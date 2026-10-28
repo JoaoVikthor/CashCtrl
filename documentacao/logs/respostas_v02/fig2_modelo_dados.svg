@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="760" viewBox="0 0 1000 760" font-family="DejaVu Sans, Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="760" fill="#ffffff"/>
+
+  <!-- Raiz -->
+  <rect x="360" y="30" width="280" height="130" rx="8" fill="#165A41"/>
+  <text x="500" y="58" text-anchor="middle" font-size="19" font-weight="bold" fill="#ffffff">users/{uid}</text>
+  <text x="500" y="84" text-anchor="middle" font-size="14" fill="#E8F0EB">nome, email, telefone</text>
+  <text x="500" y="104" text-anchor="middle" font-size="14" fill="#E8F0EB">empresa, cnpj,</text>
+  <text x="500" y="124" text-anchor="middle" font-size="14" fill="#E8F0EB">segmento, endereco</text>
+  <text x="500" y="146" text-anchor="middle" font-size="13" font-style="italic" fill="#B89775">perfil do usuario + negocio</text>
+
+  <!-- Conectores -->
+  <g stroke="#B89775" stroke-width="2" fill="none">
+    <line x1="420" y1="160" x2="180" y2="250"/>
+    <line x1="460" y1="160" x2="420" y2="250"/>
+    <line x1="540" y1="160" x2="580" y2="250"/>
+    <line x1="580" y1="160" x2="820" y2="250"/>
+    <line x1="500" y1="160" x2="500" y2="470"/>
+  </g>
+
+  <!-- transactions -->
+  <rect x="40" y="250" width="280" height="150" rx="8" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+  <text x="180" y="276" text-anchor="middle" font-size="16" font-weight="bold" fill="#165A41">transactions/{txId}</text>
+  <text x="180" y="300" text-anchor="middle" font-size="13" fill="#0D1E16">type (receita | despesa)</text>
+  <text x="180" y="320" text-anchor="middle" font-size="13" fill="#0D1E16">category, description</text>
+  <text x="180" y="340" text-anchor="middle" font-size="13" fill="#0D1E16">amount &gt; 0 (RN01), date</text>
+  <text x="180" y="360" text-anchor="middle" font-size="13" fill="#0D1E16">paymentMethod, recurring</text>
+
+  <!-- budgets -->
+  <rect x="340" y="250" width="160" height="150" rx="8" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+  <text x="420" y="276" text-anchor="middle" font-size="15" font-weight="bold" fill="#165A41">budgets/{id}</text>
+  <text x="420" y="304" text-anchor="middle" font-size="13" fill="#0D1E16">category</text>
+  <text x="420" y="326" text-anchor="middle" font-size="13" fill="#0D1E16">limit (R$/mes)</text>
+  <text x="420" y="348" text-anchor="middle" font-size="13" fill="#0D1E16">monthly</text>
+
+  <!-- products -->
+  <rect x="520" y="250" width="160" height="150" rx="8" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+  <text x="600" y="276" text-anchor="middle" font-size="15" font-weight="bold" fill="#165A41">products/{id}</text>
+  <text x="600" y="300" text-anchor="middle" font-size="12" fill="#0D1E16">ficha tecnica</text>
+  <text x="600" y="322" text-anchor="middle" font-size="13" fill="#0D1E16">recipe[]</text>
+  <text x="600" y="344" text-anchor="middle" font-size="13" fill="#0D1E16">laborCost</text>
+  <text x="600" y="366" text-anchor="middle" font-size="13" fill="#0D1E16">packagingCost, salePrice</text>
+
+  <!-- price_audit_logs -->
+  <rect x="700" y="250" width="260" height="150" rx="8" fill="#F5EFE6" stroke="#B89775" stroke-width="2"/>
+  <text x="830" y="276" text-anchor="middle" font-size="15" font-weight="bold" fill="#7a5f3c">price_audit_logs/{id}</text>
+  <text x="830" y="300" text-anchor="middle" font-size="13" fill="#0D1E16">action, entityType, entityId</text>
+  <text x="830" y="322" text-anchor="middle" font-size="13" fill="#0D1E16">summary, preco antes/depois</text>
+  <text x="830" y="344" text-anchor="middle" font-size="13" fill="#0D1E16">timestamp, expireAt (+180d)</text>
+  <text x="830" y="368" text-anchor="middle" font-size="12" font-style="italic" fill="#7a5f3c">append-only: sem update/delete</text>
+
+  <!-- ingredients + offers embutidas -->
+  <rect x="300" y="470" width="400" height="170" rx="8" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+  <text x="500" y="496" text-anchor="middle" font-size="16" font-weight="bold" fill="#165A41">ingredients/{id}  (produtos do parque)</text>
+  <text x="500" y="520" text-anchor="middle" font-size="13" fill="#0D1E16">name, unit, purchasePrice, packageQuantity</text>
+  <text x="500" y="540" text-anchor="middle" font-size="13" fill="#0D1E16">activeOfferId  -  preco/un = RN03</text>
+  <rect x="360" y="556" width="280" height="64" rx="6" fill="#ffffff" stroke="#165A41" stroke-width="1.5"/>
+  <text x="500" y="578" text-anchor="middle" font-size="13" font-weight="bold" fill="#165A41">offers[] (ate 15)</text>
+  <text x="500" y="598" text-anchor="middle" font-size="12" fill="#0D1E16">supplier, productName, price, quantity</text>
+
+  <!-- relacao products -> ingredients -->
+  <g stroke="#165A41" stroke-width="2" stroke-dasharray="6,4" fill="none">
+    <line x1="600" y1="400" x2="560" y2="470"/>
+  </g>
+  <text x="640" y="440" font-size="12" fill="#165A41">recipe[].ingredientId</text>
+
+  <!-- nota isolamento -->
+  <text x="500" y="700" text-anchor="middle" font-size="14" font-style="italic" fill="#165A41">Firestore - isolamento total por UID (RN02): cada usuario acessa apenas users/{uid}/...</text>
+  <text x="500" y="726" text-anchor="middle" font-size="13" fill="#7A8B83">Sem Firebase Storage na versao definitiva (modulos de foto removidos)</text>
+</svg>

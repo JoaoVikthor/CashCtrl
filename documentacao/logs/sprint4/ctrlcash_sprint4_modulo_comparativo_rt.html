@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Documentação Técnica do Módulo Comparativo de Fornecedores do CashCtrl — Sprint 4</title>
+<style>
+  /* Estilos espelhados do template BIBLIOTECA_113_RT_279.docx */
+  body { font-family: Georgia, serif; font-size: 12pt; color: #000; }
+  h1 { font-family: Arial, sans-serif; font-size: 16pt; font-weight: bold; margin: 18pt 0 10pt 0; }   /* estilo: Ttulo1 | fonte: Arial 16pt bold */
+  h2 { font-family: Arial, sans-serif; font-size: 14pt; font-weight: bold; margin: 14pt 0 8pt 0; }    /* estilo: Ttulo2 | fonte: Arial 14pt bold */
+  h3 { font-family: Arial, sans-serif; font-size: 14pt; font-weight: bold; margin: 12pt 0 6pt 0; }    /* estilo: Ttulo3 | fonte: Arial 14pt bold */
+  h4 { font-family: 'Palatino Linotype', serif; font-size: 12pt; font-weight: bold; margin: 10pt 0 6pt 0; } /* estilo: Ttulo4 | fonte: Palatino Linotype 12pt bold */
+  h5 { font-family: 'Courier New', monospace; font-size: 11pt; font-weight: bold; margin: 8pt 0 4pt 0; }    /* estilo: Ttulo5 | fonte: Courier New bold */
+  p  { font-family: Georgia, serif; font-size: 12pt; text-align: justify; margin: 6pt 0; }             /* estilo: Corpodetexto | fonte: Georgia 12pt */
+  li { font-family: Georgia, serif; font-size: 12pt; text-align: justify; margin: 3pt 0; }             /* estilo: PargrafodaLista | List Paragraph */
+  pre { font-family: 'Courier New', monospace; font-size: 10pt; margin: 8pt 0; }                       /* estilo: Ttulo5 | fonte: Courier New */
+  table { border-collapse: collapse; width: 100%; font-family: Georgia, serif; font-size: 10.5pt; margin: 8pt 0; }
+  th { border: 0.75pt solid #666666; padding: 4pt 6pt; background-color: #EFEFEF; font-weight: bold; text-align: left; }
+  td { border: 0.75pt solid #666666; padding: 4pt 6pt; vertical-align: top; }
+
+  .cap { text-align: center; font-family: Georgia, serif; font-size: 11pt; font-style: italic; margin: 4pt 0 10pt 0; }
+  .toc1 { font-family: Georgia, serif; font-size: 12pt; margin: 2pt 0; }                               /* estilo: Sumrio1 */
+  .toc2 { font-family: Georgia, serif; font-size: 12pt; margin: 2pt 0 2pt 24pt; }                      /* estilo: Sumrio2 */
+  .cover-title { text-align: center; font-family: Verdana, sans-serif; font-size: 20pt; font-weight: bold; margin: 90pt 0 24pt 0; }
+  .cover-sub { text-align: center; font-family: Verdana, sans-serif; font-size: 14pt; margin: 0 0 40pt 0; }
+  .cover-authors { text-align: center; font-family: Georgia, serif; font-size: 12pt; margin: 6pt 0; }
+  .cover-seal { text-align: center; font-family: Georgia, serif; font-size: 12pt; font-weight: bold; margin: 60pt 0 0 0; }
+  .cover-place { text-align: center; font-family: Georgia, serif; font-size: 12pt; margin: 4pt 0; }
+  .note { font-family: Georgia, serif; font-size: 10.5pt; font-style: italic; color: #333333; }
+  code { font-family: 'Courier New', monospace; font-size: 10.5pt; }
+</style>
+</head>
+<body>
+
+<!-- ================= CAPA ================= -->
+<p class="cover-title">Documentação Técnica do Módulo Comparativo de Fornecedores do CashCtrl — Sprint 4</p>
+<p class="cover-sub">Comparação de ofertas por insumo, painel "Comparar preços",<br>
+troca manual da oferta ativa com confirmação/desfazer,<br>
+exclusão com confirmação e logs de auditoria de preços</p>
+<p class="cover-authors">Equipe CashCtrl</p>
+<p class="cover-authors">autoria: github.com/JoaoVikthor</p>
+<p class="cover-seal">RELATÓRIOS TÉCNICOS DO CASHCTRL</p>
+<p class="cover-place">São Carlos</p>
+<p class="cover-place">09/10/2026</p>
+
+<!-- ================= ÍNDICE ================= -->
+<h1 style="page-break-before: always">Indice</h1>
+<p class="toc1">1. Introdução</p>
+<p class="toc1">2. Arquitetura do Módulo</p>
+<p class="toc2">2.1 Modelo de dados — ofertas embutidas no insumo (offers[])</p>
+<p class="toc2">2.2 Subcoleção price_audit_logs (append-only)</p>
+<p class="toc2">2.3 Camadas e separação de interesses (SoC)</p>
+<p class="toc2">2.4 Diagrama do modelo de dados</p>
+<p class="toc1">3. Fluxos do Módulo</p>
+<p class="toc2">3.1 Cadastro e edição de oferta (upsert por fornecedor)</p>
+<p class="toc2">3.2 Troca da oferta ativa — confirmação, desfazer e auditoria</p>
+<p class="toc2">3.3 Exclusão de oferta — confirmação com alerta de oferta ativa</p>
+<p class="toc2">3.4 Comparação por produto e por fornecedor (painel "Comparar preços")</p>
+<p class="toc2">3.5 Histórico de auditoria com retry funcional</p>
+<p class="toc1">4. Segurança</p>
+<p class="toc2">4.1 Regras do Firestore (isolamento por UID)</p>
+<p class="toc2">4.2 Append-only dos logs de auditoria</p>
+<p class="toc2">4.3 Batch atômico (mutação + log)</p>
+<p class="toc1">5. Testes</p>
+<p class="toc1">6. Decisões de Produto</p>
+<p class="toc1">7. Limitações Conhecidas e Próximos Passos</p>
+<p class="toc1">8. Considerações Finais</p>
+<p class="toc1">Referências</p>
+
+<!-- ================= 1. INTRODUÇÃO ================= -->
+<h1 style="page-break-before: always">1. Introdução</h1>
+<p>Este relatório apresenta a documentação técnica do <b>módulo comparativo de
+fornecedores</b> do CashCtrl, aplicativo móvel desenvolvido em Flutter com backend
+Firebase, consolidado na <b>Sprint 4</b> (branch <code>nova-versao-app</code>, commit
+<code>e3c6302</code>). O módulo reúne, em um único conjunto coeso: o modelo de ofertas por
+insumo (<code>offers[]</code> embutido no documento do insumo), a lógica pura de comparação
+e agregação, o painel "Comparar preços" (visões por produto e por fornecedor), a
+troca manual da oferta ativa com confirmação e desfazer, a exclusão de oferta
+com diálogo de confirmação e os logs de auditoria de preços append-only.</p>
+<p>O objetivo dessa documentação é propiciar uma visão abrangente dos recursos
+implementados e incentivar que a ferramenta seja rapidamente compreendida por
+desenvolvedores interessados em evoluir suas características. Todo o conteúdo
+reflete o código efetivamente entregue (<code>lib/</code>, <code>firestore.rules</code>,
+<code>test/</code>) na data de outubro de 2026: nomes de arquivos, classes, assinaturas,
+mensagens de erro e microcopy foram extraídos diretamente do repositório. Em
+relação ao relatório da Sprint 3 (que documentava o painel como implementação
+futura), esta versão registra os diferenciais implementados depois: <b>exclusão
+de oferta com confirmação e log de auditoria</b>, <b>falha explícita e amigável
+ao trocar para oferta inexistente</b>, <b>parsing defensivo de documentos
+malformados</b>, <b>retry funcional na tela de auditoria</b> e o <b>corte do
+login social</b> (decisão de escopo, seção 6.4).</p>
+
+<!-- ================= 2. ARQUITETURA DO MÓDULO ================= -->
+<h1 style="page-break-before: always">2. Arquitetura do Módulo</h1>
+
+<h2>2.1 Modelo de dados — ofertas embutidas no insumo (offers[])</h2>
+<p>A decisão de modelar as ofertas como <b>array embutido no documento do insumo</b>
+(evitando subcoleção e leitura adicional) foi mantida da Sprint 2 e consolidada.
+Cada insumo (<code>users/{uid}/ingredients/{ingredientId}</code>) carrega até <b>15 ofertas</b>
+(<code>offers[]</code>) e o identificador da oferta ativa (<code>activeOfferId</code>). O modelo
+<code>IngredientOffer</code> (<code>lib/models/ingredient_offer.dart</code>) possui os campos da
+Tabela 1.</p>
+
+<p class="cap">Tabela 1. Campos do modelo IngredientOffer (lib/models/ingredient_offer.dart).</p>
+<table>
+  <tr><th style="width:18%">Campo</th><th style="width:12%">Tipo</th><th style="width:12%">Padrão</th><th style="width:58%">Descrição</th></tr>
+  <tr><td><code>id</code></td><td>String</td><td><code>''</code></td><td>Identificador da oferta (gerado no serviço quando vazio)</td></tr>
+  <tr><td><code>supplier</code></td><td>String</td><td><code>''</code></td><td>Nome do fornecedor (normalizado <code>trim().toLowerCase()</code> para upsert)</td></tr>
+  <tr><td><code>packagePrice</code></td><td>double</td><td><code>0</code></td><td>Preço pago na embalagem (deve ser &gt; 0 — RN01)</td></tr>
+  <tr><td><code>packageQuantity</code></td><td>double</td><td><code>0</code></td><td>Quantidade da embalagem (deve ser &gt; 0 — RN01)</td></tr>
+  <tr><td><code>isActive</code></td><td>bool</td><td><code>false</code></td><td>Flag exclusiva: apenas uma oferta ativa por insumo</td></tr>
+  <tr><td><code>source</code></td><td>String</td><td><code>'manual'</code></td><td>Origem (<code>'manual'</code> ou <code>'migration'</code> na oferta sintética legado)</td></tr>
+  <tr><td><code>notes</code></td><td>String</td><td><code>''</code></td><td>Notas opcionais (limite visual de 200 caracteres no formulário)</td></tr>
+  <tr><td><code>createdAt</code></td><td>DateTime</td><td>—</td><td>Criação (preservada no update)</td></tr>
+  <tr><td><code>updatedAt</code></td><td>DateTime</td><td>—</td><td>Última atualização</td></tr>
+</table>
+
+<p>O getter <code>pricePerUnit</code> calcula <code>packagePrice / packageQuantity</code> (retorna <code>0</code>
+quando a quantidade é não positiva). O <code>fromMap</code> é <b>defensivo</b>: aceita
+<code>Timestamp</code>, <code>DateTime</code> ou String ISO 8601 para as datas, com fallback
+<code>DateTime.now()</code>, e valores numéricos nulos caem para <code>0</code>.</p>
+<p>O modelo <code>Ingredient</code> (<code>lib/models/ingredient.dart</code>) expõe os getters sintéticos
+calculados (não persistidos): <code>activeOffer</code> (procura <code>activeOfferId</code> com
+<code>isActive</code>, depois a primeira <code>isActive</code>, senão <code>null</code>), <code>pricePerUnit</code> (da
+oferta ativa, com fallback <code>purchasePrice / packageQuantity</code>), <code>offersCount</code>,
+<code>lowestActivePricePerUnit</code> (mínimo entre as ativas) e <code>bestActiveOffer</code> (ativa
+mais barata). O <code>fromMap</code> do insumo usa <b>parsing defensivo</b> com
+<code>whereType&lt;Map&gt;()</code>: elementos malformados dentro de <code>offers[]</code> são simplesmente
+ignorados, sem derrubar o stream de dados (seção 3.2).</p>
+
+<h2>2.2 Subcoleção price_audit_logs (append-only)</h2>
+<p>Cada mutação de preço grava um log em <code>users/{uid}/price_audit_logs/{logId}</code>
+(modelo <code>PriceAuditLog</code>, <code>lib/models/price_audit_log.dart</code>), no <b>mesmo batch</b>
+da mutação (seção 4.3). Os campos estão na Tabela 2.</p>
+
+<p class="cap">Tabela 2. Campos do modelo PriceAuditLog (lib/models/price_audit_log.dart).</p>
+<table>
+  <tr><th style="width:20%">Campo</th><th style="width:16%">Tipo</th><th style="width:64%">Descrição</th></tr>
+  <tr><td><code>action</code></td><td>String</td><td>Ação (Tabela 3)</td></tr>
+  <tr><td><code>entityType</code></td><td>String</td><td><code>'ingredient'</code>, <code>'offer'</code> ou <code>'product'</code></td></tr>
+  <tr><td><code>entityId</code></td><td>String</td><td>Identificador da entidade afetada</td></tr>
+  <tr><td><code>summary</code></td><td>String</td><td>Resumo legível em português (microcopy real do app)</td></tr>
+  <tr><td><code>supplier</code></td><td>String?</td><td>Fornecedor envolvido (quando aplicável)</td></tr>
+  <tr><td><code>previousPrice</code></td><td>double?</td><td>Preço anterior (quando aplicável)</td></tr>
+  <tr><td><code>newPrice</code></td><td>double?</td><td>Novo preço (quando aplicável)</td></tr>
+  <tr><td><code>pricePerUnit</code></td><td>double?</td><td>Preço por unidade resultante</td></tr>
+  <tr><td><code>source</code></td><td>String</td><td>Origem (padrão <code>'manual'</code>)</td></tr>
+  <tr><td><code>timestamp</code></td><td>DateTime?</td><td><code>FieldValue.serverTimestamp()</code> no momento da gravação</td></tr>
+  <tr><td><code>expireAt</code></td><td>Timestamp</td><td>Criação + 180 dias (campo reservado para política TTL — seção 7.1)</td></tr>
+</table>
+
+<p class="cap">Tabela 3. Ações registradas nos logs de auditoria (campo action).</p>
+<table>
+  <tr><th style="width:26%">Ação</th><th style="width:30%">Origem no código</th><th style="width:44%">Conteúdo típico do summary</th></tr>
+  <tr><td><code>offer.create</code></td><td><code>FirestoreService.upsertOffer</code></td><td>"Oferta de {fornecedor} criada"</td></tr>
+  <tr><td><code>offer.update</code></td><td><code>FirestoreService.upsertOffer</code></td><td>"Oferta de {fornecedor} atualizada"</td></tr>
+  <tr><td><code>offer.setActive</code></td><td><code>FirestoreService.setActiveOffer</code></td><td>"Oferta de {fornecedor} definida como ativa — {ppu}/un"</td></tr>
+  <tr><td><code>offer.toggleActive</code></td><td><code>FirestoreService.toggleOfferActive</code></td><td>"Oferta de {fornecedor} ativada/desativada" (ou "…desativada; ticket volta ao preço base")</td></tr>
+  <tr><td><code>offer.delete</code></td><td><code>FirestoreService.deleteOffer</code></td><td>"Oferta de {fornecedor} removida"</td></tr>
+  <tr><td><code>ingredient.create</code> / <code>ingredient.update</code> / <code>ingredient.delete</code></td><td>CRUD de insumos</td><td>"Insumo {nome} criado/atualizado/removido"</td></tr>
+</table>
+
+<h2>2.3 Camadas e separação de interesses (SoC)</h2>
+<p>O módulo mantém a arquitetura em camadas do app:</p>
+<ul>
+  <li><b>Lógica pura (sem Widgets):</b> <code>lib/utils/offer_comparator.dart</code> —
+  <code>RankedOffer</code> (oferta ranqueada com <code>isBest</code>, <code>isActive</code> e
+  <code>deltaVsActive</code>), <code>TicketLineSaving</code>/<code>TicketScenario</code> (cenário
+  informativo de economia no ticket), <code>rank</code>/<code>rankAll</code> (ranking ascendente
+  por preço/unidade), <code>bestOffer</code>, <code>syntheticLegacyOffer</code> (oferta sintética
+  do preço legado), <code>pricePerUnitWithFallback</code>, <code>hasDifferentPackageSizes</code>,
+  <code>bestSupplierScenario</code> (tolerância de 0,005 e arredondamento em 2 casas) e
+  <code>deltaUnit</code>. <code>lib/utils/price_panel_aggregator.dart</code> —
+  <code>ProductPanelEntry</code>, <code>SupplierPanelRow</code>, <code>SupplierPanelEntry</code>,
+  <code>PanelSummary</code> e o agregador <code>PricePanelAggregator</code> (<code>buildPanel</code>,
+  <code>sortPanel</code>, <code>filterPanel</code>, <code>summarize</code>, <code>rowsForSupplier</code>,
+  <code>buildSupplierReport</code>), com normalização de fornecedores
+  (<code>trim().toLowerCase()</code>), remoção de acentos na ordenação/busca
+  (<code>_unaccent</code>/<code>_sortKey</code>), tolerância de 0,005 no delta e sentinela <code>-1</code>
+  quando não há comparação válida.</li>
+  <li><b>Dados:</b> models (<code>lib/models/ingredient_offer.dart</code>,
+  <code>price_audit_log.dart</code>, <code>ingredient.dart</code>) e acesso ao Firestore
+  (<code>lib/services/firestore_service.dart</code>) com streams em tempo real e logs
+  gravados em batch; provider (<code>lib/providers/ingredient_provider.dart</code>) com
+  mapa <code>id → Ingredient</code> e cache do stream de auditoria.</li>
+  <li><b>Apresentação:</b> telas (<code>lib/screens/ingredient_offers_screen.dart</code>,
+  <code>offer_form_screen.dart</code>, <code>compare_prices_screen.dart</code>,
+  <code>audit_logs_screen.dart</code>) e widgets (<code>lib/widgets/offer_card.dart</code>,
+  <code>panel_product_card.dart</code>, <code>supplier_summary_card.dart</code>,
+  <code>audit_entry_tile.dart</code>, <code>economy_summary_card.dart</code>,
+  <code>confirm_action_dialog.dart</code> e auxiliares), sobre a paleta existente
+  (<code>0xFF0D1E16</code>, <code>0xFF165A41</code>, <code>0xFFB89775</code>, <code>0xFF142A20</code>,
+  <code>0xFF7A8B83</code>).</li>
+</ul>
+<p>A Figura 14 mostra a estrutura de diretórios do módulo (árvore real do
+repositório).</p>
+
+<p class="cap">Figura 14. Estrutura de diretórios do módulo comparativo de fornecedores.</p>
+<pre>
+lib/
+|-- main.dart                       (rotas /ingredient-offers, /offer-form,
+|                                    /audit-logs, /compare-prices)
+|-- models/
+|   |-- ingredient.dart             (offers[], activeOfferId + getters sintéticos)
+|   |-- ingredient_offer.dart       (modelo IngredientOffer)
+|   |-- price_audit_log.dart        (modelo PriceAuditLog)
+|-- utils/
+|   |-- offer_comparator.dart       (ranking, delta, cenário best — lógica pura)
+|   |-- price_panel_aggregator.dart (painel por produto/fornecedor — lógica pura)
+|-- services/
+|   |-- firestore_service.dart      (upsertOffer, setActiveOffer, toggleOfferActive,
+|                                    deleteOffer + logs em batch)
+|-- providers/
+|   |-- ingredient_provider.dart    (wrappers + auditLogs cacheado + reconnectAuditLogs)
+|-- screens/
+|   |-- ingredient_offers_screen.dart (comparativo do insumo + ações)
+|   |-- offer_form_screen.dart        (nova/editar oferta)
+|   |-- compare_prices_screen.dart    (painel "Comparar preços")
+|   |-- audit_logs_screen.dart        (histórico de auditoria)
+|-- widgets/
+    |-- offer_card.dart              (card da oferta com onDelete)
+    |-- panel_product_card.dart      (card do painel por produto)
+    |-- supplier_summary_card.dart   (card do painel por fornecedor)
+    |-- audit_entry_tile.dart        (linha da timeline de auditoria)
+    |-- economy_summary_card.dart    (cenário de economia no ticket)
+    |-- confirm_action_dialog.dart   (diálogo de confirmação reutilizável)
+    |-- active_offer_marker.dart, best_price_chip.dart, delta_price_text.dart,
+    |-- offer_count_badge.dart, offer_limit_banner.dart, empty_state.dart,
+    |-- error_state.dart, filter_chip_row.dart, search_field.dart,
+    |-- section_header.dart          (auxiliares do módulo)
+test/
+|-- offer_comparator_test.dart      (23 testes)
+|-- price_panel_aggregator_test.dart(15 testes)
+|-- unit_converter_test.dart        (15 testes)
+|-- widget_test.dart                (1 teste de widget)
+</pre>
+
+<h2>2.4 Diagrama do modelo de dados</h2>
+<p>A Figura 15 apresenta o modelo de dados do módulo sob o namespace do usuário
+(<code>users/{uid}/...</code>), com as ofertas embutidas no insumo e a subcoleção de
+auditoria.</p>
+
+<p class="cap">Figura 15. Modelo de dados do módulo (Firestore, isolado por UID).</p>
+<pre>
+users/{uid}                          (perfil do usuário — Firebase Auth e-mail/senha)
+  |
+  |-- ingredients/{ingredientId}     (insumo do parque)
+  |     |-- name, unit, purchasePrice, packageQuantity, createdAt
+  |     |-- activeOfferId : String?  (referência lógica a offers[].id)
+  |     |-- offers[] : Array&lt;IngredientOffer&gt;   (teto de 15)
+  |            |-- id, supplier, packagePrice, packageQuantity,
+  |            |   isActive, source, notes, createdAt, updatedAt
+  |
+  |-- price_audit_logs/{logId}       (subcoleção append-only)
+        |-- action, entityType, entityId, summary
+        |-- supplier?, previousPrice?, newPrice?, pricePerUnit?, source
+        |-- timestamp (serverTimestamp), expireAt (+180 dias)
+
+Relações (lógicas, sem referências do Firestore):
+  - ingredients.activeOfferId  -&gt; ingredients.offers[].id
+  - price_audit_logs.entityId  -&gt; ingredients.id | ingredients.offers[].id | products.id
+  - products.recipe[].ingredientId -&gt; ingredients.id (ticket consome Ingredient.pricePerUnit)
+</pre>
+
+<!-- ================= 3. FLUXOS ================= -->
+<h1 style="page-break-before: always">3. Fluxos do Módulo</h1>
+
+<h2>3.1 Cadastro e edição de oferta (upsert por fornecedor)</h2>
+<p>O formulário (<code>lib/screens/offer_form_screen.dart</code>, rota <code>/offer-form</code>) coleta
+fornecedor, preço da embalagem, quantidade da embalagem e notas, com <b>preview
+ao vivo</b> do preço por unidade e, em edição, o card "Comparado com a oferta
+ativa" (<code>DeltaPriceText</code>). A validação é inline (<code>errorText</code>) e por SnackBar:
+fornecedor obrigatório, preço &gt; 0, quantidade &gt; 0 e teto de 15 ofertas.</p>
+<p>No serviço, <code>upsertOffer</code> (<code>lib/services/firestore_service.dart</code>) executa:</p>
+<ul>
+  <li><b>Validação de domínio (RN01):</b> <code>packagePrice &lt;= 0 || packageQuantity &lt;= 0</code>
+  lança <code>StateError('O preço e a quantidade da embalagem devem ser maiores que
+  zero (RN01).')</code>.</li>
+  <li><b>Leitura defensiva do documento:</b> <code>offers[]</code> é parseado com
+  <code>whereType&lt;Map&gt;()</code> — elementos malformados são ignorados.</li>
+  <li><b>Upsert por fornecedor normalizado</b> (<code>trim().toLowerCase()</code>): o mesmo
+  fornecedor <b>atualiza</b> a oferta existente (preservando <code>createdAt</code>) em vez
+  de duplicar; log <code>offer.update</code> com <code>previousPrice</code>/<code>newPrice</code>.</li>
+  <li><b>Criação:</b> respeita o teto (<code>StateError('Limite de 15 ofertas por insumo
+  atingido.')</code>); a <b>primeira</b> oferta do insumo nasce ativa
+  (<code>isActive = true</code> e <code>activeOfferId</code> apontando para ela); log
+  <code>offer.create</code>.</li>
+  <li><b>Batch atômico:</b> grava <code>{offers, activeOfferId}</code> no documento do insumo
+  (<code>SetOptions(merge: true)</code>) <b>e</b> o log de auditoria
+  (<code>expireAt = agora + 180 dias</code>) no mesmo <code>WriteBatch</code>.</li>
+</ul>
+
+<h2>3.2 Troca da oferta ativa — confirmação, desfazer e auditoria</h2>
+<p>Na tela de ofertas (<code>lib/screens/ingredient_offers_screen.dart</code>), a ação
+"Usar no ticket" do <code>OfferCard</code> abre o diálogo <code>ConfirmActionDialog</code> ("Usar
+esta oferta no ticket?") cujo corpo calcula o impacto contra a oferta ativa
+atual: economia por unidade, aumento por unidade ou preço sem referência, com a
+nota "Você pode trocar de volta quando quiser. O app não altera
+automaticamente." — materialização da política "o app nunca troca sozinho"
+(seção 6.2).</p>
+<p>Confirmada a troca, <code>setActiveOffer</code> reescreve o array com a flag <code>isActive</code>
+exclusiva e grava o log <code>offer.setActive</code> no mesmo batch. O SnackBar de sucesso
+(dourado) oferece a ação <b>"Desfazer"</b>, que reativa a oferta anterior
+(<code>previousActiveOfferId</code>) — desfazer também é uma troca manual auditada.</p>
+<p><b>Diferencial pós-Sprint 3 (falha explícita):</b> se o identificador informado
+não corresponde a nenhuma oferta do documento, <code>setActiveOffer</code> lança
+<code>Exception('Oferta não encontrada.')</code> (<code>firstWhere</code> com <code>orElse</code> que lança) em
+vez de ativar a oferta errada ou falhar silenciosamente; a tela captura a
+exceção e exibe o SnackBar vermelho "Não foi possível trocar a oferta: Oferta
+não encontrada.". Casos de documento inexistente, <code>offers</code> não-lista ou o
+convite legado <code>offerId == 'legacy'</code> com array vazio continuam sendo ignorados
+com <code>return</code> (sem mutação).</p>
+<p>A Figura 16 resume o fluxo.</p>
+
+<p class="cap">Figura 16. Fluxo de troca da oferta ativa (confirmação → batch → auditoria → desfazer).</p>
+<pre>
+Usuário toca "Usar no ticket" (OfferCard)
+  |
+  v
+ConfirmActionDialog "Usar esta oferta no ticket?"
+  |-- corpo: economia/aumento por unidade vs. oferta ativa
+  |-- nota: "Você pode trocar de volta quando quiser.
+  |          O app não altera automaticamente."
+  |
+  +-- Cancelar -&gt; nada acontece
+  |
+  v Confirmar
+IngredientProvider.setActiveOffer(ingredientId, offerId)
+  |
+  v
+FirestoreService.setActiveOffer
+  |-- doc inexistente / offers não-lista / ('legacy' com array vazio) -&gt; return
+  |-- offerId desconhecido -&gt; Exception('Oferta não encontrada.')
+  |      -&gt; SnackBar vermelho "Não foi possível trocar a oferta: …"
+  |
+  v
+WriteBatch (atômico):
+  |-- set ingredients/{id} { offers[] com isActive exclusivo, activeOfferId }
+  |-- set price_audit_logs/{id} action=offer.setActive, expireAt=+180d
+  |
+  v
+SnackBar dourado "Oferta de {fornecedor} agora é a ativa."
+  +-- ação "Desfazer" -&gt; setActiveOffer(ingredientId, previousActiveOfferId)
+</pre>
+
+<h2>3.3 Exclusão de oferta — confirmação com alerta de oferta ativa</h2>
+<p><b>Diferencial pós-Sprint 3:</b> a exclusão de oferta individual passou a ter
+<b>diálogo de confirmação próprio</b> na tela de ofertas (<code>_deleteOffer</code>), com
+comportamento distinto quando a oferta é a ativa:</p>
+<ul>
+  <li>Corpo do diálogo: "{fornecedor} · {preço}/un"; quando a oferta é a ativa,
+  acrescenta "Esta é a oferta ATIVA. Ao excluir, o ticket volta ao preço base
+  até você escolher outra oferta."</li>
+  <li>Nota: "A oferta ativa será removida." (ativa) ou "A exclusão não pode ser
+  desfeita." (comum).</li>
+  <li>O <code>OfferCard</code> expõe a ação "Excluir" pelo callback opcional <code>onDelete</code>
+  (ícone <code>delete_outline</code>, cor secundária).</li>
+</ul>
+<p>No serviço, <code>deleteOffer</code> remove a oferta do array, limpa <code>activeOfferId</code>
+quando ele apontava para a oferta excluída (o ticket volta ao preço base
+<code>purchasePrice / packageQuantity</code>) e grava o log <code>offer.delete</code> (com
+<code>previousPrice</code> e <code>pricePerUnit</code>) no mesmo batch. O SnackBar de sucesso é
+dourado ("Oferta de {fornecedor} excluída."); falhas exibem SnackBar vermelho
+"Erro ao excluir oferta: …".</p>
+<p>O toggle de visibilidade (<code>toggleOfferActive</code>) permanece: desativar a oferta
+ativa limpa <code>activeOfferId</code> e registra o summary "Oferta de {fornecedor}
+desativada; ticket volta ao preço base" (ação <code>offer.toggleActive</code>).</p>
+
+<h2>3.4 Comparação por produto e por fornecedor (painel "Comparar preços")</h2>
+<p>A tela <code>compare_prices_screen.dart</code> (rota <code>/compare-prices</code>, item "Comparar
+preços" no drawer com <code>Icons.compare_arrows_outlined</code>) agrega o parque de
+insumos via <code>PricePanelAggregator</code> (client-side, sem mudança de schema) em duas
+visões selecionadas por <code>AppFilterChipRow</code>:</p>
+<ul>
+  <li><b>Por produto:</b> linha de economia ("Economia possível — {soma} combinados
+  por unidade em {N} insumos" ou "Você já usa o melhor preço entre as ofertas
+  cadastradas."), busca ("Buscar produto ou fornecedor…", sem acentos e
+  case-insensitive), ordenação (Maior economia / Menor preço / Nome), chips de
+  fornecedor (com tooltip acima de 18 caracteres), banner quando há apenas um
+  fornecedor ("Cadastre mais fornecedores para ver o comparativo.") e cards
+  <code>PanelProductCard</code> (melhor preço em destaque, linha "No ticket: {fornecedor}
+  · {delta}" com <code>Semantics</code>, mini-chips de até 3 outros fornecedores e
+  eco-chip "−{delta}/un"); insumos sem ofertas recebem a pill "sem comparação"
+  (<code>legacyOnly</code>). O toque no card navega para <code>/ingredient-offers</code>.</li>
+  <li><b>Por fornecedor:</b> <code>SupplierSummaryCard</code> expansível por fornecedor
+  ("Fornece {N} insumos · ★ melhor em {M}"), com pills das melhores ofertas
+  (até 3 + "+{N}") e linhas por insumo com posição ("{i}º de {total}" ou
+  "★ melhor preço · {i}º de {total}") e delta colorido (verde ≤ 0, laranja
+  &lt; 1, vermelho ≥ 1). Múltiplas ofertas do mesmo fornecedor são agrupadas
+  usando a melhor (<code>rowsForSupplier</code>).</li>
+</ul>
+<p>O resumo (<code>summarize</code>) conta <code>productsWithOffers</code>, <code>suppliersCount</code>,
+<code>productsPayMore</code> e <code>economySumPerUnit</code> (soma honesta de deltas por unidade,
+ignorando <code>legacyOnly</code> e deltas abaixo da tolerância de 0,005).</p>
+
+<h2>3.5 Histórico de auditoria com retry funcional</h2>
+<p>A tela <code>audit_logs_screen.dart</code> (rota <code>/audit-logs</code>, ícone de histórico na
+AppBar da tela de ofertas) consome o stream <code>priceAuditLogsStream</code> (últimos 100
+logs, <code>orderBy('timestamp', descending: true)</code>) via <code>StreamBuilder</code>. O provider
+<b>cacheia</b> o stream (<code>_auditLogsStream ??= …</code>) para não reabrir a assinatura a
+cada rebuild.</p>
+<p><b>Diferencial pós-Sprint 3 (retry funcional):</b> em caso de erro do stream, a
+tela exibe <code>ErrorState("Não foi possível carregar o histórico.")</code> cujo botão
+"Tentar novamente" chama <code>provider.reconnectAuditLogs()</code> (que zera o cache e
+notifica os ouvintes) seguido de <code>setState</code> — o <code>StreamBuilder</code> <b>reassina</b> um
+stream novo em vez de ficar preso no erro. A troca de usuário também zera o
+cache (<code>_onUserChanged</code>).</p>
+<p>A timeline agrupa os logs por dia ("Hoje", "Ontem" ou data formatada), com
+<code>AuditEntryTile</code> (ícone por ação, vermelho para ações <code>.delete</code>; detalhe "de X
+para Y" / "novo valor: X" / fornecedor; hora) e bottom sheet de detalhe ao
+toque (resumo, timestamp completo, preços anterior → novo, fornecedor). Filtros:
+Tudo / Insumos / Ofertas / Produtos / Sistema (por <code>entityType</code> e <code>source</code>),
+além de busca textual.</p>
+
+<p class="cap">Tabela 4. Telas e rotas do módulo comparativo de fornecedores.</p>
+<table>
+  <tr><th style="width:22%">Rota</th><th style="width:34%">Tela (arquivo)</th><th style="width:44%">Função</th></tr>
+  <tr><td><code>/ingredient-offers</code></td><td><code>ingredient_offers_screen.dart</code></td><td>Comparativo do insumo: ranking, filtros, troca/exclusão/toggle de ofertas</td></tr>
+  <tr><td><code>/offer-form</code></td><td><code>offer_form_screen.dart</code></td><td>Nova/editar oferta (upsert por fornecedor)</td></tr>
+  <tr><td><code>/compare-prices</code></td><td><code>compare_prices_screen.dart</code></td><td>Painel "Comparar preços" (por produto / por fornecedor)</td></tr>
+  <tr><td><code>/audit-logs</code></td><td><code>audit_logs_screen.dart</code></td><td>Histórico de auditoria (somente leitura, com retry)</td></tr>
+</table>
+
+<!-- ================= 4. SEGURANÇA ================= -->
+<h1 style="page-break-before: always">4. Segurança</h1>
+
+<h2>4.1 Regras do Firestore (isolamento por UID)</h2>
+<p><code>firestore.rules</code> (<code>rules_version = '2'</code>) mantém o princípio do isolamento
+completo por UID (RN02): cada usuário só lê/escreve dentro do próprio
+<code>users/{uid}/...</code>. As subcoleções <code>transactions</code>, <code>budgets</code>,
+<code>ingredients</code> e <code>products</code> permitem <code>read, write</code> apenas ao dono
+(<code>request.auth.uid == uid</code>); a subcoleção <code>price_audit_logs</code> tem regra
+própria (seção 4.2); o catch-all final (<code>match /{document=**}</code>) nega qualquer
+outra coleção (<code>allow read, write: if false</code>). Não há coleções globais
+acessíveis aos clientes.</p>
+
+<h2>4.2 Append-only dos logs de auditoria</h2>
+<p>O bloco de <code>price_audit_logs</code> é <b>append-only</b>:</p>
+<pre>
+match /price_audit_logs/{logId} {
+  allow read, create: if request.auth != null &amp;&amp; request.auth.uid == uid;
+  allow update, delete: if false;
+}
+</pre>
+<p>O dono pode ler e criar logs, mas <b>nenhum cliente</b> pode alterar ou apagar um
+log existente — o histórico é imutável no nível das regras. A retenção
+automática (TTL) é responsabilidade do console/GCP, não das regras (seção 7.1).</p>
+
+<h2>4.3 Batch atômico (mutação + log)</h2>
+<p>Toda mutação do módulo grava a mudança e o log de auditoria <b>no mesmo
+<code>WriteBatch</code></b>: ou os dois documentos são gravados, ou nenhum é. Isso vale para
+<code>upsertOffer</code>, <code>setActiveOffer</code>, <code>toggleOfferActive</code>, <code>deleteOffer</code> e também
+para o CRUD de insumos (<code>ingredient.create</code>/<code>update</code>/<code>delete</code>). O
+<code>updateIngredient</code> protege as ofertas removendo <code>offers</code> e <code>activeOfferId</code> do
+mapa antes do <code>merge</code> — a edição comum do insumo nunca apaga ofertas por
+acidente. As credenciais do Firebase permanecem em <code>.env</code> (via
+<code>flutter_dotenv</code>), nunca hardcoded.</p>
+
+<!-- ================= 5. TESTES ================= -->
+<h1 style="page-break-before: always">5. Testes</h1>
+<p>A suíte do repositório possui <b>54 testes unitários e de widget, todos
+aprovados</b> (<code>flutter test</code> → <code>+54: All tests passed!</code>, verificado em
+09/10/2026). Os três arquivos de teste do módulo são:</p>
+<ul>
+  <li><b><code>test/offer_comparator_test.dart</code> (23 testes):</b> <code>rank</code> (ordenação
+  ascendente, marcação da melhor, <code>deltaVsActive</code> positivo/negativo/zero,
+  lista vazia), <code>rankAll</code> (inclui inativas), <code>bestOffer</code> (ativa mais barata,
+  <code>activeOnly=false</code>, ignora <code>packageQuantity &lt;= 0</code>, empate estável, lista
+  vazia), <code>syntheticLegacyOffer</code> (espelha o preço legado com
+  <code>source='migration'</code>), <code>hasDifferentPackageSizes</code> e
+  <code>bestSupplierScenario</code> (economia agregada, <code>null</code> sem economia, linhas
+  <code>missing</code> ignoradas, <code>stillLoss</code>, sem falsa economia por arredondamento e
+  tolerância de 0,005) e <code>deltaUnit</code>.</li>
+  <li><b><code>test/price_panel_aggregator_test.dart</code> (15 testes):</b> cenário "padaria"
+  com 8 insumos e 6 fornecedores — <code>buildPanel</code> (deltas corretos,
+  <code>legacyOnly</code> sem economia, sentinela <code>-1</code> sem ofertas ativas válidas),
+  <code>sortPanel</code> (economy/lowest/name), <code>filterPanel</code> (query sem acento,
+  fornecedor exato, combinação), <code>rowsForSupplier</code> (posições e agrupamento de
+  múltiplas ofertas do mesmo fornecedor), <code>buildSupplierReport</code> (ordenado por
+  <code>bestCount</code>, exclui fornecedores sem ofertas ativas) e <code>summarize</code>
+  (contagens e soma de economia, ignorando <code>legacyOnly</code>).</li>
+  <li><b><code>test/unit_converter_test.dart</code> (15 testes):</b> conversões g↔kg e L↔ml,
+  unidades iguais, famílias incompatíveis, zero/negativo sem conversão,
+  comparação case-insensitive e <code>compatibleUnits</code>.</li>
+</ul>
+<p>O teste de widget <code>test/widget_test.dart</code> (1 teste) cobre a renderização da
+tela de cadastro. A Tabela 5 resume a distribuição.</p>
+
+<p class="cap">Tabela 5. Distribuição dos 54 testes da suíte.</p>
+<table>
+  <tr><th style="width:40%">Arquivo</th><th style="width:14%">Testes</th><th style="width:46%">Escopo</th></tr>
+  <tr><td><code>offer_comparator_test.dart</code></td><td>23</td><td>Lógica pura de comparação de ofertas</td></tr>
+  <tr><td><code>price_panel_aggregator_test.dart</code></td><td>15</td><td>Lógica pura do painel (produto/fornecedor)</td></tr>
+  <tr><td><code>unit_converter_test.dart</code></td><td>15</td><td>Conversão de unidades (g/kg, L/ml)</td></tr>
+  <tr><td><code>widget_test.dart</code></td><td>1</td><td>Widget da tela de cadastro</td></tr>
+  <tr><td><b>Total</b></td><td><b>54</b></td><td></td></tr>
+</table>
+
+<p class="note">Observação de ambiente: <code>flutter analyze</code> não é executável neste
+workspace (o analysis server encerra com o caminho contendo "(Cópia)"); o
+verificador oficial é <code>dart analyze .</code> (limpo) e <code>flutter test</code> (54/54).</p>
+
+<!-- ================= 6. DECISÕES DE PRODUTO ================= -->
+<h1 style="page-break-before: always">6. Decisões de Produto</h1>
+
+<h2>6.1 Do protótipo ao módulo real</h2>
+<p>O painel "Comparar preços" nasceu como protótipo HTML interativo aprovado
+(Sprint 3, <code>documentacao/logs/sprint3/prototipo_painel_precos.html</code>) e foi
+depois implementado como <b>módulo utilizável dentro do app</b> (decisão
+registrada em <code>context/decisoes-de-fluxo.md</code>), sobre os dados reais de
+<code>offers[]</code>, sem mudança de schema. O protótipo permanece como especificação
+aprovada da UI.</p>
+
+<h2>6.2 "O app nunca troca sozinho"</h2>
+<p>A política central do módulo é que <b>a escolha do preço que entra no ticket é
+sempre manual</b>: toda troca de oferta ativa exige confirmação explícita
+(<code>ConfirmActionDialog</code>), o SnackBar de sucesso oferece "Desfazer", e o painel
+apenas informa e navega — nunca altera dados. A microcopy do app é explícita:
+"Você escolhe qual oferta entra no ticket. O app não troca sozinho." (tela de
+ofertas) e "Nada foi alterado no ticket." (<code>EconomySummaryCard</code>, que apresenta
+o cenário "Melhor fornecedor possível" apenas como simulação informativa).</p>
+
+<h2>6.3 O fornecedor nunca escreve no sistema</h2>
+<p>Não há login, convite ou portal para fornecedores: as ofertas são digitadas
+pelo dono do negócio a partir dos preços que recebe. Todo dado vive sob
+<code>users/{uid}/...</code> e as regras do Firestore não concedem acesso a terceiros —
+o "fornecedor" é apenas um campo de texto (<code>supplier</code>) normalizado para
+agrupamento.</p>
+
+<h2>6.4 Corte do login social (decisão de escopo)</h2>
+<p><b>Diferencial pós-Sprint 3:</b> o login com Google e Facebook foi <b>removido</b>
+por instabilidade, e o app passou a usar <b>apenas autenticação e-mail/senha</b>
+(Firebase Auth). A decisão está materializada no código: <code>pubspec.yaml</code> sem
+<code>google_sign_in</code> e <code>flutter_facebook_auth</code>; <code>AuthService</code>
+(<code>lib/services/auth_service.dart</code>) expõe somente
+<code>signInWithEmail</code>/<code>registerWithEmail</code>/<code>signOut</code>, com mensagens de erro
+amigáveis em português (<code>friendlyAuthError</code>); <code>LoginScreen</code> sem botões
+sociais; e o cadastro multi-etapa persiste o perfil em <code>users/{uid}</code>.
+Registrada no commit <code>e3c6302</code> ("Reta final: remove login social; excluir
+oferta na UI e seguranca de dados no comparativo"). Reintroduzir provedores
+sociais é decisão futura que exigiria reavaliação de estabilidade e
+configuração nativa.</p>
+
+<!-- ================= 7. LIMITAÇÕES ================= -->
+<h1 style="page-break-before: always">7. Limitações Conhecidas e Próximos Passos</h1>
+
+<h2>7.1 TTL de 180 dias ainda não ativado no console/GCP</h2>
+<p>O campo <code>expireAt</code> (criação + 180 dias) <b>já é gravado</b> em todos os logs de
+auditoria (<code>PriceAuditLog.toMap(expireAt)</code>), mas a <b>política de expiração
+automática (TTL) ainda não foi ativada</b> no console do Firebase/GCP
+(Firestore → política TTL no campo <code>expireAt</code>). Enquanto a política não for
+criada, os logs antigos permanecem armazenados indefinidamente; a ativação é
+operação de console, não de código.</p>
+
+<h2>7.2 Migração de preço legado é apresentada, mas não persistida</h2>
+<p>Insumos criados antes do módulo (sem <code>offers[]</code>) são tratados <b>em runtime</b>:
+<code>OfferComparator.syntheticLegacyOffer</code> constrói uma oferta sintética em
+memória (id <code>legacy</code>, fornecedor "Fornecedor padrão", <code>source='migration'</code>,
+nota "Preço cadastrado migrado automaticamente") para exibição na tela de
+ofertas, e o ticket continua lendo o preço base pelo fallback
+<code>purchasePrice / packageQuantity</code> (<code>pricePerUnitWithFallback</code>). <b>Nada é
+escrito</b> no documento do insumo — não há migração persistida em lote. A tela
+de ofertas mostra o card "Preço base do insumo" convidando ao cadastro de
+ofertas, e o filtro "Padrão" isola ofertas com <code>source == 'migration'</code>.
+<code>setActiveOffer('legacy')</code> é ignorado (return silencioso) quando o array está
+vazio.</p>
+
+<h2>7.3 Próximos passos (v-next)</h2>
+<ul>
+  <li><b>Reconhecimento por foto</b> de produtos e <b>recorrência</b> de ofertas ficam
+  para a próxima versão (não implementados no código atual).</li>
+  <li><b>Economia semanal de verdade</b> no painel exigiria campo de consumo no
+  modelo (hoje a economia é por unidade — decisão de produto pendente).</li>
+  <li><b>Deploy das regras</b> (<code>firebase deploy --only firestore:rules</code>) segue como
+  pendência operacional do usuário antes de rodar/distribuir o app atualizado.</li>
+  <li><b>Capturas de tela</b> do módulo para as Figuras 17–20 (pendentes de
+  dispositivo/emulador).</li>
+</ul>
+
+<!-- ================= 8. CONSIDERAÇÕES FINAIS ================= -->
+<h1 style="page-break-before: always">8. Considerações Finais</h1>
+<p>O módulo comparativo de fornecedores do CashCtrl está consolidado como parte
+estável do aplicativo: modelo de dados enxuto (ofertas embutidas com teto de
+15 e oferta ativa exclusiva), lógica pura testável (38 testes de comparação e
+painel), operações Firestore atômicas com auditoria append-only, painel
+informativo em duas visões e UX de troca manual com confirmação, desfazer e
+falhas amigáveis. Os diferenciais pós-Sprint 3 — exclusão com confirmação e
+log, erro explícito "Oferta não encontrada.", parsing defensivo de documentos
+malformados, retry funcional na auditoria e o corte do login social — foram
+verificados diretamente no código da branch <code>nova-versao-app</code> (commit
+<code>e3c6302</code>) e estão documentados nas seções 3.2, 3.3, 3.5 e 6.4.</p>
+<p>As limitações remanescentes (TTL a ativar no console, migração legado apenas
+em runtime, reconhecimento por foto e recorrência para v-next) estão
+registradas na seção 7 com os responsáveis claros: console/GCP, runtime e
+próxima versão, respectivamente.</p>
+
+<!-- ================= REFERÊNCIAS ================= -->
+<h1 style="page-break-before: always">Referências</h1>
+<ul>
+  <li>Código-fonte: <code>lib/models/ingredient_offer.dart</code>,
+  <code>lib/models/price_audit_log.dart</code>, <code>lib/models/ingredient.dart</code>,
+  <code>lib/utils/offer_comparator.dart</code>, <code>lib/utils/price_panel_aggregator.dart</code>,
+  <code>lib/services/firestore_service.dart</code>, <code>lib/providers/ingredient_provider.dart</code>,
+  <code>lib/screens/ingredient_offers_screen.dart</code>, <code>lib/screens/offer_form_screen.dart</code>,
+  <code>lib/screens/compare_prices_screen.dart</code>, <code>lib/screens/audit_logs_screen.dart</code>,
+  <code>lib/widgets/offer_card.dart</code> (e demais widgets listados na Figura 14),
+  <code>lib/main.dart</code>, <code>lib/services/auth_service.dart</code>.</li>
+  <li>Regras de segurança: <code>firestore.rules</code>, <code>storage.rules</code>.</li>
+  <li>Testes: <code>test/offer_comparator_test.dart</code>,
+  <code>test/price_panel_aggregator_test.dart</code>, <code>test/unit_converter_test.dart</code>,
+  <code>test/widget_test.dart</code>.</li>
+  <li>Documentação de apoio: <code>docs/overview.md</code>;
+  <code>documentacao/ctrlcash_documentacao.txt</code>;
+  <code>documentacao/logs/sprint3/HANDOVER.md</code>;
+  <code>documentacao/logs/metadata/sprint3_2026-10-08_comparar_precos.md</code>;
+  <code>context/decisoes-de-fluxo.md</code>; <code>context/erros-a-evitar.md</code>.</li>
+  <li>Relatórios anteriores do padrão BIBLIOTECA:
+  <code>documentacao/BIBLIOTECA_113_RT_279.docx</code> (template),
+  <code>documentacao/CTRLCASH_SPRINT2_PROPOSTA_A_RT.docx</code>,
+  <code>documentacao/CTRLCASH_SPRINT3_PAINEL_COMPARACAO_FUTURO_RT.docx</code>.</li>
+</ul>
+
+<p class="note">Figuras pendentes de captura de tela (dispositivo/emulador):
+Figura 17 — tela de ofertas do insumo (ranking com badges "ATIVA"/"melhor",
+filtros e ações do OfferCard); Figura 18 — diálogo "Usar esta oferta no
+ticket?" com economia/aumento e SnackBar com "Desfazer"; Figura 19 — painel
+"Comparar preços" (visão por produto e por fornecedor); Figura 20 — histórico
+de auditoria (timeline por dia e bottom sheet de detalhe).</p>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "orchestrator",
+  "subagent_depth": 2,
+  "instructions": ["context/erros-a-evitar.md"],
+  "skills": {
+    "paths": [
+      ".agents/skills",
+      "/home/vikthor/dev/Projetos/only_punch/.agents/skills"
+    ]
+  },
+  "agent": {
+    "orchestrator": {
+      "mode": "primary",
+      "model": "opencode-go/qwen3.8-flash",
+      "description": "Orquestrador do CashCtrl. Coordena sprints, delega aos subagentes e nunca implementa código diretamente.",
+      "permission": {
+        "read": "allow",
+        "edit": "allow",
+        "task": "allow",
+        "bash": "ask",
+        "todowrite": "allow",
+        "question": "allow"
+      }
+    },
+    "project-analyst": {
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-flash",
+      "description": "Analista de projetos do CashCtrl. Mapeia código, telas, Firestore e restrições. Só leitura.",
+      "permission": {
+        "read": "allow",
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "innovator": {
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.8-flash",
+      "description": "Conselheiro de inovações do CashCtrl. Gera ideias e o desenho da comparação de fornecedores. Só leitura.",
+      "permission": {
+        "read": "allow",
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "innovator-advisor": {
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3-flash",
+      "description": "Segundo conselheiro de inovações. Critica riscos, UX, migração e complexidade. Só leitura.",
+      "permission": {
+        "read": "allow",
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "implementer": {
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "description": "Implementador Flutter/Firebase do CashCtrl. Escreve código em models, services, providers, utils, screens, widgets e rules.",
+      "permission": {
+        "read": "allow",
+        "edit": "allow",
+        "bash": {
+          "flutter pub get*": "allow",
+          "flutter analyze*": "allow",
+          "flutter test*": "allow",
+          "dart analyze*": "allow",
+          "*": "ask"
+        }
+      }
+    },
+    "design-analyst": {
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.5",
+      "description": "Analista profissional de design do CashCtrl. Repensa telas com skills de design sem mudar cores nem logo camaleão.",
+      "permission": {
+        "read": "allow",
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "docs-writer": {
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3-flash",
+      "description": "Escritor de documentação do CashCtrl. Gera docx no padrão do relatório BIBLIOTECA via Markdown+HTML+LibreOffice.",
+      "permission": {
+        "read": "allow",
+        "edit": "allow",
+        "bash": {
+          "soffice*": "allow",
+          "libreoffice*": "allow",
+          "mkdir*": "allow",
+          "*": "ask"
+        }
+      }
+    },
+    "metadata-tracker": {
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.6-flash",
+      "description": "Rastreador de metadados do CashCtrl. Snapshot antes/depois, logs e limpeza sob confirmação.",
+      "permission": {
+        "read": "allow",
+        "edit": "allow",
+        "bash": {
+          "git status*": "allow",
+          "git diff*": "allow",
+          "sha256sum*": "allow",
+          "ls*": "allow",
+          "find*": "allow",
+          "rm *": "ask",
+          "*": "ask"
+        }
+      }
+    }
+  }
+}

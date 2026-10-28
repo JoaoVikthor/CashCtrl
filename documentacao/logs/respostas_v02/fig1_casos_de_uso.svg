@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1010" viewBox="0 0 1000 1010" font-family="DejaVu Sans, Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="1010" fill="#ffffff"/>
+
+  <!-- Sistema -->
+  <rect x="330" y="60" width="620" height="920" rx="10" fill="#ffffff" stroke="#165A41" stroke-width="3"/>
+  <text x="640" y="100" text-anchor="middle" font-size="26" font-weight="bold" fill="#165A41">CashCtrl</text>
+
+  <!-- Ator -->
+  <circle cx="150" cy="470" r="20" fill="none" stroke="#0D1E16" stroke-width="3"/>
+  <line x1="150" y1="490" x2="150" y2="560" stroke="#0D1E16" stroke-width="3"/>
+  <line x1="110" y1="515" x2="190" y2="515" stroke="#0D1E16" stroke-width="3"/>
+  <line x1="150" y1="560" x2="120" y2="615" stroke="#0D1E16" stroke-width="3"/>
+  <line x1="150" y1="560" x2="180" y2="615" stroke="#0D1E16" stroke-width="3"/>
+  <text x="150" y="650" text-anchor="middle" font-size="18" fill="#0D1E16">Proprietário</text>
+  <text x="150" y="674" text-anchor="middle" font-size="18" fill="#0D1E16">do negócio</text>
+
+  <!-- Linhas do ator aos casos -->
+  <g stroke="#B89775" stroke-width="2">
+    <line x1="185" y1="540" x2="390" y2="170"/>
+    <line x1="185" y1="545" x2="390" y2="265"/>
+    <line x1="185" y1="550" x2="390" y2="360"/>
+    <line x1="185" y1="555" x2="390" y2="455"/>
+    <line x1="185" y1="560" x2="390" y2="550"/>
+    <line x1="185" y1="565" x2="390" y2="645"/>
+    <line x1="185" y1="570" x2="390" y2="740"/>
+    <line x1="185" y1="575" x2="390" y2="835"/>
+    <line x1="185" y1="580" x2="390" y2="930"/>
+  </g>
+
+  <!-- Casos de uso -->
+  <g>
+    <ellipse cx="640" cy="170" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="177" text-anchor="middle" font-size="19" fill="#0D1E16">Efetuar login / cadastro</text>
+
+    <ellipse cx="640" cy="265" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="272" text-anchor="middle" font-size="19" fill="#0D1E16">Gerenciar transações</text>
+
+    <ellipse cx="640" cy="360" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="367" text-anchor="middle" font-size="19" fill="#0D1E16">Gerenciar orçamentos</text>
+
+    <ellipse cx="640" cy="455" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="462" text-anchor="middle" font-size="19" fill="#0D1E16">Ver dashboard e relatórios</text>
+
+    <ellipse cx="640" cy="550" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="557" text-anchor="middle" font-size="19" fill="#0D1E16">Exportar Excel</text>
+
+    <ellipse cx="640" cy="645" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="652" text-anchor="middle" font-size="19" fill="#0D1E16">Cadastrar produtos e ofertas</text>
+
+    <ellipse cx="640" cy="740" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="733" text-anchor="middle" font-size="18" fill="#0D1E16">Comparar preços / oferta ativa</text>
+    <text x="640" y="755" text-anchor="middle" font-size="18" fill="#0D1E16">/ auditoria de preços</text>
+
+    <ellipse cx="640" cy="835" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="842" text-anchor="middle" font-size="19" fill="#0D1E16">Criar ficha técnica e ver ticket</text>
+
+    <ellipse cx="640" cy="930" rx="250" ry="40" fill="#E8F0EB" stroke="#165A41" stroke-width="2"/>
+    <text x="640" y="937" text-anchor="middle" font-size="19" fill="#0D1E16">Configurar conta e notificações</text>
+  </g>
+</svg>

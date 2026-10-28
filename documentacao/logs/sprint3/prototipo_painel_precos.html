@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protótipo — Painel de Comparação de Preços · CashCtrl</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#07120d; color:#fff;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    padding:40px 24px; min-height:100vh;
+  }
+  h1 { font-size:22px; font-weight:700; }
+  h1 span { color:#B89775; }
+  .sub { color:#7A8B83; font-size:13px; margin:6px 0 8px; max-width:920px; line-height:1.5; }
+  .legend { font-size:12px; color:#7A8B83; margin-bottom:28px; max-width:920px; line-height:1.6; }
+  .legend b { color:#B89775; font-weight:600; }
+  h2 { font-size:15px; color:#B89775; text-transform:uppercase; letter-spacing:1px; margin:36px 0 18px; }
+  .row { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .caption { font-size:12px; color:#7A8B83; margin-top:10px; text-align:center; max-width:330px; line-height:1.5; }
+  .caption b { color:#fff; }
+  .phone {
+    width:330px; border:8px solid #000; border-radius:34px;
+    box-shadow:0 0 0 1px #1f3329, 0 20px 50px rgba(0,0,0,.6);
+    background:#0D1E16; overflow:hidden; flex-shrink:0;
+  }
+  .status { display:flex; justify-content:space-between; padding:8px 18px 2px; font-size:10px; color:#7A8B83; }
+  .status .batt { display:inline-block; width:18px; height:9px; border:1px solid #7A8B83; border-radius:2px; position:relative; }
+  .status .batt::after { content:''; position:absolute; top:2px; left:2px; right:6px; bottom:2px; background:#B89775; border-radius:1px; }
+  .appbar { display:flex; align-items:center; justify-content:center; position:relative; padding:12px 16px 10px; }
+  .appbar .title { font-size:15px; font-weight:700; color:#fff; }
+  .appbar .back { position:absolute; left:12px; color:#fff; display:flex; }
+  .body { padding:16px 16px 14px; }
+  .card { background:#142A20; border-radius:12px; padding:14px; margin-bottom:12px; }
+  .card-hero { background:#142A20; border-radius:16px; padding:16px; margin-bottom:12px; border:1px solid rgba(184,151,117,.25); }
+  .muted { color:#7A8B83; }
+  .tiny { font-size:10px; }
+  .small { font-size:11px; }
+  .gold { color:#B89775; font-weight:700; }
+  .green { color:#4CAF50; }
+  .red { color:#F44336; }
+  .orange { color:#FF9800; }
+  .pill { display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px; border-radius:10px; font-size:9.5px; font-weight:700; letter-spacing:.3px; }
+  .pill-active { background:#165A41; color:#fff; }
+  .pill-best { border:1.2px solid #B89775; color:#B89775; background:rgba(184,151,117,.12); }
+  .pill-off { border:1px solid rgba(255,255,255,.24); color:#7A8B83; }
+  .search { background:#142A20; border-radius:12px; height:44px; display:flex; align-items:center; gap:10px; padding:0 14px; color:#7A8B83; font-size:13px; margin-bottom:10px; }
+  .chips { display:flex; gap:8px; overflow:hidden; margin-bottom:8px; }
+  .chip { height:32px; padding:0 14px; border-radius:16px; background:#142A20; color:#7A8B83; font-size:12px; display:flex; align-items:center; font-weight:600; white-space:nowrap; }
+  .chip.sel { background:#165A41; color:#fff; }
+  .chip-code { height:30px; min-width:40px; padding:0 10px; border-radius:15px; background:#142A20; color:#7A8B83; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; letter-spacing:.5px; }
+  .chip-code.sel { background:#165A41; color:#fff; }
+  .sup-legend { font-size:9.5px; color:#7A8B83; line-height:1.55; margin:0 2px 10px; }
+  .sup-legend b { color:#B0BDB7; font-weight:600; }
+  .eco-line { background:rgba(76,175,80,.12); border:1px solid rgba(76,175,80,.35); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+  .eco-line .h { font-size:13px; font-weight:700; color:#4CAF50; display:flex; align-items:center; gap:8px; }
+  .eco-line .v { font-size:20px; font-weight:800; color:#B89775; margin-top:4px; }
+  .eco-line .v small { font-size:12px; font-weight:600; color:#7A8B83; }
+  .pcard { background:#142A20; border-radius:12px; padding:14px; margin-bottom:12px; }
+  .pcard.best-row { border:1px solid rgba(184,151,117,.35); }
+  .prow-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .pname { font-size:14px; font-weight:700; color:#fff; line-height:1.25; }
+  .punit { font-size:10px; color:#7A8B83; margin-top:2px; }
+  .best-block { margin-top:10px; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .best-sup { font-size:11px; color:#B0BDB7; font-weight:600; }
+  .best-val { font-size:19px; font-weight:800; color:#B89775; }
+  .best-val small { font-size:11px; font-weight:600; color:#7A8B83; }
+  .ticket-line { margin-top:8px; font-size:11px; color:#B0BDB7; line-height:1.4; }
+  .ticket-line .d { font-weight:700; }
+  .mini-chips { margin-top:8px; font-size:10px; color:#7A8B83; letter-spacing:.2px; }
+  .eco-chip { display:inline-flex; align-items:center; gap:5px; margin-top:9px; height:24px; padding:0 10px; border-radius:12px; background:rgba(76,175,80,.14); border:1px solid rgba(76,175,80,.4); color:#4CAF50; font-size:11px; font-weight:700; }
+  .pills-row { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
+  .rank-row { display:flex; gap:12px; align-items:flex-start; padding:14px; background:#142A20; border-radius:12px; margin-bottom:10px; }
+  .rank-row.win { border:1.4px solid rgba(184,151,117,.45); }
+  .rank-row.dim { opacity:.6; }
+  .rank-pos { width:26px; height:26px; border-radius:50%; background:rgba(184,151,117,.14); color:#B89775; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+  .rank-pos.first { background:rgba(184,151,117,.25); }
+  .rank-info { flex:1; min-width:0; }
+  .rank-sup { font-size:13.5px; font-weight:700; color:#fff; }
+  .rank-pkg { font-size:11px; color:#7A8B83; margin-top:3px; }
+  .rank-val { font-size:17px; font-weight:800; color:#B89775; margin-top:6px; }
+  .rank-val small { font-size:11px; font-weight:600; color:#7A8B83; }
+  .rank-delta { font-size:11px; font-weight:700; margin-top:4px; }
+  .rank-actions { margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .btn-out { border:1.2px solid rgba(22,90,65,.9); color:#fff; background:transparent; border-radius:10px; height:36px; padding:0 14px; font-size:11.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; }
+  .btn-out.gold { border-color:rgba(184,151,117,.7); color:#B89775; }
+  .note-foot { font-size:10px; color:#7A8B83; line-height:1.55; margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08); }
+  .note-foot b { color:#B0BDB7; font-weight:600; }
+  .demo-section { margin-bottom:8px; }
+  .demo-controls { display:flex; gap:8px; margin:12px 0 22px; flex-wrap:wrap; }
+  .demo-state-btn { height:34px; padding:0 16px; border-radius:17px; background:#142A20; color:#7A8B83; border:none; font-size:12px; font-weight:700; cursor:pointer; }
+  .demo-state-btn.sel { background:#165A41; color:#fff; }
+  .demo-state-btn:focus-visible { outline:2px solid #B89775; outline-offset:2px; }
+  .search-input { background:transparent; border:none; color:#fff; flex:1; font-size:13px; outline:none; font-family:inherit; }
+  .search-input::placeholder { color:#7A8B83; }
+  .pcard-interactive { cursor:pointer; transition:transform .08s ease, box-shadow .08s ease; }
+  .pcard-interactive:active { transform:scale(.985); }
+  .chip-interactive, .chip-code-interactive { cursor:pointer; transition:opacity .08s ease; }
+  .chip-interactive:active, .chip-code-interactive:active { opacity:.8; }
+  .btn-action { cursor:pointer; transition:opacity .08s ease; }
+  .btn-action:active { opacity:.8; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .modal { background:#0D1E16; border-radius:16px; padding:20px; width:100%; max-width:300px; border:1px solid rgba(184,151,117,.35); box-shadow:0 20px 50px rgba(0,0,0,.5); }
+  .modal-title { font-size:16px; font-weight:800; color:#fff; margin-bottom:10px; }
+  .modal-body { font-size:12px; color:#B0BDB7; line-height:1.6; margin-bottom:14px; }
+  .modal-note { font-size:11px; color:#7A8B83; line-height:1.5; margin:12px 0 16px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08); }
+  .modal-actions { display:flex; gap:10px; }
+  .modal-actions button { flex:1; height:42px; border-radius:10px; font-size:12.5px; font-weight:700; border:none; cursor:pointer; }
+  .modal-cancel { background:#142A20; color:#fff; }
+  .modal-confirm { background:#165A41; color:#fff; }
+  .snackbar { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#142A20; border:1px solid #B89775; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; z-index:200; box-shadow:0 10px 30px rgba(0,0,0,.5); max-width:90vw; }
+  .snackbar-msg { font-size:12.5px; color:#fff; }
+  .snackbar-undo { font-size:12px; font-weight:800; color:#B89775; background:transparent; border:none; cursor:pointer; }
+  .hero-title { font-size:17px; font-weight:800; color:#fff; }
+  .hero-sub { font-size:12px; color:#7A8B83; margin-top:4px; }
+  .hero-price { font-size:24px; font-weight:800; color:#B89775; line-height:1.1; margin-top:10px; }
+  .hero-price small { font-size:13px; color:#7A8B83; font-weight:600; }
+  .hero-supplier { font-size:12.5px; color:#B0BDB7; margin-top:2px; }
+  .sup-head .n { font-size:17px; font-weight:800; color:#fff; }
+  .sup-head .m { font-size:11.5px; color:#7A8B83; margin-top:4px; line-height:1.45; }
+  .sup-row { display:flex; gap:10px; align-items:center; padding:12px 14px; background:#142A20; border-radius:12px; margin-bottom:8px; }
+  .sup-row .info { flex:1; min-width:0; }
+  .sup-row .nm { font-size:12.5px; font-weight:700; color:#fff; }
+  .sup-row .pos { font-size:10px; margin-top:3px; font-weight:700; }
+  .sup-row .val { text-align:right; }
+  .sup-row .v { font-size:14px; font-weight:800; color:#B89775; }
+  .sup-row .v small { font-size:10px; color:#7A8B83; font-weight:600; }
+  .sup-row .vs { font-size:10px; font-weight:700; margin-top:3px; }
+  .basket { background:rgba(22,90,65,.14); border:1px solid rgba(22,90,65,.4); border-radius:12px; padding:12px 14px; margin-top:12px; }
+  .basket .t { font-size:11px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .basket .l { font-size:11px; color:#B0BDB7; line-height:1.6; }
+  .basket .l span { color:#B89775; font-weight:700; }
+  .empty-wrap { text-align:center; padding:28px 18px 18px; }
+  .empty-ic { width:56px; height:56px; margin:0 auto 14px; color:#7A8B83; display:flex; align-items:center; justify-content:center; }
+  .empty-t { font-size:15px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .empty-m { font-size:12px; color:#7A8B83; line-height:1.5; margin-bottom:16px; }
+  .cta { background:#165A41; color:#fff; border:none; border-radius:12px; height:46px; width:100%; font-size:13.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .cta.outline { background:transparent; border:1.4px solid #165A41; }
+  .one-sup { background:#142A20; border-radius:12px; padding:14px; margin-bottom:10px; }
+  .one-sup .n { font-size:13px; font-weight:700; color:#fff; }
+  .one-sup .d { font-size:11px; color:#7A8B83; margin-top:4px; line-height:1.45; }
+  .banner-info { background:rgba(255,152,0,.13); border:1px solid rgba(255,152,0,.38); border-radius:10px; padding:10px 12px; font-size:11px; color:#FF9800; line-height:1.45; margin-bottom:12px; display:flex; gap:8px; }
+  svg { display:block; }
+  .divider { border:none; border-top:1px solid rgba(255,255,255,.08); margin:12px 0; }
+  .sort-label { font-size:10px; color:#7A8B83; margin:2px 2px 6px; text-transform:uppercase; letter-spacing:.8px; font-weight:700; }
+</style>
+</head>
+<body>
+
+<h1>Protótipo · <span>Painel de Comparação de Preços</span></h1>
+<p class="sub">Mockup do diferencial essencial do CashCtrl: o usuário vê os <b style="color:#fff;">produtos com os preços dos fornecedores</b> e compara — um “mercado” dos dados do próprio usuário. Fiel à identidade (paleta e tokens reais do app). Não é tela do build — é protótipo de revisão antes do código.</p>
+<p class="legend">Tokens: fundo <b>#0D1E16</b> · card <b>#142A20</b> · verde <b>#165A41</b> · dourado <b>#B89775</b> · texto sec <b>#7A8B83</b> · status <b>green/red/orange</b> = Material (já usados no app). Raio 12 (cards) / 16 (destaque). Ícones Material Outline. Microcopy PT-BR sentence case.</p>
+<p class="legend">Dados de exemplo (padaria/lanchonete): <b>SJ</b> Atacão São Jorge · <b>DC</b> Distribuidora Central · <b>BF</b> Mercado Bom Farto · <b>EC</b> Empório do Café · <b>MC</b> Maciel &amp; Filhos · <b>HB</b> Hortifruti Boa Colheita. Cenário semanal de exemplo para a economia: queijo 2 kg · café 2 × 500 g · copos 80 un → <b>R$ 14,32</b>.</p>
+
+<h2 class="demo-section">Demo interativa — clique à vontade</h2>
+<div class="demo-controls">
+  <button class="demo-state-btn sel" data-state="normal">Normal</button>
+  <button class="demo-state-btn" data-state="empty">Vazio</button>
+  <button class="demo-state-btn" data-state="one">1 fornecedor</button>
+</div>
+<div class="row">
+  <div>
+    <div class="phone" id="demo-phone">
+      <div id="demo-screen"></div>
+    </div>
+    <p class="caption"><b>demo clicável</b> — use busca, ordenação e filtros; toque num card para ver ranking; troque a oferta ativa com confirmação e desfazer; alterne para <b>Vazio</b> e <b>1 fornecedor</b> para mostrar estados.</p>
+  </div>
+</div>
+
+<h2>Tela 1 — Comparar preços (painel principal)</h2>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg></span>
+        <span class="title">Comparar preços</span>
+      </div>
+      <div class="body">
+        <div class="eco-line">
+          <div class="h">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17l-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></svg>
+            Economia possível
+          </div>
+          <div class="v">R$ 14,32 <small>· trocando 3 produtos de fornecedor</small></div>
+        </div>
+
+        <div class="search">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B89775" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Buscar produto ou fornecedor…
+        </div>
+
+        <div class="sort-label">Ordenar por</div>
+        <div class="chips">
+          <span class="chip sel">Maior economia</span><span class="chip">Menor preço</span><span class="chip">Nome</span>
+        </div>
+
+        <div class="sort-label">Fornecedor</div>
+        <div class="chips">
+          <span class="chip sel">Todos</span>
+          <span class="chip-code">SJ</span><span class="chip-code">DC</span><span class="chip-code">BF</span>
+          <span class="chip-code">EC</span><span class="chip-code">MC</span><span class="chip-code">HB</span>
+        </div>
+        <p class="sup-legend"><b>SJ</b> Atacão São Jorge · <b>DC</b> Distribuidora Central · <b>BF</b> Mercado Bom Farto · <b>EC</b> Empório do Café · <b>MC</b> Maciel &amp; Filhos · <b>HB</b> Hortifruti Boa Colheita</p>
+
+        <!-- Card: Café torrado -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Café torrado</div>
+              <div class="punit">por kg · pacotes de 500 g</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 79,80<small>/kg</small></span>
+            <span class="best-sup">Atacão São Jorge · R$ 39,90 · 500 g</span>
+          </div>
+          <div class="ticket-line">No ticket: <b>Empório do Café</b> · <span class="d red">+R$ 8,20/kg</span></div>
+          <div class="mini-chips">EC 88,00 · MC 83,00</div>
+          <span class="eco-chip">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17l-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></svg>
+            −R$ 8,20/semana
+          </span>
+        </div>
+
+        <!-- Card: Queijo mussarela -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Queijo mussarela</div>
+              <div class="punit">por kg</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 37,80<small>/kg</small></span>
+            <span class="best-sup">Distribuidora Central · R$ 37,80 · 1 kg</span>
+          </div>
+          <div class="ticket-line">No ticket: <b>Atacão São Jorge</b> · <span class="d red">+R$ 2,10/kg</span></div>
+          <div class="mini-chips">SJ 39,90 · MC 42,50</div>
+          <span class="eco-chip">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17l-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></svg>
+            −R$ 4,20/semana
+          </span>
+        </div>
+
+        <!-- Card: Copo descartável -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Copo descartável 200 ml</div>
+              <div class="punit">por un · pacotes de 100 un</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 0,17<small>/un</small></span>
+            <span class="best-sup">Distribuidora Central · R$ 16,50 · 100 un</span>
+          </div>
+          <div class="ticket-line">No ticket: <b>Atacão São Jorge</b> · <span class="d orange">+R$ 0,02/un</span></div>
+          <div class="mini-chips">SJ 0,19</div>
+          <span class="eco-chip">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17l-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></svg>
+            −R$ 1,92/semana
+          </span>
+        </div>
+
+        <!-- Card: Presunto -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Presunto</div>
+              <div class="punit">por kg</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 26,40<small>/kg</small></span>
+            <span class="best-sup">Atacão São Jorge · R$ 26,40 · 1 kg</span>
+          </div>
+          <div class="ticket-line">No ticket: <b>Maciel &amp; Filhos</b> · <span class="d red">+R$ 2,50/kg</span></div>
+          <div class="mini-chips">MC 28,90</div>
+        </div>
+
+        <!-- Card: Tomate -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Tomate</div>
+              <div class="punit">por kg</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 6,50<small>/kg</small></span>
+            <span class="best-sup">Hortifruti Boa Colheita · R$ 6,50 · 1 kg</span>
+          </div>
+          <div class="ticket-line">No ticket: <b>Maciel &amp; Filhos</b> · <span class="d orange">+R$ 0,70/kg</span></div>
+          <div class="mini-chips">MC 7,20</div>
+        </div>
+
+        <!-- Card: Pão francês -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Pão francês</div>
+              <div class="punit">por un · ≈ 16 un/kg</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 0,43<small>/un</small></span>
+            <span class="best-sup">Mercado Bom Farto · R$ 6,90 · 1 kg</span>
+          </div>
+          <div class="ticket-line">No ticket: <b>Distribuidora Central</b> · <span class="d orange">+R$ 0,02/un</span></div>
+          <div class="mini-chips">DC 0,45 · SJ 0,50</div>
+        </div>
+
+        <!-- Card: Óleo de soja (ativa = melhor) -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Óleo de soja</div>
+              <div class="punit">por litro · frascos de 900 ml</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-active">ATIVA</span>
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 8,28<small>/L</small></span>
+            <span class="best-sup">Mercado Bom Farto · R$ 7,45 · 900 ml</span>
+          </div>
+          <div class="ticket-line">★ também é a melhor — <span class="d muted">—</span> sem delta</div>
+          <div class="mini-chips">DC 8,77 · SJ 9,43</div>
+        </div>
+
+        <!-- Card: Açúcar cristal (ativa = melhor) -->
+        <div class="pcard">
+          <div class="prow-top">
+            <div>
+              <div class="pname">Açúcar cristal</div>
+              <div class="punit">por kg</div>
+            </div>
+            <div class="pills-row">
+              <span class="pill pill-active">ATIVA</span>
+              <span class="pill pill-best">★ melhor</span>
+            </div>
+          </div>
+          <div class="best-block">
+            <span class="best-val">R$ 4,29<small>/kg</small></span>
+            <span class="best-sup">Mercado Bom Farto · R$ 4,29 · 1 kg</span>
+          </div>
+          <div class="ticket-line">★ também é a melhor — <span class="d muted">—</span> sem delta</div>
+          <div class="mini-chips">DC 4,55 · SJ 4,89</div>
+        </div>
+
+        <p class="note-foot">O dourado lidera cada card: <b>melhor preço por unidade + fornecedor</b>. A linha “No ticket” mostra a oferta ativa (a que alimenta o ticket) e o delta vs. a melhor — o app <b>não troca sozinho</b>. Chips verdes de economia aparecem só nos produtos do cenário atual.</p>
+      </div>
+    </div>
+    <p class="caption"><b>comparar_precos_screen</b> (nova entrada no drawer/header) — busca + ordenação + chips de fornecedor; 1 card por insumo com hierarquia: melhor preço dourado → ativa+delta → mini-chips → economia.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span class="title">Queijo mussarela</span>
+      </div>
+      <div class="body">
+        <div class="card-hero">
+          <div style="font-size:17px;font-weight:800;">Queijo mussarela</div>
+          <div class="small muted" style="margin-top:4px;">3 ofertas cadastradas · por kg</div>
+          <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
+            <span class="tiny muted">melhor preço agora</span>
+          </div>
+          <div style="font-size:24px;font-weight:800;color:#B89775;line-height:1.1;">R$ 37,80<span style="font-size:13px;color:#7A8B83;font-weight:600;">/kg</span></div>
+          <div class="small" style="color:#B0BDB7;margin-top:2px;">Distribuidora Central · R$ 37,80 · 1 kg</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+            <span class="pill pill-active">ATIVA · Atacão São Jorge</span>
+            <span class="pill pill-best">★ melhor · Distribuidora Central</span>
+          </div>
+        </div>
+
+        <div class="banner-info">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          A oferta ativa custa R$ 2,10/kg a mais que a melhor. Trocar é opcional — você confirma.
+        </div>
+
+        <div class="sort-label">Ranking por preço por unidade</div>
+
+        <div class="rank-row win">
+          <div class="rank-pos first">1</div>
+          <div class="rank-info">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+              <div class="rank-sup">Distribuidora Central</div>
+              <div class="pills-row"><span class="pill pill-best">★ melhor</span></div>
+            </div>
+            <div class="rank-pkg">Embalagem: R$ 37,80 · 1 kg</div>
+            <div class="rank-val">R$ 37,80<span style="font-size:11px;color:#7A8B83;font-weight:600;">/kg</span></div>
+            <div class="rank-delta green">−R$ 2,10/kg vs. a ativa</div>
+            <div class="rank-actions">
+              <span class="btn-out">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Usar no ticket
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rank-row">
+          <div class="rank-pos">2</div>
+          <div class="rank-info">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+              <div class="rank-sup">Atacão São Jorge</div>
+              <div class="pills-row"><span class="pill pill-active">ATIVA</span></div>
+            </div>
+            <div class="rank-pkg">Embalagem: R$ 39,90 · 1 kg</div>
+            <div class="rank-val">R$ 39,90<span style="font-size:11px;color:#7A8B83;font-weight:600;">/kg</span></div>
+            <div class="rank-delta muted">— oferta ativa no ticket</div>
+          </div>
+        </div>
+
+        <div class="rank-row dim">
+          <div class="rank-pos">3</div>
+          <div class="rank-info">
+            <div class="rank-sup">Maciel &amp; Filhos</div>
+            <div class="rank-pkg">Embalagem: R$ 42,50 · 1 kg</div>
+            <div class="rank-val">R$ 42,50<span style="font-size:11px;color:#7A8B83;font-weight:600;">/kg</span></div>
+            <div class="rank-delta red">+R$ 2,60/kg vs. a ativa</div>
+            <div class="rank-actions">
+              <span class="btn-out gold">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+                Editar oferta
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <p class="note-foot"><b>Preços coletados em 02/10 · confirme antes de comprar.</b><br>“Usar no ticket” pede confirmação e troca só quando você manda. O app não altera automaticamente.</p>
+      </div>
+    </div>
+    <p class="caption"><b>Detalhe do produto</b> — herói com melhor preço + pills ATIVA/★; ranking vertical com R$/un grande dourado, preço da embalagem, Δ vs. ativa e ação “Usar no ticket” só onde faz sentido. ≈ <b>ingredient_offers_screen</b> da Proposta A, reenquadrada pelo painel.</p>
+  </div>
+</div>
+
+<h2>Tela 3 — Visão por fornecedor</h2>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span class="title">Por fornecedor</span>
+      </div>
+      <div class="body">
+        <div class="chips">
+          <span class="chip-code sel">SJ</span>
+          <span class="chip-code">DC</span><span class="chip-code">BF</span>
+          <span class="chip-code">EC</span><span class="chip-code">MC</span><span class="chip-code">HB</span>
+        </div>
+        <p class="sup-legend" style="margin-bottom:12px;"><b>SJ</b> Atacão São Jorge · toque para trocar o fornecedor em foco</p>
+
+        <div class="sup-head">
+          <div class="n">Atacão São Jorge</div>
+          <div class="m">Fornece 7 de 8 insumos · <span style="color:#4CAF50;font-weight:700;">★ melhor em 2</span> · 3º preço em 3</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+            <span class="pill pill-best">★ presunto</span>
+            <span class="pill pill-best">★ café torrado</span>
+            <span class="pill pill-off">não fornece tomate</span>
+          </div>
+        </div>
+
+        <div class="sort-label">Produtos que ele fornece</div>
+
+        <div class="sup-row">
+          <div class="info">
+            <div class="nm">Presunto</div>
+            <div class="pos green">★ melhor preço · 1º de 2</div>
+          </div>
+          <div class="val">
+            <div class="v">R$ 26,40<small>/kg</small></div>
+            <div class="vs green">−R$ 1,25 vs média</div>
+          </div>
+        </div>
+
+        <div class="sup-row">
+          <div class="info">
+            <div class="nm">Café torrado</div>
+            <div class="pos green">★ melhor preço · 1º de 3</div>
+          </div>
+          <div class="val">
+            <div class="v">R$ 79,80<small>/kg</small></div>
+            <div class="vs green">−R$ 3,80 vs média</div>
+          </div>
+        </div>
+
+        <div class="sup-row">
+          <div class="info">
+            <div class="nm">Queijo mussarela</div>
+            <div class="pos green">2º melhor preço · de 3</div>
+          </div>
+          <div class="val">
+            <div class="v">R$ 39,90<small>/kg</small></div>
+            <div class="vs green">−R$ 0,17 vs média</div>
+          </div>
+        </div>
+
+        <div class="sup-row">
+          <div class="info">
+            <div class="nm">Copo descartável 200 ml</div>
+            <div class="pos orange">2º melhor preço · de 2</div>
+          </div>
+          <div class="val">
+            <div class="v">R$ 0,19<small>/un</small></div>
+            <div class="vs orange">+R$ 0,01 vs média</div>
+          </div>
+        </div>
+
+        <div class="sup-row">
+          <div class="info">
+            <div class="nm">Pão francês</div>
+            <div class="pos red">3º de 3</div>
+          </div>
+          <div class="val">
+            <div class="v">R$ 0,50<small>/un</small></div>
+            <div class="vs red">+R$ 0,04 vs média</div>
+          </div>
+        </div>
+
+        <div class="sup-row">
+          <div class="info">
+            <div class="nm">Óleo de soja</div>
+            <div class="pos red">3º de 3</div>
+          </div>
+          <div class="val">
+            <div class="v">R$ 9,43<small>/L</small></div>
+            <div class="vs red">+R$ 0,60 vs média</div>
+          </div>
+        </div>
+
+        <div class="sup-row">
+          <div class="info">
+            <div class="nm">Açúcar cristal</div>
+            <div class="pos red">3º de 3</div>
+          </div>
+          <div class="val">
+            <div class="v">R$ 4,89<small>/kg</small></div>
+            <div class="vs red">+R$ 0,31 vs média</div>
+          </div>
+        </div>
+
+        <div class="basket">
+          <div class="t">Se a cesta inteira fosse deste fornecedor</div>
+          <div class="l">Cesta SJ (7 insumos): <span>R$ 379,17</span>/semana<br>
+          Cesta mais barata (★ de cada insumo): <span>R$ 352,67</span>/semana<br>
+          Diferença: <span style="color:#F44336;">+R$ 26,50</span> a mais</div>
+          <div class="l" style="margin-top:6px;">SJ é ★melhor em presunto e café — vale comprar <b style="color:#fff;">só esses</b> dele.</div>
+        </div>
+
+        <p class="note-foot">Consumo semanal de exemplo: pão 15 kg · queijo 2 kg · presunto 2 kg · café 2×500 g · óleo 2×900 ml · açúcar 3 kg · copos 80 un. Posição = R$/un dentre as ofertas cadastradas daquele insumo.</p>
+      </div>
+    </div>
+    <p class="caption"><b>fornecedor_view</b> — leitura alternativa do mesmo dado: chips de fornecedor no topo, produtos com posição (“★ melhor” / “2º de 3”) vs. média, e rodapé honesto da cesta consolidada.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span class="title">Comparar preços</span>
+      </div>
+      <div class="body">
+        <div class="empty-wrap">
+          <div class="empty-ic">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg>
+          </div>
+          <div class="empty-t">Nenhuma oferta cadastrada ainda</div>
+          <div class="empty-m">Cadastre preços de fornecedores para comparar e escolher quem entra no ticket.</div>
+          <button class="cta">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Adicionar primeira oferta
+          </button>
+        </div>
+        <hr class="divider">
+        <p class="note-foot">Estado vazio do painel. Enquanto não há ofertas, o ticket continua usando o preço base cadastrado no insumo — sem quebra de fluxo.</p>
+      </div>
+    </div>
+    <p class="caption"><b>Estado vazio</b> — EmptyState com storefront, microcopy de incentivo e CTA verde único.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span class="title">Comparar preços</span>
+      </div>
+      <div class="body">
+        <div class="banner-info">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          Cadastre mais fornecedores para ver o comparativo.
+        </div>
+
+        <div class="one-sup">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="n">Distribuidora Central</div>
+              <div class="d">único fornecedor com ofertas · 8 insumos</div>
+            </div>
+            <span class="pill pill-off">sem comparação</span>
+          </div>
+        </div>
+
+        <p class="note-foot">Com 1 fornecedor, o painel mostra os preços, mas <b>sem ranking, delta ou economia</b> — não há “melhor” nem “pior” sem concorrência. A entrada no drawer continua valendo a pena: é onde a comparação nasce.</p>
+
+        <button class="cta outline" style="margin-top:12px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B89775" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg>
+          Cadastrar outro fornecedor
+        </button>
+      </div>
+    </div>
+    <p class="caption"><b>Estado “poucos dados”</b> — 1 fornecedor só: banner laranja + card único marcado “sem comparação” + CTA outline. Nada de ranking inventado.</p>
+  </div>
+</div>
+
+<h2>Notas de implementação (para o Flutter)</h2>
+<p class="legend">
+  · Entrada nova no drawer/header: <b>Comparar preços</b> → rota kebab-case (<b>/comparar-precos</b>).<br>
+  · Hierarquia do card do painel: nome+unidade → <b>melhor R$/un dourado + fornecedor</b> → pills ★/ATIVA → “No ticket” com Δ → mini-chips → chip de economia (só cenário).<br>
+  · Δ: vermelho ≥ R$ 1,00 · laranja &lt; R$ 1,00 · “—” quando ativa = melhor. Reusa <b>BestPriceChip</b>, <b>ActiveOfferMarker</b>, <b>DeltaPriceText</b> da Proposta A.<br>
+  · Política intocável: preço do ticket = oferta ativa escolhida manualmente; o app nunca troca sozinho. Este painel <b>informa e sugere</b>, nunca altera.<br>
+  · Dados exibidos = <b>pricePerUnit</b> derivado (packagePrice / packageQuantity) de <b>IngredientOffer</b>; exibir sempre R$/un (nunca só o preço da embalagem).
+</p>
+
+<script>
+const suppliers = {
+  SJ: { code: 'SJ', name: 'Atacão São Jorge' },
+  DC: { code: 'DC', name: 'Distribuidora Central' },
+  BF: { code: 'BF', name: 'Mercado Bom Farto' },
+  EC: { code: 'EC', name: 'Empório do Café' },
+  MC: { code: 'MC', name: 'Maciel & Filhos' },
+  HB: { code: 'HB', name: 'Hortifruti Boa Colheita' },
+};
+
+const products = [
+  {
+    id: 'cafe', name: 'Café torrado', unitLabel: 'kg', baseUnit: 'kg', unitRatio: 1, weeklyConsumption: 1, displayUnit: 'por kg · pacotes de 500 g',
+    offers: [
+      { id: 'cafe-sj', supplierId: 'SJ', packagePrice: 39.90, packageQuantity: 0.5, packageUnit: 'kg', packageDisplay: 'R$ 39,90 · 500 g' },
+      { id: 'cafe-ec', supplierId: 'EC', packagePrice: 44.00, packageQuantity: 0.5, packageUnit: 'kg', packageDisplay: 'R$ 44,00 · 500 g' },
+      { id: 'cafe-mc', supplierId: 'MC', packagePrice: 41.50, packageQuantity: 0.5, packageUnit: 'kg', packageDisplay: 'R$ 41,50 · 500 g' },
+    ],
+    activeOfferId: 'cafe-ec',
+  },
+  {
+    id: 'queijo', name: 'Queijo mussarela', unitLabel: 'kg', baseUnit: 'kg', unitRatio: 1, weeklyConsumption: 2, displayUnit: 'por kg',
+    offers: [
+      { id: 'queijo-dc', supplierId: 'DC', packagePrice: 37.80, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 37,80 · 1 kg' },
+      { id: 'queijo-sj', supplierId: 'SJ', packagePrice: 39.90, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 39,90 · 1 kg' },
+      { id: 'queijo-mc', supplierId: 'MC', packagePrice: 42.50, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 42,50 · 1 kg' },
+    ],
+    activeOfferId: 'queijo-sj',
+  },
+  {
+    id: 'copo', name: 'Copo descartável 200 ml', unitLabel: 'un', baseUnit: 'un', unitRatio: 1, weeklyConsumption: 80, displayUnit: 'por un · pacotes de 100 un',
+    offers: [
+      { id: 'copo-dc', supplierId: 'DC', packagePrice: 16.50, packageQuantity: 100, packageUnit: 'un', packageDisplay: 'R$ 16,50 · 100 un' },
+      { id: 'copo-sj', supplierId: 'SJ', packagePrice: 18.90, packageQuantity: 100, packageUnit: 'un', packageDisplay: 'R$ 18,90 · 100 un' },
+    ],
+    activeOfferId: 'copo-sj',
+  },
+  {
+    id: 'presunto', name: 'Presunto', unitLabel: 'kg', baseUnit: 'kg', unitRatio: 1, weeklyConsumption: 0, displayUnit: 'por kg',
+    offers: [
+      { id: 'presunto-sj', supplierId: 'SJ', packagePrice: 26.40, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 26,40 · 1 kg' },
+      { id: 'presunto-mc', supplierId: 'MC', packagePrice: 28.90, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 28,90 · 1 kg' },
+    ],
+    activeOfferId: 'presunto-mc',
+  },
+  {
+    id: 'tomate', name: 'Tomate', unitLabel: 'kg', baseUnit: 'kg', unitRatio: 1, weeklyConsumption: 0, displayUnit: 'por kg',
+    offers: [
+      { id: 'tomate-hb', supplierId: 'HB', packagePrice: 6.50, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 6,50 · 1 kg' },
+      { id: 'tomate-mc', supplierId: 'MC', packagePrice: 7.20, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 7,20 · 1 kg' },
+    ],
+    activeOfferId: 'tomate-mc',
+  },
+  {
+    id: 'pao', name: 'Pão francês', unitLabel: 'un', baseUnit: 'kg', unitRatio: 16, weeklyConsumption: 0, displayUnit: 'por un · ≈ 16 un/kg',
+    offers: [
+      { id: 'pao-bf', supplierId: 'BF', packagePrice: 6.90, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 6,90 · 1 kg' },
+      { id: 'pao-dc', supplierId: 'DC', packagePrice: 7.20, packageQuantity: 16, packageUnit: 'un', packageDisplay: 'R$ 7,20 · 16 un' },
+      { id: 'pao-sj', supplierId: 'SJ', packagePrice: 8.00, packageQuantity: 16, packageUnit: 'un', packageDisplay: 'R$ 8,00 · 16 un' },
+    ],
+    activeOfferId: 'pao-dc',
+  },
+  {
+    id: 'oleo', name: 'Óleo de soja', unitLabel: 'L', baseUnit: 'L', unitRatio: 1, weeklyConsumption: 0, displayUnit: 'por litro · frascos de 900 ml',
+    offers: [
+      { id: 'oleo-bf', supplierId: 'BF', packagePrice: 7.45, packageQuantity: 0.9, packageUnit: 'L', packageDisplay: 'R$ 7,45 · 900 ml' },
+      { id: 'oleo-dc', supplierId: 'DC', packagePrice: 7.89, packageQuantity: 0.9, packageUnit: 'L', packageDisplay: 'R$ 7,89 · 900 ml' },
+      { id: 'oleo-sj', supplierId: 'SJ', packagePrice: 8.49, packageQuantity: 0.9, packageUnit: 'L', packageDisplay: 'R$ 8,49 · 900 ml' },
+    ],
+    activeOfferId: 'oleo-bf',
+  },
+  {
+    id: 'acucar', name: 'Açúcar cristal', unitLabel: 'kg', baseUnit: 'kg', unitRatio: 1, weeklyConsumption: 0, displayUnit: 'por kg',
+    offers: [
+      { id: 'acucar-bf', supplierId: 'BF', packagePrice: 4.29, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 4,29 · 1 kg' },
+      { id: 'acucar-dc', supplierId: 'DC', packagePrice: 4.55, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 4,55 · 1 kg' },
+      { id: 'acucar-sj', supplierId: 'SJ', packagePrice: 4.89, packageQuantity: 1, packageUnit: 'kg', packageDisplay: 'R$ 4,89 · 1 kg' },
+    ],
+    activeOfferId: 'acucar-bf',
+  },
+];
+
+const state = {
+  screen: 'panel',
+  detailProductId: null,
+  supplierFocusId: 'SJ',
+  search: '',
+  sortBy: 'savings',
+  supplierFilter: 'all',
+  demoState: 'normal',
+  undo: null,
+};
+
+const icons = {
+  back: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  search: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B89775" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+  trend: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17l-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></svg>',
+  eco: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17l-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></svg>',
+  check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
+  info: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+  store: '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg>',
+  plus: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  storeGold: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B89775" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg>',
+};
+
+function formatMoney(value) {
+  return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatPricePerUnit(value, unit) {
+  return formatMoney(value) + '/' + unit;
+}
+
+function pricePerUnit(offer, product) {
+  if (product.baseUnit && offer.packageUnit === product.baseUnit && product.unitRatio && product.unitRatio !== 1) {
+    return offer.packagePrice / (offer.packageQuantity * product.unitRatio);
+  }
+  return offer.packagePrice / offer.packageQuantity;
+}
+
+function packageLabel(offer) {
+  if (offer.packageDisplay) return offer.packageDisplay;
+  const qty = offer.packageQuantity % 1 === 0 ? offer.packageQuantity : offer.packageQuantity.toString().replace('.', ',');
+  return formatMoney(offer.packagePrice) + ' · ' + qty + ' ' + offer.packageUnit;
+}
+
+function getActiveOffer(product) {
+  return product.offers.find(o => o.id === product.activeOfferId);
+}
+
+function rankOffers(product) {
+  return product.offers.slice().sort((a, b) => pricePerUnit(a, product) - pricePerUnit(b, product));
+}
+
+function getBestOffer(product) {
+  return rankOffers(product)[0];
+}
+
+function productDelta(product) {
+  const active = getActiveOffer(product);
+  const best = getBestOffer(product);
+  if (!active || !best || active.id === best.id) return 0;
+  return pricePerUnit(active, product) - pricePerUnit(best, product);
+}
+
+function weeklySavings(product) {
+  if (!product.weeklyConsumption) return 0;
+  return productDelta(product) * product.weeklyConsumption;
+}
+
+function totalPossibleSavings() {
+  return products.reduce((sum, p) => sum + weeklySavings(p), 0);
+}
+
+function countSavingsProducts() {
+  return products.filter(p => weeklySavings(p) > 0).length;
+}
+
+function supplierPosition(product, supplierId) {
+  const ranked = rankOffers(product);
+  const idx = ranked.findIndex(o => o.supplierId === supplierId);
+  if (idx < 0) return null;
+  return { rank: idx + 1, total: ranked.length, offer: ranked[idx] };
+}
+
+function supplierDeltaVsAverage(product, supplierId) {
+  const ranked = rankOffers(product);
+  if (ranked.length < 2) return 0;
+  const offer = ranked.find(o => o.supplierId === supplierId);
+  if (!offer) return 0;
+  const avg = ranked.reduce((sum, o) => sum + pricePerUnit(o, product), 0) / ranked.length;
+  return pricePerUnit(offer, product) - avg;
+}
+
+function supplierBasket(supplierId) {
+  let total = 0;
+  const consumes = { pao: 240, queijo: 2, presunto: 2, cafe: 1, oleo: 1.8, acucar: 3, copo: 80 };
+  products.forEach(p => {
+    if (p.id === 'tomate') return;
+    const pos = supplierPosition(p, supplierId);
+    if (pos) {
+      total += pricePerUnit(pos.offer, p) * (consumes[p.id] || 0);
+    }
+  });
+  return total;
+}
+
+function bestBasket() {
+  let total = 0;
+  const consumes = { pao: 240, queijo: 2, presunto: 2, cafe: 1, oleo: 1.8, acucar: 3, copo: 80 };
+  products.forEach(p => {
+    if (p.id === 'tomate') return;
+    const best = getBestOffer(p);
+    total += pricePerUnit(best, p) * (consumes[p.id] || 0);
+  });
+  return total;
+}
+
+function supplierSummary(supplierId) {
+  const supplied = products.filter(p => p.offers.some(o => o.supplierId === supplierId));
+  const bestCount = supplied.filter(p => {
+    const pos = supplierPosition(p, supplierId);
+    return pos && pos.rank === 1;
+  }).length;
+  const thirdInThree = supplied.filter(p => {
+    const pos = supplierPosition(p, supplierId);
+    return pos && pos.rank === 3 && pos.total === 3;
+  }).length;
+  const parts = [];
+  parts.push(`Fornece ${supplied.length} de ${products.length} insumos`);
+  parts.push(`<span style="color:#4CAF50;font-weight:700;">★ melhor em ${bestCount}</span>`);
+  if (thirdInThree > 0) parts.push(`${thirdInThree}º preço em ${thirdInThree}`);
+  return parts.join(' · ');
+}
+
+function deltaColorClass(value) {
+  if (Math.abs(value) < 0.001) return 'muted';
+  if (value >= 1) return 'red';
+  if (value > 0) return 'orange';
+  return 'green';
+}
+
+function deltaSign(value) {
+  if (Math.abs(value) < 0.001) return '—';
+  return (value > 0 ? '+' : '−') + formatMoney(Math.abs(value));
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function renderPhone(content) {
+  const screen = document.getElementById('demo-screen');
+  screen.innerHTML = content;
+}
+
+function panelHeader() {
+  const total = totalPossibleSavings();
+  const count = countSavingsProducts();
+  return `
+    <div class="status"><span>09:41</span><span class="batt"></span></div>
+    <div class="appbar">
+      <span class="back">${icons.back}</span>
+      <span class="title">Comparar preços</span>
+    </div>
+    <div class="body">
+      <div class="eco-line">
+        <div class="h">${icons.trend} Economia possível</div>
+        <div class="v">${formatMoney(total)} <small>· trocando ${count} produto${count === 1 ? '' : 's'} de fornecedor</small></div>
+      </div>
+      <div class="search">${icons.search}<input type="text" class="search-input" id="demo-search" placeholder="Buscar produto ou fornecedor…" value="${escapeHtml(state.search)}"></div>
+      <div class="sort-label">Ordenar por</div>
+      <div class="chips" id="demo-sort-chips">
+        <span class="chip chip-interactive ${state.sortBy === 'savings' ? 'sel' : ''}" data-sort="savings">Maior economia</span>
+        <span class="chip chip-interactive ${state.sortBy === 'price' ? 'sel' : ''}" data-sort="price">Menor preço</span>
+        <span class="chip chip-interactive ${state.sortBy === 'name' ? 'sel' : ''}" data-sort="name">Nome</span>
+      </div>
+      <div class="sort-label">Fornecedor</div>
+      <div class="chips" id="demo-supplier-chips">
+        <span class="chip chip-interactive ${state.supplierFilter === 'all' ? 'sel' : ''}" data-sup="all">Todos</span>
+        ${Object.values(suppliers).map(s => `<span class="chip-code chip-code-interactive ${state.supplierFilter === s.code ? 'sel' : ''}" data-sup="${s.code}">${s.code}</span>`).join('')}
+      </div>
+      <p class="sup-legend"><b>SJ</b> Atacão São Jorge · <b>DC</b> Distribuidora Central · <b>BF</b> Mercado Bom Farto · <b>EC</b> Empório do Café · <b>MC</b> Maciel &amp; Filhos · <b>HB</b> Hortifruti Boa Colheita</p>
+      <div class="sort-label">Visualização</div>
+      <div class="chips" id="demo-view-chips">
+        <span class="chip chip-interactive sel">Comparar preços</span>
+        <span class="chip chip-interactive" data-view="supplier">Por fornecedor</span>
+      </div>
+  `;
+}
+
+function panelCards() {
+  let list = products.slice();
+  const q = state.search.toLowerCase().trim();
+  if (q) {
+    list = list.filter(p => {
+      const matchesName = p.name.toLowerCase().includes(q);
+      const matchesSupplier = p.offers.some(o => suppliers[o.supplierId].name.toLowerCase().includes(q) || o.supplierId.toLowerCase().includes(q));
+      return matchesName || matchesSupplier;
+    });
+  }
+  if (state.supplierFilter !== 'all') {
+    list = list.filter(p => p.offers.some(o => o.supplierId === state.supplierFilter));
+  }
+  if (state.sortBy === 'price') {
+    list.sort((a, b) => pricePerUnit(getBestOffer(a), a) - pricePerUnit(getBestOffer(b), b));
+  } else if (state.sortBy === 'name') {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  } else {
+    list.sort((a, b) => weeklySavings(b) - weeklySavings(a));
+  }
+  if (list.length === 0) {
+    return '<div class="empty-wrap"><div class="empty-t" style="margin-top:12px;">Nenhum resultado</div><div class="empty-m">Tente outro termo ou remova o filtro.</div></div>';
+  }
+  return list.map(p => renderPanelCard(p)).join('');
+}
+
+function renderPanelCard(p) {
+  const best = getBestOffer(p);
+  const active = getActiveOffer(p);
+  const delta = productDelta(p);
+  const savings = weeklySavings(p);
+  const isActiveBest = active && best && active.id === best.id;
+  const mini = rankOffers(p).slice(0, 3).map(o => `${o.supplierId} ${formatMoney(pricePerUnit(o, p)).replace('R$ ', '')}`).join(' · ');
+  let ticketLine;
+  if (isActiveBest) {
+    ticketLine = '★ também é a melhor — <span class="d muted">—</span> sem delta';
+  } else {
+    const color = deltaColorClass(delta);
+    ticketLine = `No ticket: <b>${suppliers[active.supplierId].name}</b> · <span class="d ${color}">${deltaSign(delta)}/${p.unitLabel}</span>`;
+  }
+  const ecoChip = savings > 0.001 ? `<span class="eco-chip">${icons.eco} ${deltaSign(-savings)}/semana</span>` : '';
+  const activePill = isActiveBest ? `<span class="pill pill-active">ATIVA</span>` : '';
+  return `
+    <div class="pcard pcard-interactive" data-product="${p.id}">
+      <div class="prow-top">
+        <div>
+          <div class="pname">${p.name}</div>
+          <div class="punit">${p.displayUnit}</div>
+        </div>
+        <div class="pills-row">
+          ${activePill}<span class="pill pill-best">★ melhor</span>
+        </div>
+      </div>
+      <div class="best-block">
+        <span class="best-val">${formatPricePerUnit(pricePerUnit(best, p), p.unitLabel)}</span>
+        <span class="best-sup">${suppliers[best.supplierId].name} · ${packageLabel(best)}</span>
+      </div>
+      <div class="ticket-line">${ticketLine}</div>
+      <div class="mini-chips">${mini}</div>
+      ${ecoChip}
+    </div>
+  `;
+}
+
+function renderPanel() {
+  const html = panelHeader() + panelCards() + `
+      <p class="note-foot">O dourado lidera cada card: <b>melhor preço por unidade + fornecedor</b>. A linha “No ticket” mostra a oferta ativa (a que alimenta o ticket) e o delta vs. a melhor — o app <b>não troca sozinho</b>. Chips verdes de economia aparecem só nos produtos do cenário atual.</p>
+    </div>
+  `;
+  renderPhone(html);
+  bindPanelEvents();
+}
+
+function bindPanelEvents() {
+  const search = document.getElementById('demo-search');
+  if (search) {
+    search.addEventListener('input', e => { state.search = e.target.value; renderPanel(); });
+  }
+  document.getElementById('demo-sort-chips').addEventListener('click', e => {
+    const sort = e.target.dataset.sort;
+    if (sort) { state.sortBy = sort; renderPanel(); }
+  });
+  document.getElementById('demo-supplier-chips').addEventListener('click', e => {
+    const sup = e.target.dataset.sup;
+    if (sup) { state.supplierFilter = sup; renderPanel(); }
+  });
+  document.getElementById('demo-view-chips').addEventListener('click', e => {
+    const view = e.target.dataset.view;
+    if (view === 'supplier') { state.screen = 'supplier'; renderSupplier(); }
+  });
+  document.querySelectorAll('.pcard-interactive').forEach(card => {
+    card.addEventListener('click', () => {
+      state.detailProductId = card.dataset.product;
+      state.screen = 'detail';
+      renderDetail();
+    });
+  });
+}
+
+function renderDetail() {
+  const p = products.find(x => x.id === state.detailProductId);
+  if (!p) return renderPanel();
+  const best = getBestOffer(p);
+  const active = getActiveOffer(p);
+  const ranked = rankOffers(p);
+  const rows = ranked.map((o, idx) => {
+    const isBest = idx === 0;
+    const isActive = o.id === active.id;
+    const delta = pricePerUnit(o, p) - pricePerUnit(active, p);
+    const pills = [];
+    if (isActive) pills.push('<span class="pill pill-active">ATIVA</span>');
+    if (isBest) pills.push('<span class="pill pill-best">★ melhor</span>');
+    let deltaLine;
+    let action = '';
+    if (isActive) {
+      deltaLine = '<div class="rank-delta muted">— oferta ativa no ticket</div>';
+    } else {
+      const color = delta < 0 ? 'green' : 'red';
+      const sign = delta < 0 ? '−' : '+';
+      const ref = isBest ? 'ativa' : 'ativa';
+      deltaLine = `<div class="rank-delta ${color}">${sign}${formatMoney(Math.abs(delta))}/${p.unitLabel} vs. a ${ref}</div>`;
+      if (!isActive) {
+        const eco = p.weeklyConsumption ? (Math.abs(delta) * p.weeklyConsumption) : 0;
+        const ecoText = eco > 0.001 ? ` · ${delta < 0 ? '−' : '+'}${formatMoney(eco)}/semana` : '';
+        action = `<div class="rank-actions"><span class="btn-out btn-action" data-offer="${o.id}" data-product="${p.id}">${icons.check} Usar no ticket${ecoText}</span></div>`;
+      }
+    }
+    return `
+      <div class="rank-row ${isBest ? 'win' : ''} ${isActive ? '' : 'dim'}">
+        <div class="rank-pos ${isBest ? 'first' : ''}">${idx + 1}</div>
+        <div class="rank-info">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+            <div class="rank-sup">${suppliers[o.supplierId].name}</div>
+            <div class="pills-row">${pills.join('')}</div>
+          </div>
+          <div class="rank-pkg">Embalagem: ${packageLabel(o)}</div>
+          <div class="rank-val">${formatPricePerUnit(pricePerUnit(o, p), p.unitLabel)}</div>
+          ${deltaLine}
+          ${action}
+        </div>
+      </div>
+    `;
+  }).join('');
+  const deltaActive = productDelta(p);
+  const banner = deltaActive > 0.001 ? `
+    <div class="banner-info">
+      ${icons.info}
+      A oferta ativa custa ${formatMoney(deltaActive)}/${p.unitLabel} a mais que a melhor. Trocar é opcional — você confirma.
+    </div>
+  ` : '';
+  const html = `
+    <div class="status"><span>09:41</span><span class="batt"></span></div>
+    <div class="appbar">
+      <span class="back" id="demo-back">${icons.back}</span>
+      <span class="title">${p.name}</span>
+    </div>
+    <div class="body">
+      <div class="card-hero">
+        <div class="hero-title">${p.name}</div>
+        <div class="hero-sub">${p.offers.length} oferta${p.offers.length === 1 ? '' : 's'} cadastrada${p.offers.length === 1 ? '' : 's'} · por ${p.unitLabel}</div>
+        <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;"><span class="tiny muted">melhor preço agora</span></div>
+        <div class="hero-price">${formatPricePerUnit(pricePerUnit(best, p), p.unitLabel)}</div>
+        <div class="hero-supplier">${suppliers[best.supplierId].name} · ${packageLabel(best)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+          <span class="pill pill-active">ATIVA · ${suppliers[active.supplierId].name}</span>
+          <span class="pill pill-best">★ melhor · ${suppliers[best.supplierId].name}</span>
+        </div>
+      </div>
+      ${banner}
+      <div class="sort-label">Ranking por preço por unidade</div>
+      ${rows}
+      <p class="note-foot"><b>Preços coletados em 02/10 · confirme antes de comprar.</b><br>“Usar no ticket” pede confirmação e troca só quando você manda. O app não altera automaticamente.</p>
+    </div>
+  `;
+  renderPhone(html);
+  document.getElementById('demo-back').addEventListener('click', () => { state.screen = 'panel'; renderPanel(); });
+  document.querySelectorAll('.btn-action[data-offer]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const productId = btn.dataset.product;
+      const offerId = btn.dataset.offer;
+      const product = products.find(x => x.id === productId);
+      const offer = product.offers.find(o => o.id === offerId);
+      openConfirm(product, offer);
+    });
+  });
+}
+
+function openConfirm(product, offer) {
+  const delta = pricePerUnit(getActiveOffer(product), product) - pricePerUnit(offer, product);
+  const weekly = product.weeklyConsumption ? delta * product.weeklyConsumption : 0;
+  const ecoText = weekly > 0.001 ? `Economia estimada: ${formatMoney(weekly)}/semana.` : '';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-title">Usar esta oferta no ticket?</div>
+      <div class="modal-body">
+        <b>${suppliers[offer.supplierId].name}</b><br>
+        ${formatPricePerUnit(pricePerUnit(offer, product), product.unitLabel)}<br>
+        Embalagem: ${packageLabel(offer)}<br><br>
+        ${ecoText}
+      </div>
+      <div class="modal-note">Você pode trocar de volta quando quiser. O app não altera automaticamente.</div>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="demo-cancel">Cancelar</button>
+        <button class="modal-confirm" id="demo-confirm">Confirmar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('demo-cancel').addEventListener('click', () => overlay.remove());
+  document.getElementById('demo-confirm').addEventListener('click', () => {
+    state.undo = { productId: product.id, previousActiveOfferId: product.activeOfferId };
+    product.activeOfferId = offer.id;
+    overlay.remove();
+    showSnackbar(suppliers[offer.supplierId].name);
+    if (state.screen === 'detail') renderDetail();
+    else if (state.screen === 'supplier') renderSupplier();
+    else renderPanel();
+  });
+}
+
+function showSnackbar(supplierName) {
+  let bar = document.getElementById('demo-snackbar');
+  if (bar) bar.remove();
+  bar = document.createElement('div');
+  bar.id = 'demo-snackbar';
+  bar.className = 'snackbar';
+  bar.innerHTML = `<span class="snackbar-msg">Oferta de ${supplierName} agora é a ativa.</span><button class="snackbar-undo" id="demo-undo">Desfazer</button>`;
+  document.body.appendChild(bar);
+  document.getElementById('demo-undo').addEventListener('click', () => {
+    if (state.undo) {
+      const product = products.find(p => p.id === state.undo.productId);
+      product.activeOfferId = state.undo.previousActiveOfferId;
+      state.undo = null;
+      bar.remove();
+      if (state.screen === 'detail') renderDetail();
+      else if (state.screen === 'supplier') renderSupplier();
+      else renderPanel();
+    }
+  });
+  setTimeout(() => { if (bar.parentNode) bar.remove(); }, 5000);
+}
+
+function renderSupplier() {
+  const sid = state.supplierFocusId;
+  const s = suppliers[sid];
+  const supplied = products.filter(p => p.offers.some(o => o.supplierId === sid));
+  const bestCount = supplied.filter(p => {
+    const pos = supplierPosition(p, sid);
+    return pos && pos.rank === 1;
+  }).length;
+  const totalProducts = products.length;
+  const chips = Object.values(suppliers).map(sup => `<span class="chip-code chip-code-interactive ${sid === sup.code ? 'sel' : ''}" data-sup="${sup.code}">${sup.code}</span>`).join('');
+  const headerPills = supplied.map(p => {
+    const pos = supplierPosition(p, sid);
+    if (!pos) return '';
+    if (pos.rank === 1) return `<span class="pill pill-best">★ ${p.name.toLowerCase()}</span>`;
+    return '';
+  }).filter(Boolean).join('');
+  const notSupplied = products.filter(p => !p.offers.some(o => o.supplierId === sid));
+  const notSuppliedPills = notSupplied.map(p => `<span class="pill pill-off">não fornece ${p.name.toLowerCase()}</span>`).join('');
+  const rows = supplied.map(p => {
+    const pos = supplierPosition(p, sid);
+    if (!pos) return '';
+    const delta = supplierDeltaVsAverage(p, sid);
+    const color = deltaColorClass(delta);
+    const sign = deltaSign(delta);
+    const posText = pos.rank === 1 ? `★ melhor preço · 1º de ${pos.total}` : `${pos.rank}º melhor preço · de ${pos.total}`;
+    return `
+      <div class="sup-row">
+        <div class="info">
+          <div class="nm">${p.name}</div>
+          <div class="pos ${color}">${posText}</div>
+        </div>
+        <div class="val">
+          <div class="v">${formatPricePerUnit(pricePerUnit(pos.offer, p), p.unitLabel)}</div>
+          <div class="vs ${color}">${sign} vs média</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  const basket = supplierBasket(sid);
+  const best = bestBasket();
+  const diff = basket - best;
+  const suppliedCount = supplied.length;
+  const html = `
+    <div class="status"><span>09:41</span><span class="batt"></span></div>
+    <div class="appbar">
+      <span class="back" id="demo-back">${icons.back}</span>
+      <span class="title">Por fornecedor</span>
+    </div>
+    <div class="body">
+      <div class="chips" id="demo-supplier-focus-chips">${chips}</div>
+      <p class="sup-legend" style="margin-bottom:12px;"><b>${sid}</b> ${s.name} · toque para trocar o fornecedor em foco</p>
+      <div class="sort-label">Visualização</div>
+      <div class="chips" id="demo-view-chips-supplier">
+        <span class="chip chip-interactive" data-view="panel">Comparar preços</span>
+        <span class="chip chip-interactive sel">Por fornecedor</span>
+      </div>
+      <div class="sup-head">
+        <div class="n">${s.name}</div>
+        <div class="m">${supplierSummary(sid)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">${headerPills}${notSuppliedPills}</div>
+      </div>
+      <div class="sort-label">Produtos que ele fornece</div>
+      ${rows}
+      <div class="basket">
+        <div class="t">Se a cesta inteira fosse deste fornecedor</div>
+        <div class="l">Cesta ${sid} (${suppliedCount} insumo${suppliedCount === 1 ? '' : 's'}): <span>${formatMoney(basket)}</span>/semana<br>
+        Cesta mais barata (★ de cada insumo): <span>${formatMoney(best)}</span>/semana<br>
+        Diferença: <span style="color:#F44336;">${deltaSign(diff)}</span> a mais</div>
+        <div class="l" style="margin-top:6px;">${sid} é ★melhor em ${bestCount} produto${bestCount === 1 ? '' : 's'}${bestCount > 0 ? ' — vale comprar <b style="color:#fff;">só esses</b> dele' : ''}.</div>
+      </div>
+      <p class="note-foot">Consumo semanal de exemplo: pão 15 kg · queijo 2 kg · presunto 2 kg · café 2×500 g · óleo 2×900 ml · açúcar 3 kg · copos 80 un. Posição = R$/un dentre as ofertas cadastradas daquele insumo.</p>
+    </div>
+  `;
+  renderPhone(html);
+  document.getElementById('demo-back').addEventListener('click', () => { state.screen = 'panel'; renderPanel(); });
+  document.getElementById('demo-supplier-focus-chips').addEventListener('click', e => {
+    const code = e.target.dataset.sup;
+    if (code) { state.supplierFocusId = code; renderSupplier(); }
+  });
+  document.getElementById('demo-view-chips-supplier').addEventListener('click', e => {
+    const view = e.target.dataset.view;
+    if (view === 'panel') { state.screen = 'panel'; renderPanel(); }
+  });
+}
+
+function renderEmpty() {
+  const html = `
+    <div class="status"><span>09:41</span><span class="batt"></span></div>
+    <div class="appbar">
+      <span class="back">${icons.back}</span>
+      <span class="title">Comparar preços</span>
+    </div>
+    <div class="body">
+      <div class="empty-wrap">
+        <div class="empty-ic">${icons.store}</div>
+        <div class="empty-t">Nenhuma oferta cadastrada ainda</div>
+        <div class="empty-m">Cadastre preços de fornecedores para comparar e escolher quem entra no ticket.</div>
+        <button class="cta">${icons.plus} Adicionar primeira oferta</button>
+      </div>
+      <hr class="divider">
+      <p class="note-foot">Estado vazio do painel. Enquanto não há ofertas, o ticket continua usando o preço base cadastrado no insumo — sem quebra de fluxo.</p>
+    </div>
+  `;
+  renderPhone(html);
+}
+
+function renderOneSupplier() {
+  const html = `
+    <div class="status"><span>09:41</span><span class="batt"></span></div>
+    <div class="appbar">
+      <span class="back">${icons.back}</span>
+      <span class="title">Comparar preços</span>
+    </div>
+    <div class="body">
+      <div class="banner-info">
+        ${icons.info}
+        Cadastre mais fornecedores para ver o comparativo.
+      </div>
+      <div class="one-sup">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="n">Distribuidora Central</div>
+            <div class="d">único fornecedor com ofertas · 8 insumos</div>
+          </div>
+          <span class="pill pill-off">sem comparação</span>
+        </div>
+      </div>
+      <p class="note-foot">Com 1 fornecedor, o painel mostra os preços, mas <b>sem ranking, delta ou economia</b> — não há “melhor” nem “pior” sem concorrência. A entrada no drawer continua valendo a pena: é onde a comparação nasce.</p>
+      <button class="cta outline">${icons.storeGold} Cadastrar outro fornecedor</button>
+    </div>
+  `;
+  renderPhone(html);
+}
+
+function renderDemo() {
+  if (state.demoState === 'empty') {
+    renderEmpty();
+  } else if (state.demoState === 'one') {
+    renderOneSupplier();
+  } else if (state.screen === 'detail') {
+    renderDetail();
+  } else if (state.screen === 'supplier') {
+    renderSupplier();
+  } else {
+    renderPanel();
+  }
+}
+
+function init() {
+  const buttons = document.querySelectorAll('.demo-state-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      state.demoState = btn.dataset.state;
+      state.screen = 'panel';
+      state.search = '';
+      state.supplierFilter = 'all';
+      state.sortBy = 'savings';
+      renderDemo();
+    });
+  });
+  renderDemo();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+{
+  "phase": "sprint5_2026-10-12_fechamento",
+  "generated_at": "2026-10-12T19:01:27.847440+00:00",
+  "project": "ctrlcash",
+  "note": "Snapshot FINAL da sprint de fechamento (sprint 5 - tema, notificacoes, seguranca e testes). Estado pos-sprint; nada commitado, deletado ou limpo por este tracker.",
+  "git": {
+    "head": "e3c6302016fb40e02d88992195ab6a543be7cf1a",
+    "head_short": "e3c6302",
+    "commits_since_caed584": 4,
+    "stash_count": 0,
+    "status_summary": {
+      "M": 56,
+      "D": 0,
+      "untracked": 21,
+      "total": 77
+    },
+    "diff_vs_head": "56 files changed, 5219 insertions(+), 3127 deletions(-)"
+  },
+  "counts": {
+    "lib_dart_files": 80,
+    "lib_dart_lines": 16273,
+    "test_files": 11,
+    "test_lines": 2223,
+    "tests_total": 120,
+    "tests_passed": 120,
+    "named_routes": 25,
+    "firestore_collections": [
+      "users",
+      "transactions",
+      "budgets",
+      "ingredients",
+      "products",
+      "price_audit_logs"
+    ],
+    "theme_files": 5,
+    "widgets": 23,
+    "color_0xFF_outside_theme": 0,
+    "raw_0xFF_outside_theme": "19 em lib/utils/categories.dart (cores de categorias - excecao esperada)",
+    "colors_green_red_orange_blue_raw_outside_theme": 0,
+    "static_const_color": "11, todas em lib/theme/app_colors.dart (0 fora do theme)",
+    "dart_analyze": "1 info (deprecated_member_use updateEmail em auth_service.dart:107), exit 0",
+    "flutter_test": "exit 0 - +120: All tests passed!"
+  },
+  "entries": [
+    {
+      "path": "opencode.json",
+      "status": "present",
+      "size": 3559,
+      "mtime": "2026-10-07T11:44:38.258017+00:00",
+      "sha256": "93e73ab19390439b24a57333db3ac0a99bb85750e0af16c9074473dc155ad6f8"
+    },
+    {
+      "path": ".metadata",
+      "status": "present",
+      "size": 1114,
+      "mtime": "2026-08-12T11:49:32.837994+00:00",
+      "sha256": "18ee863779ac16234b7a38b83e4fc713a0f40b1e529b866337d2a761dcde88df"
+    },
+    {
+      "path": "context/CONTEXT.md",
+      "status": "present",
+      "size": 589,
+      "mtime": "2026-08-12T11:49:33.131010+00:00",
+      "sha256": "0d44c0d862a1f47228dda3bbb65c81ac3eba4b4f528511dc80bc701aeb4fe33c"
+    },
+    {
+      "path": "context/erros-a-evitar.md",
+      "status": "present",
+      "size": 3477,
+      "mtime": "2026-08-12T11:49:33.132472+00:00",
+      "sha256": "8feb133cec0bd968e425244f3e8fa88927c4b8ba4d63537fccdd98336f5ea901"
+    },
+    {
+      "path": "context/decisoes-de-fluxo.md",
+      "status": "present",
+      "size": 3531,
+      "mtime": "2026-10-08T22:05:31.848576+00:00",
+      "sha256": "f5c7244d9fdef022013330ea0b8c9877c0b399a807f18de78f911b6f263c9af3"
+    },
+    {
+      "path": "docs/overview.md",
+      "status": "present",
+      "size": 10180,
+      "mtime": "2026-10-09T12:03:45.468011+00:00",
+      "sha256": "2cb18c81bede06f6380e99a806cb667ef9ab5439c73f2ad88eca51f87396ab3c"
+    },
+    {
+      "path": "agent.json/backend.json",
+      "status": "deleted"
+    },
+    {
+      "path": "agent.json/frontend.json",
+      "status": "deleted"
+    },
+    {
+      "path": "agent.json/logic.json",
+      "status": "deleted"
+    },
+    {
+      "path": "agent.json/qa.json",
+      "status": "deleted"
+    },
+    {
+      "path": ".opencode/agents/backend.md",
+      "status": "deleted"
+    },
+    {
+      "path": ".opencode/agents/frontend.md",
+      "status": "deleted"
+    },
+    {
+      "path": ".opencode/agents/logic.md",
+      "status": "deleted"
+    },
+    {
+      "path": ".opencode/agents/qa.md",
+      "status": "deleted"
+    },
+    {
+      "path": "documentacao/ctrlcash_documentacao.txt",
+      "status": "present",
+      "size": 19087,
+      "mtime": "2026-09-09T17:10:39.193502+00:00",
+      "sha256": "32bc6436c0556338ecb64fbd8664568a659a74ff8984dc69369c6055c30322e0"
+    },
+    {
+      "path": "documentacao/BIBLIOTECA_113_RT_279.docx",
+      "status": "present",
+      "size": 478660,
+      "mtime": "2026-10-07T11:29:04.709022+00:00",
+      "sha256": "e5f1cf01916d9161c405e49e17b273a4c4e4261c17d45a17665026f29fa85796"
+    },
+    {
+      "path": "documentacao/CTRLCASH_SPRINT2_PROPOSTA_A_RT.docx",
+      "status": "present",
+      "size": 30036,
+      "mtime": "2026-10-07T13:34:49.560285+00:00",
+      "sha256": "d8993099ceeb118e4e90be46cd496f56182ee23ff46ce3776cbb4cf19a058446"
+    },
+    {
+      "path": "documentacao/CTRLCASH_SPRINT3_PAINEL_COMPARACAO_FUTURO_RT.docx",
+      "status": "present",
+      "size": 38466,
+      "mtime": "2026-10-08T12:31:55.532784+00:00",
+      "sha256": "906807e1ded0a8fa54d5d0794a515656c612ecf22069f1fe8be026aaff718bf9"
+    },
+    {
+      "path": "documentacao/CTRLCASH_SPRINT4_MODULO_COMPARATIVO_RT.docx",
+      "status": "present",
+      "size": 24415,
+      "mtime": "2026-10-09T12:02:33.700842+00:00",
+      "sha256": "0dc94823ae02480709d28b838a6baab742872e704caeccabcaf77ba28fd6de6e"
+    },
+    {
+      "path": "documentacao/GUIA_FORMATACAO_DOCX.md",
+      "status": "present",
+      "size": 8078,
+      "mtime": "2026-10-08T12:32:49.024217+00:00",
+      "sha256": "e900712e13a81829257dd746b26546eff979bbdf67066f283eb613be5c690240"
+    },
+    {
+      "path": "documentacao/logs/sprint4/docs_sprint4_modulo_comparativo.md",
+      "status": "present",
+      "size": 33200,
+      "mtime": "2026-10-09T11:57:49.911138+00:00",
+      "sha256": "d7c203b3df80e418abd473123fe58d54a062bd59137f27ae753cb5aa433c253f"
+    },
+    {
+      "path": "documentacao/logs/sprint4/ctrlcash_sprint4_modulo_comparativo_rt.html",
+      "status": "present",
+      "size": 43566,
+      "mtime": "2026-10-09T12:01:00.785012+00:00",
+      "sha256": "7c224612999e4361a9c137d2c27f96c1879ef631925ed4cc66abab588ef54cc2"
+    },
+    {
+      "path": "lib/theme/app_colors.dart",
+      "status": "created",
+      "size": 621,
+      "mtime": "2026-10-12T18:22:05.900597+00:00",
+      "sha256": "e7600de999b6076741d6db7c6191901cf76ce060be2c751b0bd5796039b521bf"
+    },
+    {
+      "path": "lib/theme/app_radius.dart",
+      "status": "created",
+      "size": 146,
+      "mtime": "2026-10-12T18:22:08.388597+00:00",
+      "sha256": "5d62d09314ef3c46fb4a0ca1fd0e040cfdd3c15de4aa5e8f591b4c37ac917824"
+    },
+    {
+      "path": "lib/theme/app_spacing.dart",
+      "status": "created",
+      "size": 236,
+      "mtime": "2026-10-12T18:22:07.431597+00:00",
+      "sha256": "158a4da11878b0fd8d3298345610ffc7b79d18c0f173185855285630ff5f71ac"
+    },
+    {
+      "path": "lib/theme/app_theme.dart",
+      "status": "created",
+      "size": 7083,
+      "mtime": "2026-10-12T18:23:31.408596+00:00",
+      "sha256": "52efb9ba3c926adeef5ec054185b9e969ce824cbaed24f14b8f343de4fd2d12c"
+    },
+    {
+      "path": "lib/theme/app_typography.dart",
+      "status": "created",
+      "size": 1032,
+      "mtime": "2026-10-12T18:23:31.409596+00:00",
+      "sha256": "17f6455ee0041fc814e5266bcb20399aba6397964e7471113b82c77fa1936af7"
+    },
+    {
+      "path": "lib/services/notification_service.dart",
+      "status": "created",
+      "size": 5398,
+      "mtime": "2026-10-12T17:24:54.427618+00:00",
+      "sha256": "0fb4e4a5cf0c1cbcc9f13de45188909eef26c12c896cfc2b09283e97b740926d"
+    },
+    {
+      "path": "lib/screens/settings/terms_privacy_screen.dart",
+      "status": "created",
+      "size": 3548,
+      "mtime": "2026-10-12T18:33:16.425592+00:00",
+      "sha256": "081574ed3372e297f0424ef4788c479714cd8e646499f4f4ac349605c46ff27e"
+    },
+    {
+      "path": "lib/utils/app_info.dart",
+      "status": "created",
+      "size": 104,
+      "mtime": "2026-10-12T16:14:44.423643+00:00",
+      "sha256": "0a6fc0332a97bd42fb605f7ce46174c8828600f443c738b7d94bb25357787360"
+    },
+    {
+      "path": "lib/utils/audit_builder.dart",
+      "status": "created",
+      "size": 5719,
+      "mtime": "2026-10-12T16:17:24.680642+00:00",
+      "sha256": "c35a3ada885dce792ab213a0587aec78e46a060e46ef6fcf6a933940a26cc06b"
+    },
+    {
+      "path": "lib/utils/offer_rules.dart",
+      "status": "created",
+      "size": 224,
+      "mtime": "2026-10-12T16:16:58.881642+00:00",
+      "sha256": "67805a2c2e7b5c3fbe7cd658c0b7df6cbd0bd5f609d20be3bdd0409f19d54bc9"
+    },
+    {
+      "path": "lib/utils/recurrence.dart",
+      "status": "created",
+      "size": 2981,
+      "mtime": "2026-10-12T17:21:47.116619+00:00",
+      "sha256": "2933822d4ea660ccf09b86cbf0a70c623a29df6e54990d53c21c0b92f692b8ed"
+    },
+    {
+      "path": "lib/widgets/alert_banner.dart",
+      "status": "created",
+      "size": 1338,
+      "mtime": "2026-10-12T18:26:31.624595+00:00",
+      "sha256": "d196ea336ee2c7583e7716517709f0b41eee384893987d5b456059b84296c5d7"
+    },
+    {
+      "path": "lib/widgets/app_text_field.dart",
+      "status": "created",
+      "size": 1798,
+      "mtime": "2026-10-12T18:31:08.063593+00:00",
+      "sha256": "e1479ddc0d14d0ce777cf037c259172bdd5a48c2dc73b897e4c19524028d32ff"
+    },
+    {
+      "path": "lib/widgets/app_toast.dart",
+      "status": "created",
+      "size": 1776,
+      "mtime": "2026-10-12T18:26:27.017595+00:00",
+      "sha256": "cc1c0923326ef48ca8402838353df176ba8f5baef4f786b882a299bd4e3dd195"
+    },
+    {
+      "path": "lib/widgets/list_skeleton.dart",
+      "status": "created",
+      "size": 1796,
+      "mtime": "2026-10-12T18:26:37.596595+00:00",
+      "sha256": "f540700790fa0f1a8ffb3084988bbc126e1d46f2f29a32ee7b9d501c184ca62b"
+    },
+    {
+      "path": "test/audit_builder_test.dart",
+      "status": "created",
+      "size": 11231,
+      "mtime": "2026-10-12T16:27:41.094639+00:00",
+      "sha256": "dedf5ada926ebb776541929589a130bf3fd25f1c036fa1da888037c5dc08728f"
+    },
+    {
+      "path": "test/ingredient_active_offer_test.dart",
+      "status": "created",
+      "size": 6579,
+      "mtime": "2026-10-12T16:17:58.142642+00:00",
+      "sha256": "bd25a415570cc02e498dc004c237227969599b6b6f05581f66694572a7bbe3f7"
+    },
+    {
+      "path": "test/model_roundtrip_test.dart",
+      "status": "created",
+      "size": 5139,
+      "mtime": "2026-10-12T16:17:32.274642+00:00",
+      "sha256": "f33b65493350f36b3c7915ce3db9d75b97bb0ef46b1bad9a82a121393f4ee90a"
+    },
+    {
+      "path": "test/offer_rules_test.dart",
+      "status": "created",
+      "size": 832,
+      "mtime": "2026-10-12T16:26:28.821639+00:00",
+      "sha256": "4453d66d68036a6ad2c258f8437e8a4c164b210600ac01b530f3a114055fd88a"
+    },
+    {
+      "path": "test/product_calculator_test.dart",
+      "status": "created",
+      "size": 6973,
+      "mtime": "2026-10-12T16:16:34.011642+00:00",
+      "sha256": "bbbda32f26897665fc9df5ae7dc052a49959e8d9cffb8871103f110f575a2779"
+    },
+    {
+      "path": "test/recurrence_test.dart",
+      "status": "created",
+      "size": 3537,
+      "mtime": "2026-10-12T17:24:35.670618+00:00",
+      "sha256": "3abc63408f737f274c57ae34cb08d15eba52742c736c4a65b7eb34785effbc17"
+    },
+    {
+      "path": "test/transaction_rules_test.dart",
+      "status": "created",
+      "size": 3611,
+      "mtime": "2026-10-12T16:17:14.502642+00:00",
+      "sha256": "0201a09c3400d2aba1f83564c512fa6fcdc1940acb4e23cf149ee26c5b8fa337"
+    }
+  ]
+}

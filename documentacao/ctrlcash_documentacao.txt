@@ -1,0 +1,496 @@
+================================================================================
+                         CASHCTRL - DOCUMENTACAO COMPLETA
+================================================================================
+Versao definitiva: 1.0.0+1 (28/10/2026). Sem modulos de foto, sem Storage,
+sem leitor de codigo de barras. Login somente e-mail/senha.
+
+1. INTRODUCAO
+================================================================================
+
+CashCtrl e um aplicativo movel desenvolvido em Flutter com backend Firebase,
+projetado para auxiliar microempreendedores e pequenos negocios no controle
+financeiro e na gestao de custos de produtos.
+
+Seu diferencial e o Calculador de Ficha Tecnica (Ticket do Produto), que permite
+ao usuario cadastrar produtos de compra (insumos), montar fichas tecnicas
+(receitas) e calcular automaticamente se cada produto gera lucro ou prejuizo,
+apresentando o custo detalhado por item e a participacao percentual de cada um.
+
+O app tambem oferece comparativo de ofertas entre fornecedores por produto,
+com escolha manual da oferta ativa que alimenta o calculo, historico de
+auditoria de precos (append-only) e exportacao de relatorios para Excel.
+
+
+2. VISAO GERAL DO CASHCTRL
+================================================================================
+
+- Nome do App: CashCtrl
+- Versao: 1.0.0+1
+- Plataformas: Android (principal), Web
+- Framework: Flutter (Dart SDK ^3.11.5)
+- Backend: Firebase (Auth, Firestore)
+- Gerenciamento de Estado: Provider
+- Tema Visual: Dark com acentos verdes e dourados
+
+Funcionalidades Principais:
+  - Autenticacao por e-mail/senha com redefinicao de senha
+  - Cadastro de usuario em duas etapas (dados pessoais + dados do negocio)
+  - Gestao de transacoes financeiras (receitas e despesas) com categorias
+    de negocio, metodos de pagamento e recorrencia
+  - Orcamentos mensais por categoria com progresso em tempo real
+  - Dashboard operacional (saldo do negocio, acoes rapidas, movimentacoes)
+  - Relatorios unificados (KPIs, receitas vs custos, top 5 categorias)
+  - Exportacao de relatorios para Excel (3 abas: Resumo, Mensal, Transacoes)
+  - Parque de produtos (insumos) com calculo automatico de preco por unidade
+  - Ofertas de fornecedores por produto (ate 15), comparativo de precos,
+    oferta ativa manual e cartao de economia possivel
+  - Historico de auditoria de precos (logs append-only)
+  - Ficha tecnica de produtos (receita + mao de obra + embalagem)
+  - Calculo automatico de lucro/prejuizo, margem e markup por produto
+  - Perfil, notificacoes locais, seguranca e central de ajuda
+
+OBSERVACAO: Fotos de perfil/produto e upload ao Firebase Storage NAO fazem
+parte da versao definitiva (modulo removido pois o upload nao era persistido).
+Leitor de codigo de barras tambem foi removido. O avatar exibe as iniciais
+do nome do usuario.
+
+
+3. REQUISITOS DO CASHCTRL
+================================================================================
+
+Dependencias Principais (pubspec.yaml):
+  - flutter                  SDK
+  - firebase_core  ^3.0.0    Inicializacao do Firebase
+  - firebase_auth  ^5.0.0    Autenticacao (e-mail/senha)
+  - cloud_firestore ^5.0.0   Banco de dados NoSQL (CRUD isolado por UID)
+  - flutter_dotenv ^5.2.0    Variaveis de ambiente (.env)
+  - provider       ^6.1.2    Gerenciamento de estado
+  - fl_chart       ^0.69.0    Graficos (pizza, barras)
+  - flutter_local_notifications ^19.0.0  Alertas de orcamento, recorrencia, margem
+  - excel          ^4.0.6    Geracao do workbook de relatorio
+  - path_provider, share_plus Salvar/compartilhar .xlsx no Android
+  - web            ^1.1.0    Download .xlsx no navegador
+
+Configuracao Necessaria:
+  - Arquivo .env com chaves Firebase (project ID, API keys, app IDs)
+  - Projeto Firebase configurado (projeto ID: crtlcash-71ac3)
+  - Regras de Firestore aplicadas (firestore.rules)
+  - Google Services (Android): android/app/google-services.json (local, nao versionado)
+
+
+4. ESTRUTURA DE DIRETORIOS E SUBDIRETORIOS
+================================================================================
+
+ctrlcash/
+|-- assets/
+|   |-- images/              Logo camaleao e icones
+|
+|-- lib/                     Codigo-fonte principal
+|   |-- main.dart            Ponto de entrada (env, Firebase, providers, rotas)
+|   |-- firebase_options.dart Configuracao Firebase lida de .env
+|   |-- home_screen.dart     Dashboard operacional
+|   |-- budgets_screen.dart  Tela de orcamentos
+|   |-- expenses_screen.dart Tela de transacoes
+|   |-- reports_screen.dart  Tela de relatorios + exportacao Excel
+|   |-- settings_screen.dart Tela de configuracoes
+|   |
+|   |-- models/              Modelos de dados (puros, fromMap/toMap)
+|   |   |-- app_user.dart        Usuario + dados do negocio
+|   |   |-- transaction.dart     Transacao (receita/despesa)
+|   |   |-- budget.dart          Orcamento mensal
+|   |   |-- ingredient.dart      Produto/insumo (preco/un, ofertas[], activeOfferId)
+|   |   |-- ingredient_offer.dart Oferta de fornecedor
+|   |   |-- price_audit_log.dart Log de auditoria de precos
+|   |   |-- product.dart         Ficha tecnica (receita + custos + venda)
+|   |
+|   |-- services/            Camada de acesso ao Firebase
+|   |   |-- auth_service.dart        Login/cadastro/logout (e-mail/senha)
+|   |   |-- firestore_service.dart   CRUD Firestore isolado por UID + ofertas em batch
+|   |   |-- notification_service.dart Notificacoes locais
+|   |
+|   |-- providers/           Gerenciamento de estado
+|   |   |-- user_provider.dart        Perfil + negocio
+|   |   |-- transaction_provider.dart Stream de transacoes
+|   |   |-- budget_provider.dart      Stream de orcamentos
+|   |   |-- ingredient_provider.dart  Stream de produtos + ofertas + audit logs
+|   |   |-- product_provider.dart     Stream de fichas tecnicas
+|   |
+|   |-- screens/             Telas do aplicativo
+|   |   |-- login_screen.dart            Login (e-mail/senha)
+|   |   |-- cadastro_screen.dart         Cadastro em duas etapas
+|   |   |-- transaction_form_screen.dart Nova/editar transacao
+|   |   |-- budget_form_screen.dart      Novo/editar orcamento
+|   |   |-- ingredients_screen.dart      Lista de produtos + comparativo
+|   |   |-- ingredient_form_screen.dart  Cadastrar/editar produto (ofertas inline)
+|   |   |-- ingredient_offers_screen.dart Comparativo de fornecedores do produto
+|   |   |-- offer_form_screen.dart       Nova/editar oferta de fornecedor
+|   |   |-- audit_logs_screen.dart       Historico de auditoria (somente leitura)
+|   |   |-- compare_prices_screen.dart   Painel "Comparar precos"
+|   |   |-- products_screen.dart         Lista de fichas tecnicas com veredito
+|   |   |-- product_form_screen.dart     Criar/editar ficha tecnica
+|   |   |-- product_detail_screen.dart   Ticket (participacao % por item)
+|   |   |-- settings/
+|   |       |-- edit_profile_screen.dart      Editar perfil (sem foto; iniciais)
+|   |       |-- notifications_screen.dart     Preferencias de notificacoes
+|   |       |-- security_screen.dart          Seguranca e privacidade
+|   |       |-- help_screen.dart              Central de ajuda
+|   |       |-- terms_privacy_screen.dart     Termos e privacidade
+|   |
+|   |-- theme/               Design tokens (cores, tipografia, espacamento)
+|   |-- utils/               Logica pura
+|   |   |-- categories.dart          Categorias de negocio
+|   |   |-- format.dart              Formatacao de moeda e data (pt-BR)
+|   |   |-- product_calculator.dart  Calculo do ticket (lucro, margem, markup)
+|   |   |-- offer_comparator.dart    Ranking/delta/cenario de ofertas
+|   |   |-- offer_rules.dart         Upsert de ofertas e limite de 15
+|   |   |-- price_panel_aggregator.dart Agregacao do painel de precos
+|   |   |-- report_export.dart       Workbook Excel
+|   |   |-- report_export_native.dart/.web.dart Export (Android/Web)
+|   |
+|   |-- widgets/             Widgets reutilizaveis
+|       |-- app_drawer.dart, app_branded_header.dart, category_pie_chart.dart,
+|           export_excel_button.dart, offer_card.dart, best_price_chip.dart,
+|           active_offer_marker.dart, offer_count_badge.dart, delta_price_text.dart,
+|           economy_summary_card.dart, audit_entry_tile.dart, section_header.dart,
+|           search_field.dart, filter_chip_row.dart, empty_state.dart,
+|           error_state.dart, confirm_action_dialog.dart
+|
+|-- android/                 Configuracao Android (google-services.json local)
+|-- web/                     Configuracao web
+|-- firestore.rules          Regras de seguranca do Firestore (isolamento por UID)
+|-- .env.example             Template de variaveis de ambiente (sem segredos)
+|-- pubspec.yaml             Dependencias e versao (1.0.0+1)
+
+
+5. DESCRICAO DA IMPLEMENTACAO
+================================================================================
+
+5.1 MODELOS (lib/models/)
+  - AppUser: Perfil do usuario (nome, email, empresa, CNPJ, segmento,
+             telefone, endereco, preferencias de notificacao)
+  - AppTransaction: Transacao (tipo receita/despesa, categoria, descricao,
+                    valor, data, metodo de pagamento, recorrente)
+  - Budget: Orcamento mensal por categoria com limite
+  - Ingredient: Produto comprado (nome, unidade, preco de compra, quantidade
+                da embalagem, preco por unidade calculado, offers[] com ate 15
+                ofertas de fornecedores, activeOfferId)
+  - IngredientOffer: Oferta de fornecedor (fornecedor, nome do produto no
+                     fornecedor, preco, quantidade)
+  - PriceAuditLog: Registro append-only de alteracoes de preco
+  - Product: Ficha tecnica (receita[] com quantidades, mao de obra, embalagem,
+             preco de venda; codigo de barras apenas como campo legado)
+
+5.2 SERVICOS (lib/services/)
+  - AuthService: Login/cadastro por e-mail/senha e redefinicao de senha.
+                 Erros em portugues para codigos do Firebase Auth.
+  - FirestoreService: CRUD completo isolado por UID sob users/{uid}/, streams
+                      em tempo real, mutacao de ofertas em batch com auditoria.
+  - NotificationService: Notificacoes locais (orcamento, recorrencia, margem).
+
+5.3 PROVIDERS (lib/providers/)
+  - UserProvider: Perfil + negocio (Firestore)
+  - TransactionProvider: Stream de transacoes
+  - BudgetProvider: Stream de orcamentos
+  - IngredientProvider: Mapa id->Produto + ofertas + logs de auditoria
+  - ProductProvider: Stream de fichas tecnicas
+
+5.4 TELAS (lib/screens/)
+  - Login: e-mail/senha + "esqueci a senha" + link para cadastro
+  - Cadastro: wizard de 2 passos (pessoal + negocio), sem foto
+  - Dashboard: saldo do negocio, receitas/despesas, atalhos, acoes rapidas,
+               movimentacoes recentes
+  - Transacoes: lista com busca, filtros (tipo/categoria), resumo, swipe-delete
+  - Formulario Transacao: tipo, valor, descricao, categoria, metodo, data, recorrência
+  - Orcamentos: limites mensais por categoria com barra de progresso
+  - Relatorios: pagina unica com 4 KPIs, graficos e top 5, botao Exportar Excel
+  - Produtos (parque): lista com preco/unidade, badge de ofertas, icone de loja
+    (ver ofertas), comparativo de precos, swipe-delete
+  - Formulario Produto: nome, unidade, preco de compra, quantidade da
+    embalagem, preview preco/unidade, ofertas inline na criacao (ate 15)
+  - Comparativo de Fornecedores: ranking por preco/unidade, badge ATIVA e
+    "melhor", troca manual da oferta ativa (com desfazer), cartao de economia
+  - Fichas Tecnicas: lista com custo total e veredito lucro/prejuizo
+  - Formulario Ficha Tecnica: nome, descricao, itens da receita com
+    participacao %, mao de obra, embalagem, preco de venda, resumo ao vivo
+  - Detalhe Ficha (Ticket): veredito, margem, markup, custo por item, alerta
+    de insumo ausente
+  - Configuracoes: editar perfil, notificacoes, seguranca, ajuda, termos, logout
+
+5.5 UTILITARIOS (lib/utils/)
+  - ProductCalculator: calculo puro da ficha tecnica
+    custoTotal = Σ(qtd x preco/un de cada item) + mao de obra + embalagem
+    lucro = precoVenda - custoTotal
+    margem% = (lucro / precoVenda) x 100
+    markup = precoVenda / custoTotal
+  - OfferComparator: ranking, delta e cenario do comparativo
+  - ReportExport: workbook .xlsx (Resumo, Mensal, Transacoes)
+
+5.6 WIDGETS (lib/widgets/)
+  - AppBrandedHeader (AppBar com logo camaleao), AppDrawer (menu lateral),
+    CategoryPieChart, ExportExcelButton, OfferCard, BestPriceChip,
+    ActiveOfferMarker, OfferCountBadge, DeltaPriceText, EconomySummaryCard,
+    AuditEntryTile, SectionHeader, SearchField, FilterChipRow, EmptyState,
+    ErrorState, ConfirmActionDialog
+
+
+6. DIAGRAMA ENTIDADE-RELACIONAMENTO
+================================================================================
+
+O banco de dados Firestore utiliza uma estrutura hierarquica com isolamento
+por usuario (cada usuario so acessa os proprios dados):
+
+  users (colecao principal)
+    |
+    |-- {uid} (documento do usuario)
+          |
+          |-- transactions (subcolecao)
+          |     |-- {txId}
+          |
+          |-- budgets (subcolecao)
+          |     |-- {budgetId}
+          |
+          |-- ingredients (subcolecao)
+          |     |-- {ingredientId}   (contem offers[] embutido + activeOfferId)
+          |
+          |-- products (subcolecao)
+          |     |-- {productId}
+          |
+          |-- price_audit_logs (subcolecao)
+                |-- {logId}
+
+Relacoes:
+  - products.recipe[].ingredientId -> ingredients.id (referencia ao produto)
+  - ingredients.activeOfferId -> ingredients.offers[].id (oferta que alimenta o custo)
+
+
+7. ESQUEMA DO BANCO DE DADOS
+================================================================================
+
+7.1 users/{uid}
+  - nome: String
+  - email: String
+  - empresa: String (opcional)
+  - cnpj: String (opcional)
+  - segmento: String (opcional)
+  - telefone: String (opcional)
+  - endereco: String (opcional)
+
+7.2 users/{uid}/transactions/{txId}
+  - type: "receita" | "despesa"
+  - category: String (ex: "Insumos", "Vendas")
+  - description: String
+  - amount: Number (double, deve ser > 0 - RN01)
+  - date: String (ISO 8601)
+  - paymentMethod: "dinheiro"|"credito"|"debito"|"pix"|"transferencia"|"outro"
+  - recurring: Boolean
+  - budgetId: String (opcional, referencia ao orcamento)
+
+7.3 users/{uid}/budgets/{budgetId}
+  - category: String
+  - limit: Number (double)
+  - monthly: Boolean
+  - createdAt: String (ISO 8601)
+
+7.4 users/{uid}/ingredients/{ingredientId}
+  - name: String
+  - unit: "g"|"kg"|"L"|"ml"|"un"|"pct"
+  - purchasePrice: Number (double, >= 0)
+  - packageQuantity: Number (double)
+  - offers: Array<{supplier, productName, price, quantity}> (max 15)
+  - activeOfferId: String (opcional)
+  - createdAt: String (ISO 8601)
+  Preco por unidade = activeOffer ? preco/qtd da oferta : purchasePrice/packageQuantity
+
+7.5 users/{uid}/products/{productId}
+  - name: String
+  - description: String
+  - recipe: Array<{ingredientId, ingredientName, quantity}>
+  - laborCost: Number (mao de obra, double)
+  - packagingCost: Number (embalagem, double)
+  - salePrice: Number (double)
+  - createdAt: String (ISO 8601)
+
+7.6 users/{uid}/price_audit_logs/{logId}
+  - action, entityType, entityId, summary
+  - preco antes/depois, timestamp (serverTimestamp), expireAt (+180 dias)
+  - append-only: sem update nem delete (regra)
+
+
+8. INSTALACAO DO CASHCTRL
+================================================================================
+
+1. Clonar o repositorio:
+   git clone https://github.com/JoaoVikthor/ctrlcash.git
+   cd ctrlcash
+
+2. Configurar variaveis de ambiente:
+   Copie o arquivo .env.example para .env e preencha com suas chaves Firebase:
+   - FIREBASE_PROJECT_ID
+   - FIREBASE_ANDROID_API_KEY / FIREBASE_ANDROID_APP_ID
+   - FIREBASE_WEB_API_KEY / FIREBASE_WEB_APP_ID / FIREBASE_WEB_MEASUREMENT_ID
+   - FIREBASE_AUTH_DOMAIN / FIREBASE_STORAGE_BUCKET / FIREBASE_MESSAGING_SENDER_ID
+
+3. Configurar Firebase:
+   - Criar projeto no Firebase Console (ou usar existente)
+   - Ativar Authentication (Email/Senha)
+   - Criar Firestore Database e aplicar firestore.rules
+   - Colocar android/app/google-services.json (baixado do Console)
+
+4. Instalar dependencias e executar:
+   flutter pub get
+   flutter run
+
+   Para web:
+   flutter run -d chrome
+
+
+9. MANUAL DO USUARIO
+================================================================================
+
+9.1 Login e Cadastro
+  - Faca login com e-mail e senha (ou redefinicao de senha pelo e-mail)
+  - Para criar conta, toque em "Cadastrar-se" e siga o wizard de 2 passos
+  - Passo 1: Dados pessoais (nome, email, senha, confirmacao, termos)
+  - Passo 2: Dados do negocio (empresa, segmento, telefone, endereco, CNPJ opcional)
+
+9.2 Dashboard
+  - Tela inicial com saldo do negocio, receitas, despesas
+  - Atalho para relatorios e acoes rapidas (nova transacao, nova ficha)
+  - Movimentacoes recentes
+
+9.3 Transacoes
+  - Acesse via menu lateral > Transacoes
+  - Barra de resumo (receitas, despesas, saldo)
+  - Busca por descricao ou categoria
+  - Filtros por tipo (Todas, Receitas, Despesas) e por categoria
+  - Deslize para esquerda para excluir
+  - Toque no "+" para criar nova transacao (tipo, valor, descricao, categoria,
+    metodo, data, recorrencia)
+
+9.4 Orcamentos
+  - Acesse via menu lateral > Orcamentos
+  - Defina limites de gasto mensal por categoria
+  - Acompanhe o progresso com barra de porcentagem
+
+9.5 Relatorios
+  - Acesse via menu lateral > Relatorios
+  - 4 indicadores: Lucro Liquido, Margem, Receita Total, Custos Totais
+  - Grafico receitas vs custos (6 meses), custos por categoria, top 5
+  - Botao "Exportar Excel" gera .xlsx (Resumo, Mensal, Transacoes);
+    no Android salva e compartilha, na web faz download
+
+9.6 Produtos (Parque de Insumos)
+  - Acesse via menu lateral > Produtos
+  - Cadastre itens comprados: nome, unidade, preco de compra, quantidade da
+    embalagem; o app calcula preco por unidade automaticamente
+  - Durante a criacao, registre ofertas de fornecedores (ate 15)
+  - Toque no icone de loja no card para ver as ofertas do produto
+  - Escolha a oferta ativa (a mais barata esta marcada "melhor"); o custo da
+    ficha tecnica passa a usar a oferta ativa
+  - "Comparar precos" abre o painel geral de produtos x fornecedores
+
+9.7 Ficha Tecnica de Produtos
+  - Acesse via menu lateral > Fichas Tecnicas > "+"
+  - Nome, descricao, itens da receita (produto + quantidade, com participacao %
+    no custo), mao de obra (R$), embalagem (R$), preco de venda
+  - O resumo ao vivo mostra custo total, lucro/prejuizo e margem
+  - Detalhe (ticket): veredito DÁ LUCRO/DÁ PREJUÍZO, margem e markup, custo
+    por item e alerta de insumo ausente
+
+9.10 Auditoria de Preços
+  - Menu "Comparar preços" > aba de histórico; registros somente-leitura das
+    alterações de preço (antes/depois, data, tipo de evento)
+
+9.11 Perfil, Notificações e Segurança
+  - Configurações > Editar Perfil: nome, empresa, CNPJ, segmento, telefone,
+    endereco (avatar mostra iniciais; nao ha upload de foto)
+  - Notificacoes: alertas de orcamento, recorrencias e margem baixa (chaves)
+  - Seguranca e Privacidade: redefinir senha, termos, privacidade, logout
+
+
+10. MANUAL DO ADMINISTRADOR
+================================================================================
+
+10.1 Gerenciamento de Perfil
+  - Acesse Configuracoes > Editar Perfil
+  - Altere dados pessoais e empresariais
+
+10.2 Seguranca e Privacidade
+  - Acesse Configuracoes > Seguranca e Privacidade
+  - Redefinir senha, termos de uso, politica de privacidade
+
+10.3 Notificacoes
+  - Acesse Configuracoes > Notificacoes
+  - Configure alertas de orcamento, recorrencias e margem baixa
+
+10.4 Dados e Isolamento
+  - Todos os dados sao isolados por usuario (UID)
+  - Nenhum usuario acessa dados de outro (regra de seguranca)
+  - Regras de seguranca Firestore garantem o isolamento
+
+
+11. MANUAL DO ESTUDANTE
+================================================================================
+
+11.1 Calculo de Lucro/Prejuizo (ProductCalculator)
+  - custoTotal = Total Insumos + Mao de Obra + Embalagem
+  - Lucro = Preco Venda - custoTotal
+  - Margem % = (Lucro / Preco Venda) x 100
+  - Markup = Preco Venda / custoTotal
+  - Lucro >= 0 -> DÁ LUCRO (verde); Lucro < 0 -> DÁ PREJUÍZO (vermelho)
+
+11.2 Participacao percentual
+  - Cada item da receita exibe sua fatia no custo total (qtd x preco/unidade)
+
+11.3 Comparativo de Ofertas
+  - Para cada produto, ofertas de varios fornecedores (preco, quantidade)
+  - App ranqueia por preco por unidade e destaca a melhor
+  - A oferta ativa (escolhida manualmente) alimenta o custo da ficha tecnica
+  - Cartao informativo mostra a economia possivel ao trocar de fornecedor
+
+
+12. CONSIDERACOES FINAIS
+================================================================================
+
+12.1 Arquitetura
+  - Arquitetura em camadas: Models -> Services -> Providers -> Screens
+  - Gerenciamento de estado via Provider com streams Firestore em tempo real
+  - Calculadora de ficha tecnica como classe utilitaria pura (testavel)
+
+12.2 Regras de Negocio
+  - RN01: Valores de transacao devem ser maiores que zero
+  - RN02: Isolamento total por UID no Firestore
+  - RN03: Preco por unidade = preco da embalagem / quantidade da embalagem
+          (ou da oferta ativa, quando houver)
+  - RN04: Lucro/Prejuizo = preco venda - (insumos + mao de obra + embalagem)
+
+12.3 Sistema de Cores
+  - Fundo:            #0D1E16 (verde-escuro/preto)
+  - Verde Principal:  #165A41 (botoes, estados ativos)
+  - Dourado:          #B89775 (destaques, icones)
+  - Cartoes:          #142A20 (fundo de cards)
+  - Texto Secundario: #7A8B83 (legendas)
+  - Erro: Vermelho | Sucesso: Verde
+
+12.4 Seguranca
+  - Chaves Firebase nunca sao hardcoded (carregadas de .env)
+  - .env, google-services.json, keystores e local.properties fora do git
+  - Regras Firestore bloqueiam acesso nao autorizado (isolamento por UID)
+  - price_audit_logs: somente leitura e criacao (imutavel)
+
+
+13. EVOLUCAO FUTURA (nao implementado na versao definitiva)
+================================================================================
+
+Registrados como evolucoes, nao como entrega:
+  - Rendimento de produto (fator de conversao bruto -> liquido)
+  - Ponto de equilibrio e classificacao de custos fixos x variaveis
+  - Markup-alvo como entrada de precificacao e mix de vendas
+  - Perfis de usuario (proprietario x producao/precificacao)
+  - Fotos de perfil e de produto (modulo atual foi REMOVIDO pois o upload
+    nao persistia corretamente no Firebase Storage)
+  - Versao iOS
+
+--------------------------------------------------------------------------------
+Fim da documentacao - CashCtrl v1.0.0+1 (versao definitiva, 28/10/2026)
+================================================================================

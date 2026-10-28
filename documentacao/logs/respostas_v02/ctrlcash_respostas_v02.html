@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>CashCtrl — Respostas aos Pendentes da v0.2 (Versão Definitiva 1.0.0+1)</title>
+<style>
+  /* Estilos espelhados do template BIBLIOTECA_113_RT_279.docx */
+  body { font-family: Georgia, serif; font-size: 12pt; color: #000; }
+  h1 { font-family: Arial, sans-serif; font-size: 16pt; font-weight: bold; margin: 18pt 0 10pt 0; }   /* estilo: Ttulo1 | fonte: Arial 16pt bold */
+  h2 { font-family: Arial, sans-serif; font-size: 14pt; font-weight: bold; margin: 14pt 0 8pt 0; }    /* estilo: Ttulo2 | fonte: Arial 14pt bold */
+  h3 { font-family: Arial, sans-serif; font-size: 14pt; font-weight: bold; margin: 12pt 0 6pt 0; }    /* estilo: Ttulo3 | fonte: Arial 14pt bold */
+  h4 { font-family: 'Palatino Linotype', serif; font-size: 12pt; font-weight: bold; margin: 10pt 0 6pt 0; } /* estilo: Ttulo4 | fonte: Palatino Linotype 12pt bold */
+  h5 { font-family: 'Courier New', monospace; font-size: 11pt; font-weight: bold; margin: 8pt 0 4pt 0; }    /* estilo: Ttulo5 | fonte: Courier New bold */
+  p  { font-family: Georgia, serif; font-size: 12pt; text-align: justify; margin: 6pt 0; }             /* estilo: Corpodetexto | fonte: Georgia 12pt */
+  li { font-family: Georgia, serif; font-size: 12pt; text-align: justify; margin: 3pt 0; }             /* estilo: PargrafodaLista | List Paragraph */
+  pre { font-family: 'Courier New', monospace; font-size: 10pt; margin: 8pt 0; }                       /* estilo: Ttulo5 | fonte: Courier New */
+  table { border-collapse: collapse; width: 100%; font-family: Georgia, serif; font-size: 10.5pt; margin: 8pt 0; }
+  th { border: 0.75pt solid #666666; padding: 4pt 6pt; background-color: #EFEFEF; font-weight: bold; text-align: left; }
+  td { border: 0.75pt solid #666666; padding: 4pt 6pt; vertical-align: top; }
+
+  .cap { text-align: center; font-family: Georgia, serif; font-size: 11pt; font-style: italic; margin: 4pt 0 10pt 0; }
+  .toc1 { font-family: Georgia, serif; font-size: 12pt; margin: 2pt 0; }                               /* estilo: Sumrio1 */
+  .toc2 { font-family: Georgia, serif; font-size: 12pt; margin: 2pt 0 2pt 24pt; }                      /* estilo: Sumrio2 */
+  .cover-title { text-align: center; font-family: Verdana, sans-serif; font-size: 20pt; font-weight: bold; margin: 90pt 0 24pt 0; }
+  .cover-sub { text-align: center; font-family: Verdana, sans-serif; font-size: 14pt; margin: 0 0 40pt 0; }
+  .cover-authors { text-align: center; font-family: Georgia, serif; font-size: 12pt; margin: 6pt 0; }
+  .cover-seal { text-align: center; font-family: Georgia, serif; font-size: 12pt; font-weight: bold; margin: 60pt 0 0 0; }
+  .cover-place { text-align: center; font-family: Georgia, serif; font-size: 12pt; margin: 4pt 0; }
+  .tag { font-family: Arial, sans-serif; font-size: 10.5pt; font-weight: bold; text-align: left; letter-spacing: 0.5pt; margin: 2pt 0 8pt 0; } /* sinalização textual dos marcadores */
+  .note { font-family: Georgia, serif; font-size: 10.5pt; font-style: italic; color: #333333; }
+  code { font-family: 'Courier New', monospace; font-size: 10.5pt; }
+</style>
+</head>
+<body>
+
+<!-- ================= CAPA ================= -->
+<p class="cover-title">CashCtrl — Respostas aos Pendentes da v0.2<br>(Versão Definitiva 1.0.0+1)</p>
+<p class="cover-sub">Respostas técnicas consolidadas aos 42 marcadores do relatório v0.2,<br>
+verificadas contra a versão definitiva do app: commit único <code>master</code>,<br>
+28/10/2026, <code>v1.0.0+1</code>, sem módulos de foto</p>
+<p class="cover-authors">Equipe CashCtrl</p>
+<p class="cover-authors">autoria: github.com/JoaoVikthor</p>
+<p class="cover-seal">RELATÓRIOS TÉCNICOS DO CASHCTRL</p>
+<p class="cover-place">São Carlos</p>
+<p class="cover-place">28/10/2026</p>
+
+<!-- ================= ÍNDICE ================= -->
+<h1 style="page-break-before: always">Indice</h1>
+<p class="toc1">1. Introdução</p>
+<p class="toc1">2. Decisões da equipe (itens 1–5)</p>
+<p class="toc2">2.1 Item 1 — Situação real dos módulos citados (RF13–RF17)</p>
+<p class="toc2">2.2 Item 2 — Controle financeiro (RF01, RF05–RF10)</p>
+<p class="toc2">2.3 Item 3 — Mão de obra e custos diretos no custo do lote</p>
+<p class="toc2">2.4 Item 4 — Markup e mix de vendas</p>
+<p class="toc2">2.5 Item 5 — Perfis (proprietário × produção/precificação)</p>
+<p class="toc1">3. Conteúdo técnico (itens 6–14)</p>
+<p class="toc2">3.1 Item 6 — Diagrama de casos de uso</p>
+<p class="toc2">3.2 Item 7 — Modelo de dados: escolha do banco</p>
+<p class="toc2">3.3 Item 8 — Estrutura de pastas da versão definitiva</p>
+<p class="toc2">3.4 Item 9 — Regras de segurança do banco (firestore.rules)</p>
+<p class="toc2">3.5 Item 10 — Ferramentas de design e UML</p>
+<p class="toc2">3.6 Item 11 — Controle de versão e nome do repositório</p>
+<p class="toc2">3.7 Item 12 — Plataforma, requisitos, web e instalação</p>
+<p class="toc2">3.8 Item 13 — Versão demonstrada</p>
+<p class="toc2">3.9 Item 14 — Nível real de cada módulo</p>
+<p class="toc1">4. Evidências e validação (itens 15–19)</p>
+<p class="toc2">4.1 Item 15 — Comportamento esperado nos cinco testes</p>
+<p class="toc2">4.2 Itens 16–19 — Pesquisa, Canvas/UML/PDCA/pitch, atribuições e considerações finais</p>
+<p class="toc1">5. Manual do usuário (itens 20–25)</p>
+<p class="toc2">5.1 Item 20 — Status geral dos prints da v0.2</p>
+<p class="toc2">5.2 Item 21 — Login e cadastro (versão definitiva)</p>
+<p class="toc2">5.3 Item 22 — Formulários (conferir ao capturar)</p>
+<p class="toc2">5.4 Item 23 — Telas de configurações</p>
+<p class="toc2">5.5 Item 24 — Ícone ao lado do "+" coberto pelo botão azul</p>
+<p class="toc2">5.6 Item 25 — Seção "rendimento e simulação"</p>
+<p class="toc1">6. Conferências (itens 26–29)</p>
+<p class="toc2">6.1 Item 26 — Nome do orientador</p>
+<p class="toc2">6.2 Item 27 — Nome do evento</p>
+<p class="toc2">6.3 Item 28 — Custo R$ 1.532,00 × insumo R$ 1.500,00</p>
+<p class="toc2">6.4 Item 29 — Dados de teste dos prints</p>
+<p class="toc1">7. Acabamento (itens 30–32)</p>
+<p class="toc1">8. Resumo do que falta (só a equipe)</p>
+<p class="toc1">9. Considerações finais</p>
+
+<!-- ================= 1. INTRODUÇÃO ================= -->
+<h1 style="page-break-before: always">1. Introdução</h1>
+<p>Este documento consolida as respostas aos <b>42 marcadores pendentes</b>
+levantados pelo revisor na v0.2 do relatório técnico do CashCtrl. Todas as
+respostas foram verificadas contra a <b>versão definitiva do aplicativo</b>:
+commit único na branch <code>master</code>, de 28/10/2026, versão
+<code>1.0.0+1</code> (<code>pubspec.yaml</code>), APK de release com 59 MB. Os
+módulos de foto (<code>image_picker</code> + Firebase Storage) foram
+<b>removidos</b> dessa versão e nenhuma resposta os considera.</p>
+<p>A sinalização é textual: itens marcados com
+<b>VERIFICADO NO CÓDIGO</b> foram conferidos diretamente na base definitiva;
+itens marcados com <b>DECISÃO DA EQUIPE</b> exigem deliberação do time (com
+sugestão registrada no corpo da resposta, quando existe); itens marcados com
+<b>A CONFIRMAR PELA EQUIPE</b> dependem de dado que só a equipe possui e
+permanecem explicitamente em aberto — nenhuma resposta foi inventada para eles.
+Os itens 6 e 7 foram conferidos no código e vêm acompanhados das
+<b>Figuras 1 e 2</b>, elaboradas a partir da base definitiva (sinalização
+<b>VERIFICADO NO CÓDIGO + FIGURA</b>). O consolidado do que falta está na seção 8.</p>
+
+<!-- ================= 2. DECISÕES DA EQUIPE ================= -->
+<h1 style="page-break-before: always">2. Decisões da equipe (itens 1–5)</h1>
+
+<h2>2.1 Item 1 — Situação real dos módulos citados (RF13–RF17)</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+
+<p class="cap">Tabela 1. Situação real dos conceitos citados pelo revisor na versão definitiva.</p>
+<table>
+  <tr><th style="width:26%">Conceito</th><th style="width:52%">Status na versão definitiva</th><th style="width:22%">Onde</th></tr>
+  <tr><td>Rendimento</td><td><b>NÃO implementado</b> — não existe no código</td><td>—</td></tr>
+  <tr><td>Custos fixos × variáveis (classificação)</td><td><b>NÃO implementado</b> como classificação; existem custos diretos por ficha</td><td>—</td></tr>
+  <tr><td>Mão de obra</td><td><b>Implementado</b> — campo <code>laborCost</code> entra no custo total</td><td><code>product.dart</code>, <code>product_calculator.dart:94</code></td></tr>
+  <tr><td>Markup</td><td><b>Implementado</b> — <code>markup = venda ÷ custo total</code>, exibido no detalhe ("Markup X.XXx")</td><td><code>product_calculator.dart:34</code>, <code>product_detail_screen.dart:221</code></td></tr>
+  <tr><td>Contribuição / margem</td><td><b>Implementado</b> — <code>lucro = venda − custo</code>, <code>margem% = lucro ÷ venda</code>, veredito Dá lucro/Prejuízo</td><td><code>product_calculator.dart:95-98</code></td></tr>
+  <tr><td>Ponto de equilíbrio</td><td><b>NÃO implementado</b></td><td>—</td></tr>
+</table>
+
+<p><b>DECISÃO DA EQUIPE:</b> o que não existe (rendimento, ponto de equilíbrio,
+classificação fixo/variável) deve constar na documentação como <b>evolução
+futura</b>, não como entrega. Implementar agora atrasaria a entrega.</p>
+
+<h2>2.2 Item 2 — Controle financeiro (RF01, RF05–RF10)</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p>Já está <b>implementado e dentro da entrega</b>: transações
+(receita/despesa, categorias de negócio, método de pagamento, recorrência),
+orçamentos mensais com progresso em tempo real, dashboard operacional,
+relatórios unificados com gráficos (fl_chart) e exportação Excel (3 abas).
+Telas: <code>expenses_screen.dart</code>, <code>budgets_screen.dart</code>,
+<code>reports_screen.dart</code>, <code>home_screen.dart</code>.
+<b>DECISÃO DA EQUIPE:</b> restante — apenas manter no escopo (recomendado —
+já funciona).</p>
+
+<h2>2.3 Item 3 — Mão de obra e custos diretos no custo do lote</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p><b>Sim, entram.</b> Fórmula no código:
+<code>custoTotal = Σ(qtd × preço/un do insumo) + mão de obra + embalagem</code>
+(<code>product_calculator.dart:93-94</code>). A participação percentual de cada
+item no custo é exibida no ticket (<code>product_detail_screen.dart</code>).</p>
+
+<h2>2.4 Item 4 — Markup e mix de vendas</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<ul>
+  <li><b>Markup atual é informativo (saída), não base de cálculo (entrada):</b>
+      o app calcula e mostra o markup do preço que o usuário definiu; não sugere
+      preço a partir de um markup-alvo.</li>
+  <li><b>Mix de vendas:</b> cada ficha técnica tem preço de venda próprio. Não
+      existe markup único aplicado a vários produtos. Os relatórios têm
+      "Top 5 categorias" e receita × custos dos últimos 6 meses.</li>
+  <li><b>DECISÃO DA EQUIPE:</b> documentar o markup como indicador calculado
+      (venda ÷ custo) e tratar "precificação por markup-alvo com mix" como
+      evolução futura.</li>
+</ul>
+
+<h2>2.5 Item 5 — Perfis (proprietário × produção/precificação)</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p><b>Não existem.</b> O app é monousuário: cada conta acessa somente seus
+próprios dados (isolamento por UID no Firestore). Para duas pessoas no mesmo
+negócio, hoje compartilhariam a mesma conta. <b>DECISÃO DA EQUIPE:</b> registrar
+como evolução futura (perfis/roles).</p>
+
+<!-- ================= 3. CONTEÚDO TÉCNICO ================= -->
+<h1 style="page-break-before: always">3. Conteúdo técnico (itens 6–14)</h1>
+
+<h2>3.1 Item 6 — Diagrama de casos de uso</h2>
+<!-- sinalização atualizada: item verificado no código e ilustrado pela Figura 1 -->
+<p class="tag">VERIFICADO NO CÓDIGO + FIGURA</p>
+<p>Atores: <b>Proprietário do negócio</b> (único). Os casos de uso identificados
+nas telas foram consolidados em 9 casos no diagrama da Figura 1:</p>
+<ul>
+  <li>Efetuar login/cadastro;</li>
+  <li>Gerenciar transações;</li>
+  <li>Gerenciar orçamentos;</li>
+  <li>Ver dashboard e relatórios;</li>
+  <li>Exportar Excel;</li>
+  <li>Cadastrar produtos e ofertas;</li>
+  <li>Comparar preços/oferta ativa/auditoria de preços;</li>
+  <li>Criar ficha técnica e ver ticket;</li>
+  <li>Configurar conta e notificações.</li>
+</ul>
+<!-- Figura 1: quebra de pagina inline para imagem + legenda nao separarem -->
+<p style="text-align: center; page-break-before: always; margin: 0 0 0 0;"><img
+  src="fig1_casos_de_uso.png"
+  alt="Figura 1 — diagrama de casos de uso UML do CashCtrl"
+  style="width: 17cm;"></p>
+<p class="cap">Figura 1 – Diagrama de casos de uso do CashCtrl (fonte: código da versão definitiva v1.0.0+1)</p>
+
+<h2>3.2 Item 7 — Modelo de dados: escolha do banco</h2>
+<!-- sinalização atualizada: item verificado no código e ilustrado pela Figura 2 -->
+<p class="tag">VERIFICADO NO CÓDIGO + FIGURA</p>
+<p><b>Cloud Firestore</b> (não Realtime Database). Justificativa: documentos
+NoSQL, streams em tempo real nativos ao Flutter (<code>StreamProvider</code>),
+regras de segurança por subcoleção e isolamento por UID. Estrutura:</p>
+<pre>
+users/{uid}                     perfil + dados do negócio
+users/{uid}/transactions/{id}   tipo, categoria, valor, data,
+                                método, recorrência
+users/{uid}/budgets/{id}        categoria + limite mensal
+users/{uid}/ingredients/{id}    produto comprado: nome, unidade,
+                                preço de compra, qtd da embalagem,
+                                offers[] (≤15), activeOfferId
+users/{uid}/products/{id}       ficha técnica: receita[], laborCost,
+                                packagingCost, salePrice
+users/{uid}/price_audit_logs/{id}
+                                auditoria de preços (append-only)
+</pre>
+<!-- Figura 2: imagem centralizada na largura util da pagina (17 cm) -->
+<p style="text-align: center; margin: 10pt 0 0 0;"><img
+  src="fig2_modelo_dados.png"
+  alt="Figura 2 — modelo de dados no Firestore do CashCtrl, com isolamento por UID"
+  style="width: 17cm;"></p>
+<p class="cap">Figura 2 – Modelo de dados no Firestore, com isolamento por UID</p>
+
+<h2>3.3 Item 8 — Estrutura de pastas da versão definitiva</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<pre>
+lib/
+  main.dart, firebase_options.dart, home_screen.dart,
+  budgets_screen.dart, expenses_screen.dart, reports_screen.dart,
+  settings_screen.dart
+  models/     app_user, transaction, budget, ingredient,
+              ingredient_offer, price_audit_log, product
+  providers/  user, transaction, budget, ingredient, product
+  services/   auth_service.dart, firestore_service.dart,
+              notification_service.dart
+              (storage_service.dart REMOVIDO — sem upload de fotos)
+  screens/    login, cadastro, transaction_form, budget_form,
+              ingredients (Produtos), ingredient_form, ingredient_offers,
+              offer_form, audit_logs, products (Fichas Técnicas),
+              product_form, product_detail, compare_prices,
+              settings/ (edit_profile, notifications, security,
+              help, terms_privacy)
+  theme/  utils/  widgets/
+android/  web/  firestore.rules  storage.rules
+</pre>
+
+<h2>3.4 Item 9 — Regras de segurança do banco (firestore.rules)</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<ul>
+  <li>Isolamento total por UID:
+      <code>allow read, write: if request.auth.uid == uid</code> em
+      <code>users/{uid}/...</code>; não há coleções globais.</li>
+  <li>Transações: <code>create/update</code> exige <code>amount</code> numérico
+      &gt; 0.</li>
+  <li>Produtos (ingredients): exige <code>purchasePrice ≥ 0</code>.</li>
+  <li>Logs de auditoria: <b>append-only</b> — <code>allow read, create</code>;
+      <code>update, delete: if false</code>.</li>
+</ul>
+
+<h2>3.5 Item 10 — Ferramentas de design e UML</h2>
+<p class="tag">DECISÃO DA EQUIPE</p>
+<p>O design foi definido <b>em código</b> (design system próprio:
+<code>theme/app_colors.dart</code> — fundo <code>0xFF0D1E16</code>, verde
+<code>0xFF165A41</code>, dourado <code>0xFFB89775</code>) e validado com
+<b>protótipos HTML</b> (em
+<code>documentacao/logs/sprint2–4/prototipo_*.html</code>). Não houve uso de
+Figma. Para o relatório: desenhar diagramas em draw.io/PlantUML.
+<b>DECISÃO DA EQUIPE:</b> confirmar qual ferramenta declarar.</p>
+
+<h2>3.6 Item 11 — Controle de versão e nome do repositório</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p>Git + GitHub, repositório
+<code>https://github.com/JoaoVikthor/ctrlcash</code>. Nomenclatura real:
+<b>CashCtrl</b> = nome do app (marca, logo camaleão); <b>ctrlcash</b> = nome do
+repositório e do pacote Flutter (<code>pubspec: name: ctrlcash</code>). Sugestão
+para o texto: "CashCtrl (repositório: ctrlcash)". A branch única passa a ser
+<code>master</code> com histórico refeito (um commit).</p>
+
+<h2>3.7 Item 12 — Plataforma, requisitos, web e instalação</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<ul>
+  <li><b>Android</b> (plataforma principal; <code>minSdk</code> = padrão do
+      Flutter) e <b>Web</b> (<code>flutter build web</code>). iOS adiado.</li>
+  <li>Requisitos: Android com Firebase Auth disponível, ~50 MB de armazenamento,
+      tela sensível ao toque; app funciona em smartphone intermediário.</li>
+  <li>Instalação: APK <code>app-release.apk</code> (transferir ao aparelho e
+      instalar com "fontes desconhecidas"), ou rodar a versão web no
+      navegador.</li>
+  <li>Backend: projeto Firebase <code>crtlcash-71ac3</code> (Auth, Firestore).</li>
+</ul>
+
+<h2>3.8 Item 13 — Versão demonstrada</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p><b>v1.0.0+1</b> (<code>pubspec.yaml</code>), build definitiva de 28/10/2026
+<b>sem módulos de foto</b> (decisão da última sprint: a funcionalidade de fotos
+não salvava corretamente no Firebase Storage e foi removida — perfil exibe
+apenas iniciais).</p>
+
+<h2>3.9 Item 14 — Nível real de cada módulo</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+
+<p class="cap">Tabela 2. Nível real de cada módulo na versão definitiva (pós-demonstração).</p>
+<table>
+  <tr><th style="width:66%">Módulo</th><th style="width:34%">Nível</th></tr>
+  <tr><td>Autenticação (e-mail/senha + redefinir senha)</td><td>Completo</td></tr>
+  <tr><td>Cadastro (pessoal + negócio, multi-etapa)</td><td>Completo (sem foto)</td></tr>
+  <tr><td>Transações / receitas e despesas</td><td>Completo</td></tr>
+  <tr><td>Orçamentos</td><td>Completo</td></tr>
+  <tr><td>Dashboard</td><td>Completo</td></tr>
+  <tr><td>Relatórios + Excel</td><td>Completo</td></tr>
+  <tr><td>Produtos (parque) + ofertas + comparativo + auditoria</td><td>Completo</td></tr>
+  <tr><td>Fichas técnicas + ticket (mão de obra, embalagem, markup, margem)</td><td>Completo</td></tr>
+  <tr><td>Notificações locais</td><td>Completo (orçamento, recorrência, margem)</td></tr>
+  <tr><td>Perfil/segurança/ajuda/termos</td><td>Completo (sem upload de foto)</td></tr>
+  <tr><td>Rendimento, ponto de equilíbrio, perfis de usuário</td><td>Não implementado (evolução futura)</td></tr>
+</table>
+
+<!-- ================= 4. EVIDÊNCIAS E VALIDAÇÃO ================= -->
+<h1 style="page-break-before: always">4. Evidências e validação (itens 15–19)</h1>
+
+<h2>4.1 Item 15 — Comportamento esperado nos cinco testes</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+
+<p class="cap">Tabela 3. Comportamento da versão definitiva nos cinco testes.</p>
+<table>
+  <tr><th style="width:24%">Teste</th><th style="width:76%">O que a versão definitiva faz</th></tr>
+  <tr><td>Caso didático</td><td>Fluxo completo: produto (preço/un calculado) → ficha → ticket com veredito</td></tr>
+  <tr><td>Rendimento zero</td><td><b>N/A</b> — rendimento não existe na versão definitiva (a divisão de embalagem usa <code>packageQuantity &gt; 0</code>; se 0, preço/un = 0, sem crash: <code>ingredient.dart:76-78</code>)</td></tr>
+  <tr><td>Insumo ausente</td><td>Linha marcada como ausente, custo 0 e aviso <code>hasMissingIngredients</code> (<code>product_calculator.dart:70-78</code>)</td></tr>
+  <tr><td>Contribuição não positiva</td><td>Veredito "Prejuízo" em vermelho, margem negativa (<code>products_screen.dart:214-230</code>)</td></tr>
+  <tr><td>Acesso entre contas</td><td>Bloqueado pelas regras: só o dono do UID lê <code>users/{uid}/...</code></td></tr>
+</table>
+
+<p><b>A CONFIRMAR PELA EQUIPE:</b> os resultados <b>executados</b> (data, quem
+testou, prints) a equipe registra.</p>
+
+<h2>4.2 Itens 16–19 — Pesquisa, Canvas/UML/PDCA/pitch, atribuições e considerações finais</h2>
+<p class="tag">A CONFIRMAR PELA EQUIPE</p>
+<p>Somente a equipe fornece. Sugestão de quem faz adequações de código:
+registrar Vikthor (GitHub <code>JoaoVikthor</code>) como responsável pelo
+código do app.</p>
+
+<!-- ================= 5. MANUAL DO USUÁRIO ================= -->
+<h1 style="page-break-before: always">5. Manual do usuário (itens 20–25)</h1>
+
+<h2>5.1 Item 20 — Status geral dos prints da v0.2</h2>
+<p><b>Todos os prints da v0.2 são de versão ANTIGA do app e precisam ser
+recapturados na APK definitiva</b> (tela "Produtos" agora lista produtos de
+compra com badge "N ofertas", preço "R$ x / embalagem", preço por unidade em
+dourado e botão "Comparar preços"; as fichas técnicas mudaram de nome no menu
+para "Fichas Técnicas"; não há mais fotos nem leitor de código de barras).</p>
+
+<h2>5.2 Item 21 — Login e cadastro (versão definitiva)</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<ul>
+  <li><b>Login:</b> apenas <b>e-mail e senha</b> + "Esqueci minha senha".
+      (Login social Google/Facebook <b>não existe</b> na versão atual — não
+      colocar prints sociais.)</li>
+  <li><b>Cadastro:</b> multi-etapa — dados pessoais (nome, e-mail, telefone) →
+      dados do negócio (empresa, segmento, endereço, CNPJ opcional) → senha.
+      Sem foto.</li>
+</ul>
+
+<h2>5.3 Item 22 — Formulários (conferir ao capturar)</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<ul>
+  <li><b>Produto (tela Produtos → "+"):</b> nome, unidade (kg/g/L/un…), preço
+      de compra, quantidade da embalagem → app calcula preço por unidade;
+      ofertas de fornecedores inline (até 15: fornecedor, produto, preço,
+      quantidade).</li>
+  <li><b>Ficha técnica (tela Fichas Técnicas → "+"):</b> nome, descrição, itens
+      da receita (produto + quantidade, com participação % no custo), mão de
+      obra (R$), embalagem (R$), preço de venda → resumo ao vivo com
+      lucro/prejuízo e margem.</li>
+</ul>
+
+<h2>5.4 Item 23 — Telas de configurações</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p>Editar Perfil (nome, empresa, CNPJ, segmento, telefone, endereço; avatar com
+<b>iniciais</b>, sem upload), Notificações (3 chaves: orçamento, recorrências,
+margem), Segurança e Privacidade (redefinir senha, sessão), Ajuda e Suporte
+(FAQ) e Termos.</p>
+
+<h2>5.5 Item 24 — Ícone ao lado do "+" coberto pelo botão azul</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p>Era o <b>leitor de código de barras</b> (ícone dourado de QR,
+<code>Icons.qr_code_scanner</code>, no topo da tela Produtos da versão antiga,
+encoberto pelo FAB). <b>O módulo foi removido</b> da versão definitiva — o
+manual novo não deve citá-lo. (No card de cada produto existe hoje um ícone
+dourado de <b>loja</b> = "Ver ofertas".)</p>
+
+<h2>5.6 Item 25 — Seção "rendimento e simulação"</h2>
+<p><b>Remover/reescrever:</b> rendimento não existe. O que existe:
+<b>simulação de preço por unidade</b> (preço da embalagem ÷ quantidade) e
+<b>simulação de troca de fornecedor</b> (tela Comparar preços / ofertas, com
+ranking, melhor preço e cartão de economia possível; mudança de oferta ativa
+gera log de auditoria). Descrever isso no lugar.</p>
+
+<!-- ================= 6. CONFERÊNCIAS ================= -->
+<h1 style="page-break-before: always">6. Conferências (itens 26–29)</h1>
+
+<h2>6.1 Item 26 — Nome do orientador</h2>
+<p class="tag">A CONFIRMAR PELA EQUIPE</p>
+<p>Confirmar com a equipe: "Luiz Davi <b>Araújo</b>" ou "AraÚjos"? (Grafia
+final deve bater com o cadastro da instituição.)</p>
+
+<h2>6.2 Item 27 — Nome do evento</h2>
+<p class="tag">A CONFIRMAR PELA EQUIPE</p>
+<p>Inova SENAI ou INTEGRA SENAI? Só a coordenação confirma; usar o nome oficial
+da edição.</p>
+
+<h2>6.3 Item 28 — Custo R$ 1.532,00 × insumo R$ 1.500,00</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p>Não é erro: o valor exibido como custo da ficha técnica é
+<code>custoTotal = insumos + mão de obra + embalagem</code>. A diferença de
+R$ 32,00 corresponde a mão de obra/embalagem digitados naquela ficha de teste.
+(Custo do produto/insumo isolado é outro número: preço da embalagem.)</p>
+
+<h2>6.4 Item 29 — Dados de teste dos prints</h2>
+<p class="tag">VERIFICADO NO CÓDIGO</p>
+<p>Concordo com a crítica: recapturar tudo com dados reais da Casa do Salgado
+(ex.: empada de frango, salgado assado, insumos com preços por kg realistas).
+O "Olá, !" sem nome ocorre quando o campo nome do perfil está vazio — resolver
+cadastrando nome completo antes do print. Batata a "R$ 11,00/g" é erro de
+digitação de teste (preço da embalagem lançado como preço por grama) — no print
+novo, usar embalagens coerentes (ex.: batata 10 kg por R$ 150,00 →
+R$ 15,00/kg). "Venda de celular" deve sair do histórico de transações dos
+prints.</p>
+
+<!-- ================= 7. ACABAMENTO ================= -->
+<h1 style="page-break-before: always">7. Acabamento (itens 30–32)</h1>
+<ul>
+  <li><b>Item 30</b> — <b>VERIFICADO NO CÓDIGO</b>. Aplicável: remover na v0.3
+      o parágrafo sobre marcadores, o aviso de resultados e o "Versão 0.2" da
+      capa (trocar por versão final e data da entrega).</li>
+  <li><b>Item 31</b> — Sumário automático e legendas ("Figura N – ...") a
+      inserir na geração do .docx final.</li>
+  <li><b>Item 32</b> — <b>A CONFIRMAR PELA EQUIPE</b>: e-mails na capa — decidir
+      com a equipe.</li>
+</ul>
+
+<!-- ================= 8. RESUMO DO QUE FALTA ================= -->
+<h1 style="page-break-before: always">8. Resumo do que falta (só a equipe)</h1>
+<ol>
+  <li>Grafia do orientador (Araújo/Araújos) — item 26;</li>
+  <li>Nome oficial do evento — item 27;</li>
+  <li>Confirmar decisões A1–A5 (sugestões dadas acima são todas "manter como
+      evolução futura");</li>
+  <li>Conteúdo de Canvas/PDCA/pitch, feedback da Casa do Salgado,
+      atribuições e considerações finais — itens 16–19;</li>
+  <li>Capturar os prints novos na APK definitiva (itens 20–25);</li>
+  <li>E-mails na capa — item 32.</li>
+</ol>
+<p>Com isso, gerar a <b>v0.3 final</b> sem marcadores.</p>
+
+<!-- ================= 9. CONSIDERAÇÕES FINAIS ================= -->
+<h1 style="page-break-before: always">9. Considerações finais</h1>
+<p>Este documento responde aos 32 blocos de marcadores da v0.2 (42 marcadores
+no total), organizados nas seções A–F do revisor: decisões da equipe (1–5),
+conteúdo técnico (6–14), evidências e validação (15–19), manual do usuário
+(20–25), conferências (26–29) e acabamento (30–32). As respostas verificadas no
+código refletem a versão definitiva <code>v1.0.0+1</code> de 28/10/2026, sem
+módulos de foto.</p>
+<p>Permanecem explicitamente em aberto — sem resposta inventada — somente os
+itens sinalizados com <b>DECISÃO DA EQUIPE</b> (item 10, além das decisões
+registradas nos itens 1, 2, 4 e 5) e com <b>A CONFIRMAR PELA EQUIPE</b> (itens
+15, 16–19, 26, 27 e 32), consolidados na seção 8. As Figuras 1 (diagrama de
+casos de uso) e 2 (modelo de dados no Firestore) foram elaboradas a partir do
+código da versão definitiva e estão embutidas neste documento. Com esses
+encaminhamentos, o próximo passo é gerar a <b>v0.3 final</b> do relatório, sem
+marcadores.</p>
+
+<p class="note">Figuras 1 e 2 embutidas: diagrama de casos de uso
+(fig1_casos_de_uso.png, 1001×1011) e modelo de dados no Firestore
+(fig2_modelo_dados.png, 1001×761), ambos elaborados a partir do código da
+versão definitiva. Tabelas 1–3 preenchidas com o estado real da versão
+definitiva. Nenhum segredo (.env, keystore, google-services.json) foi lido ou
+citado neste documento.</p>
+
+</body>
+</html>

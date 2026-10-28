@@ -1,0 +1,72 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# ===== Segredo / Seguranca =====
+# Variaveis de ambiente (chaves do Firebase, login social, etc.)
+.env
+.env.*
+!.env.example
+
+# Configuracao do Firebase para Android (baixar localmente do Firebase Console)
+/android/app/google-services.json
+# Configuracao do Firebase para iOS (se vier a existir)
+**/GoogleService-Info.plist
+
+# Keystores de assinatura (NUNCA commitar)
+*.jks
+*.keystore
+/android/key.properties
+
+# Caminhos locais do SDK (NUNCA commitar)
+/android/local.properties
+
+# Binarios / instaladores (nao pertencem ao projeto Flutter)
+*.exe
+*.msi
+*.apk
+*.aab
+# Widget Preview related
+.widget_preview/

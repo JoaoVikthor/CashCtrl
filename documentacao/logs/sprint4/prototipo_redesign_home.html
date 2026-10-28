@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protótipo Redesign · Home · CashCtrl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0D1E16;
+  --green:#165A41;
+  --gold:#B89775;
+  --card:#142A20;
+  --txt2:#7A8B83;
+  --border:#1E3A2C;
+  --success:#6FCF97;
+  --danger:#E4726D;
+  --warning:#D9A05B;
+  --txt3:#5E6E66;
+  --txt-body:#E8EFEA;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background:#07120d;
+  color:var(--txt-body);
+  font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  padding:40px 24px;
+  min-height:100vh;
+}
+
+h1 { font-size:20px; font-weight:700; color:#fff; }
+h1 span { color:var(--gold); }
+.sub { color:var(--txt2); font-size:14px; margin:8px 0 10px; max-width:980px; line-height:1.55; }
+.legend { font-size:12px; color:var(--txt2); margin-bottom:28px; max-width:980px; line-height:1.65; }
+.legend b { color:var(--gold); font-weight:600; }
+.legend ul { margin:8px 0 0 18px; }
+.legend li { margin-bottom:6px; }
+
+.row { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+.caption { font-size:12px; color:var(--txt2); margin-top:10px; text-align:center; max-width:330px; line-height:1.5; }
+.caption b { color:#fff; }
+
+.phone {
+  width:330px;
+  border:8px solid #000;
+  border-radius:34px;
+  box-shadow:0 0 0 1px var(--border), 0 20px 50px rgba(0,0,0,.55);
+  background:var(--bg);
+  overflow:hidden;
+  flex-shrink:0;
+  position:relative;
+}
+
+.status { display:flex; justify-content:space-between; padding:8px 18px 2px; font-size:11px; font-weight:600; color:var(--txt2); }
+.status .batt { display:inline-block; width:18px; height:9px; border:1px solid var(--txt2); border-radius:2px; position:relative; }
+.status .batt::after { content:''; position:absolute; top:2px; left:2px; right:6px; bottom:2px; background:var(--gold); border-radius:1px; }
+
+.appbar { display:flex; align-items:center; justify-content:center; position:relative; padding:12px 16px 10px; }
+.appbar .title { font-size:16px; font-weight:700; color:#fff; }
+.appbar .menu { position:absolute; left:12px; color:#fff; width:40px; height:40px; display:flex; align-items:center; justify-content:center; }
+.appbar .logo { height:26px; }
+
+.screen-body { padding:16px 20px 90px; }
+
+.greeting { margin-bottom:20px; }
+.greeting .name { font-size:20px; font-weight:700; color:#fff; line-height:1.25; }
+.greeting .date { font-size:12px; color:var(--txt2); margin-top:2px; }
+
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+
+.card-hero {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:12px;
+}
+
+.card-hero .label { font-size:12px; color:var(--txt2); }
+.card-hero .value { font-size:28px; font-weight:700; color:#fff; margin-top:6px; font-variant-numeric:tabular-nums; }
+.card-hero .delta {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  margin-top:10px;
+  height:24px;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(111,207,151,.14);
+  color:var(--success);
+  font-size:11px;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+
+.kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
+.kpi-card { padding:14px 12px; }
+.kpi-card .label { font-size:11px; color:var(--txt2); margin-top:8px; }
+.kpi-card .value { font-size:20px; font-weight:700; color:#fff; margin-top:4px; font-variant-numeric:tabular-nums; }
+.kpi-card .icon { width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:var(--gold); }
+
+.section-header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:24px 0 14px;
+}
+.section-header .line { flex:1; height:1px; background:var(--border); }
+.section-header .title { font-size:16px; font-weight:600; color:#fff; white-space:nowrap; }
+.section-header .action { font-size:12px; font-weight:600; color:var(--gold); white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+.chart-wrap { display:flex; align-items:center; gap:16px; }
+.pie {
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  background:conic-gradient(
+    #E0913A 0deg 86deg,
+    #9C6BD6 86deg 158deg,
+    #E05A5A 158deg 212deg,
+    #46C7B3 212deg 258deg,
+    #7A8B83 258deg 360deg
+  );
+  flex-shrink:0;
+}
+.pie-legend { flex:1; }
+.leg-row { display:flex; align-items:center; gap:8px; font-size:12px; margin-bottom:8px; }
+.leg-dot { width:8px; height:8px; border-radius:50%; }
+.leg-name { color:var(--txt-body); }
+.leg-val { margin-left:auto; color:#fff; font-weight:600; font-variant-numeric:tabular-nums; }
+
+.tx-tile {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px;
+  margin-bottom:10px;
+}
+.tx-avatar {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--gold);
+}
+.tx-info { flex:1; min-width:0; }
+.tx-name { font-size:14px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tx-meta { font-size:11px; color:var(--txt2); margin-top:2px; }
+.tx-value { font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; }
+.tx-value.income { color:var(--success); }
+.tx-value.expense { color:var(--danger); }
+
+.fab {
+  position:absolute;
+  right:16px;
+  bottom:20px;
+  width:56px;
+  height:56px;
+  border-radius:16px;
+  background:var(--green);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+}
+
+.empty-state { text-align:center; padding:36px 24px; }
+.empty-state .ic { width:56px; height:56px; margin:0 auto 14px; color:var(--txt2); display:flex; align-items:center; justify-content:center; }
+.empty-state .title { font-size:16px; font-weight:700; color:#fff; margin-bottom:4px; }
+.empty-state .msg { font-size:12px; color:var(--txt2); margin-bottom:16px; }
+.btn-primary {
+  width:100%;
+  height:48px;
+  border-radius:12px;
+  background:var(--green);
+  color:#fff;
+  font-size:14px;
+  font-weight:600;
+  border:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+
+.skeleton {
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 100%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+  border-radius:8px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.sk-hero-label { width:90px; height:12px; }
+.sk-hero-value { width:160px; height:28px; margin-top:10px; }
+.sk-hero-chip { width:120px; height:22px; margin-top:12px; border-radius:999px; }
+.sk-kpi-icon { width:28px; height:28px; }
+.sk-kpi-label { width:60px; height:11px; margin-top:8px; }
+.sk-kpi-value { width:90px; height:20px; margin-top:4px; }
+.sk-tile-avatar { width:40px; height:40px; border-radius:50%; }
+.sk-tile-line1 { width:60%; height:14px; }
+.sk-tile-line2 { width:40%; height:11px; margin-top:6px; }
+.sk-tile-value { width:70px; height:14px; }
+
+.review {
+  margin-top:42px;
+  padding:20px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  max-width:980px;
+}
+.review h3 { font-size:16px; font-weight:600; color:#fff; margin-bottom:12px; }
+.review ol { margin-left:18px; color:var(--txt-body); font-size:12px; line-height:1.7; }
+.review li span { color:var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>Redesign · <span>CashCtrl</span> Home</h1>
+<p class="sub">Protótipo estático da tela inicial. Valida a nova hierarquia de dashboard (hero + 3 apoios), skeleton shimmer, gráfico de despesas, lista de transações e FAB.</p>
+<p class="legend">
+  <b>O que MUDOU vs app atual:</b>
+  <ul>
+    <li>Greeting 26 px → 20 px, com subtítulo de data-contexto 12 px --txt2.</li>
+    <li>Grid 2×2 idêntico → 1 card hero "Saldo do mês" (28 tabular) + 3 cards de apoio (Receitas / Despesas / Economia, 20 tabular).</li>
+    <li>Todos os R$/% usam <code>font-variant-numeric: tabular-nums</code>.</li>
+    <li>Botão "Nova Transação" no fim da lista → FAB verde 56 dp bottom-right.</li>
+    <li>Loading spinner nu → skeleton shimmer sobre fundo escuro.</li>
+    <li>Cores semânticas derivadas --success / --danger substituem Colors.green / Colors.red crus.</li>
+    <li>SectionHeader unificado: título 16/600 + linha fina --border.</li>
+  </ul>
+  <b>Itens para sua aprovação:</b>
+  <ul>
+    <li>Tokens derivados propostos: <span>--success #6FCF97</span>, <span>--danger #E4726D</span>, <span>--warning #D9A05B</span>, <span>--txt-body #E8EFEA</span>.</li>
+    <li>FAB quadrado com radius 16 (vs circular) para alinhar ao design system de radius.</li>
+    <li>Clarear texto secundário de --txt2 #7A8B83 para #8A9C94 no corpo longo (contraste AA).</li>
+  </ul>
+</p>
+
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></span>
+        <img src="../../../assets/images/logo.png" class="logo" alt="CashCtrl">
+      </div>
+      <div class="screen-body">
+        <div class="greeting">
+          <div class="skeleton sk-hero-label"></div>
+          <div class="skeleton sk-hero-value" style="margin-top:10px;"></div>
+        </div>
+        <div class="card-hero">
+          <div class="skeleton sk-hero-label"></div>
+          <div class="skeleton sk-hero-value"></div>
+          <div class="skeleton sk-hero-chip"></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="card kpi-card"><div class="skeleton sk-kpi-icon"></div><div class="skeleton sk-kpi-label"></div><div class="skeleton sk-kpi-value"></div></div>
+          <div class="card kpi-card"><div class="skeleton sk-kpi-icon"></div><div class="skeleton sk-kpi-label"></div><div class="skeleton sk-kpi-value"></div></div>
+          <div class="card kpi-card"><div class="skeleton sk-kpi-icon"></div><div class="skeleton sk-kpi-label"></div><div class="skeleton sk-kpi-value"></div></div>
+        </div>
+        <div class="section-header"><span class="title">Despesas por Categoria</span><span class="line"></span></div>
+        <div class="card tx-tile"><div class="skeleton sk-tile-avatar"></div><div class="tx-info"><div class="skeleton sk-tile-line1"></div><div class="skeleton sk-tile-line2"></div></div><div class="skeleton sk-tile-value"></div></div>
+        <div class="card tx-tile"><div class="skeleton sk-tile-avatar"></div><div class="tx-info"><div class="skeleton sk-tile-line1"></div><div class="skeleton sk-tile-line2"></div></div><div class="skeleton sk-tile-value"></div></div>
+        <div class="card tx-tile"><div class="skeleton sk-tile-avatar"></div><div class="tx-info"><div class="skeleton sk-tile-line1"></div><div class="skeleton sk-tile-line2"></div></div><div class="skeleton sk-tile-value"></div></div>
+      </div>
+    </div>
+    <p class="caption"><b>Carregando</b> — skeleton shimmer com opacidade sutil (4–8 % branco) em vez de spinner nu.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></span>
+        <img src="../../../assets/images/logo.png" class="logo" alt="CashCtrl">
+      </div>
+      <div class="screen-body">
+        <div class="greeting">
+          <div class="name">Olá, João!</div>
+          <div class="date">Quinta-feira, 8 de outubro</div>
+        </div>
+
+        <div class="card-hero">
+          <div class="label">Saldo do mês</div>
+          <div class="value">R$ 8.450,00</div>
+          <div class="delta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l5-5 5 5M12 12V3"/></svg> +R$ 1.240,00 · 14%</div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="card kpi-card">
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/></svg></div>
+            <div class="label">Receitas</div>
+            <div class="value">R$ 12.300,00</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 18l-9.5-9.5-5 5L1 6"/></svg></div>
+            <div class="label">Despesas</div>
+            <div class="value">R$ 3.850,00</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+            <div class="label">Economia</div>
+            <div class="value">R$ 8.450,00</div>
+          </div>
+        </div>
+
+        <div class="section-header"><span class="title">Despesas por Categoria</span><span class="line"></span><span class="action">R$ 3.850,00</span></div>
+        <div class="card" style="padding:16px;">
+          <div class="chart-wrap">
+            <div class="pie"></div>
+            <div class="pie-legend">
+              <div class="leg-row"><span class="leg-dot" style="background:#E0913A;"></span><span class="leg-name">Alimentação</span><span class="leg-val">34%</span></div>
+              <div class="leg-row"><span class="leg-dot" style="background:#9C6BD6;"></span><span class="leg-name">Transporte</span><span class="leg-val">28%</span></div>
+              <div class="leg-row"><span class="leg-dot" style="background:#E05A5A;"></span><span class="leg-name">Lazer</span><span class="leg-val">20%</span></div>
+              <div class="leg-row"><span class="leg-dot" style="background:#46C7B3;"></span><span class="leg-name">Saúde</span><span class="leg-val">10%</span></div>
+              <div class="leg-row"><span class="leg-dot" style="background:#7A8B83;"></span><span class="leg-name">Outros</span><span class="leg-val">8%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header"><span class="title">Transações Recentes</span><span class="line"></span><span class="action">Ver todas</span></div>
+        <div class="card tx-tile">
+          <div class="tx-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E0913A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 002 2h14v-4"/><path d="M18 12a2 2 0 00-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Venda pastelaria</div><div class="tx-meta">Vendas • 07/10/2026</div></div>
+          <div class="tx-value income">+R$ 450,00</div>
+        </div>
+        <div class="card tx-tile">
+          <div class="tx-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B89775" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Compra de insumos</div><div class="tx-meta">Insumos • 06/10/2026</div></div>
+          <div class="tx-value expense">−R$ 820,00</div>
+        </div>
+        <div class="card tx-tile">
+          <div class="tx-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9C6BD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18H3a2 2 0 01-2-2V8a2 2 0 012-2h3.19M15 6h2a2 2 0 012 2v8a2 2 0 01-2 2h-3.19"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Uber mensal</div><div class="tx-meta">Transporte • 05/10/2026</div></div>
+          <div class="tx-value expense">−R$ 120,00</div>
+        </div>
+        <div class="card tx-tile">
+          <div class="tx-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#46C7B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Plano de saúde</div><div class="tx-meta">Saúde • 04/10/2026</div></div>
+          <div class="tx-value expense">−R$ 350,00</div>
+        </div>
+
+        <button class="fab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+    </div>
+    <p class="caption"><b>Happy path</b> — hero com delta semântico, 3 KPIs distintos, gráfico pizza com cores reais de <code>categories.dart</code> e FAB substituindo o botão de lista.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></span>
+        <img src="../../../assets/images/logo.png" class="logo" alt="CashCtrl">
+      </div>
+      <div class="screen-body">
+        <div class="greeting"><div class="name">Olá, João!</div><div class="date">Quinta-feira, 8 de outubro</div></div>
+        <div class="card empty-state">
+          <div class="ic"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 1 3.6 2.5 5 .2.2.2.5 0 .7l-1 1.7c-.3.5.2 1.1.7.9l2.3-.8c.4-.1.8 0 1.1.2 1.8 1.3 4.3 2 6.9 2 7 0 10.5-5.6 10.5-10 0-3.8-3.2-7.9-8-7.9z"/></svg></div>
+          <div class="title">Nenhuma transação ainda</div>
+          <div class="msg">Registre sua primeira movimentação.</div>
+          <button class="btn-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Nova Transação</button>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Vazio</b> — EmptyState reutilizável com ícone outline, título 16, mensagem 12 e CTA primário.</p>
+  </div>
+
+</div>
+
+<div class="review">
+  <h3>Decisões pendentes</h3>
+  <ol>
+    <li>FAB: manter <span>quadrado radius 16</span> (proposto) ou voltar para circular? O quadrado alinha ao design system de radius.</li>
+    <li>Contraste: <span>--txt2 #7A8B83</span> sobre --card #142A20 fica borderline; aprovar clareamento para <span>#8A9C94</span> apenas no corpo longo?</li>
+    <li>Cores semânticas: aprovar <span>#6FCF97</span> (sucesso) e <span>#E4726D</span> (perigo) como tokens definitivos?</li>
+  </ol>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+Plano fechado. Segue a versão final que será gravada em context/plano-web-apk.md (e consultada por orquestrador/sub-agentes), com execução por sprints e pausa ao fim de cada uma:
+Plano final — CashCtrl: Versão Web + APK
+Decisões confirmadas: Firebase Hosting • layout responsivo desktop • scanner desativado na web • keystore novo mantendo com.example.ctrlcash • baseline commitado no Sprint 0 • push só no final.
+Artefatos (Sprint 0)
+- context/plano-web-apk.md: o plano abaixo + seção "Registro de progresso" (atualizada a cada sprint com: o que foi feito, commit, próximo passo).
+- context/CONTEXT.md: adicionar o plano na lista de arquivos a consultar.
+- Commit baseline: as 79 alterações pendentes, após git status confirmar zero segredos (.env, google-services.json, *.jks fora da área de stage).
+Convenções de cada sprint (ciclo de fechamento)
+1. flutter analyze + flutter test verdes.
+2. Atualizar context/plano-web-apk.md → marcar tarefas [x], preencher registro.
+3. Commit curto e descritivo (ex: Web: upload via XFile/putData em todos os fluxos).
+4. Pausa — aguardo sua revisão antes da próxima sprint.
+Sprint 1 — Compatibilidade web (código)
+- lib/services/storage_service.dart: File → XFile + putData(bytes, contentType) (linhas 16–28).
+- Atualizar 4 chamadores e _pendingPhotoFile (cadastro_screen.dart:559, product_form_screen.dart:452, edit_profile_screen.dart:69, product_scanner_screen.dart:296); remover dart:io.
+- pickImage: ImageSource.gallery quando kIsWeb (4 pontos).
+- product_scanner_screen.dart: branch kIsWeb → aviso "indisponível no navegador" + link ao cadastro; não montar MobileScanner.
+- Aceite: analyze/testes verdes; flutter build web compila sem erro; upload de foto testado no navegador.
+Sprint 2 — Layout responsivo desktop
+- Extrair itens de navegação do app_drawer.dart para lista compartilhada.
+- Novo lib/widgets/responsive_app_shell.dart, ligado via MaterialApp.builder no main.dart: ≥900px sidebar permanente (visual do drawer) + conteúdo; <900px drawer atual.
+- app_branded_header.dart: esconder hambúrguer em telas largas.
+- Login/cadastro: card centralizado com maxWidth; telas de conteúdo com maxWidth ~1100px.
+- Aceite: dashboard, listas e formulários usáveis em desktop (≥1280px) e intactos em mobile (<900px), verificado no navegador.
+Sprint 3 — Deploy web (Firebase Hosting)
+- Seção hosting no firebase.json (public: build/web, rewrites SPA).
+- flutter build web --release → firebase deploy --only hosting (precisará firebase login).
+- Manual seu: Console Firebase → Authentication → Authorized domains → domínio crtlcash-71ac3.web.app.
+- Aceite: site no ar, login e CRUD funcionando pelo navegador.
+Sprint 4 — APK de release
+- Keystore via keytool (ex.: ~/keystores/ctrlcash.jks, fora do repo) + android/key.properties (gitignored).
+- android/app/build.gradle.kts: signingConfigs.release lendo key.properties (substitui assinatura debug na linha 41).
+- flutter build apk --release (+ --split-per-abi opcional).
+- Aceite: APK assinado instalável, login e upload funcionando no celular.
+Sprint 5 — Verificação final e push
+- Checklist completo (login, cadastro com foto, dashboard, produto/insumo, comparar preços, orçamentos/relatórios — web desktop, web mobile e APK).
+- Registro de fechamento no próprio plano (seção progresso) + log em documentacao/logs/metadata/ seguindo o padrão sprintN_data_tema.md/.json.
+- git push para https://github.com/JoaoVikthor/ctrlcash.git (branch nova-versao-app), após git status limpo e revisão do diff.
+Riscos/pendências externas
+- firebase login e senha do keystore: digitados por você (nunca no código/git).
+- mobile_scanner/flutter_local_notifications seguem funcionando normalmente no Android — guards são kIsWeb.
+- .env no bundle web é esperado (API key pública por design; segurança vem das Security Rules).

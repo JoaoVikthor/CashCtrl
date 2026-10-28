@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Documentação Técnica da Aplicação Móvel CashCtrl — Sprint 2</title>
+<style>
+  /* Estilos espelhados do template BIBLIOTECA_113_RT_279.docx */
+  body { font-family: Georgia, serif; font-size: 12pt; color: #000; }
+  h1 { font-family: Arial, sans-serif; font-size: 16pt; font-weight: bold; margin: 18pt 0 10pt 0; }   /* estilo: Ttulo1 | fonte: Arial 16pt bold */
+  h2 { font-family: Arial, sans-serif; font-size: 14pt; font-weight: bold; margin: 14pt 0 8pt 0; }    /* estilo: Ttulo2 | fonte: Arial 14pt bold */
+  h3 { font-family: Arial, sans-serif; font-size: 14pt; font-weight: bold; margin: 12pt 0 6pt 0; }    /* estilo: Ttulo3 | fonte: Arial 14pt bold */
+  h4 { font-family: 'Palatino Linotype', serif; font-size: 12pt; font-weight: bold; margin: 10pt 0 6pt 0; } /* estilo: Ttulo4 | fonte: Palatino Linotype 12pt bold */
+  h5 { font-family: 'Courier New', monospace; font-size: 11pt; font-weight: bold; margin: 8pt 0 4pt 0; }    /* estilo: Ttulo5 | fonte: Courier New bold */
+  p  { font-family: Georgia, serif; font-size: 12pt; text-align: justify; margin: 6pt 0; }             /* estilo: Corpodetexto | fonte: Georgia 12pt */
+  li { font-family: Georgia, serif; font-size: 12pt; text-align: justify; margin: 3pt 0; }             /* estilo: PargrafodaLista | List Paragraph */
+  pre { font-family: 'Courier New', monospace; font-size: 10pt; margin: 8pt 0; }                       /* estilo: Ttulo5 | fonte: Courier New */
+  table { border-collapse: collapse; width: 100%; font-family: Georgia, serif; font-size: 10.5pt; margin: 8pt 0; }
+  th { border: 0.75pt solid #666666; padding: 4pt 6pt; background-color: #EFEFEF; font-weight: bold; text-align: left; }
+  td { border: 0.75pt solid #666666; padding: 4pt 6pt; vertical-align: top; }
+
+  .cap { text-align: center; font-family: Georgia, serif; font-size: 11pt; font-style: italic; margin: 4pt 0 10pt 0; }
+  .toc1 { font-family: Georgia, serif; font-size: 12pt; margin: 2pt 0; }                               /* estilo: Sumrio1 */
+  .toc2 { font-family: Georgia, serif; font-size: 12pt; margin: 2pt 0 2pt 24pt; }                      /* estilo: Sumrio2 */
+  .cover-title { text-align: center; font-family: Verdana, sans-serif; font-size: 20pt; font-weight: bold; margin: 90pt 0 24pt 0; }
+  .cover-sub { text-align: center; font-family: Verdana, sans-serif; font-size: 14pt; margin: 0 0 40pt 0; }
+  .cover-authors { text-align: center; font-family: Georgia, serif; font-size: 12pt; margin: 6pt 0; }
+  .cover-seal { text-align: center; font-family: Georgia, serif; font-size: 12pt; font-weight: bold; margin: 60pt 0 0 0; }
+  .cover-place { text-align: center; font-family: Georgia, serif; font-size: 12pt; margin: 4pt 0; }
+  .note { font-family: Georgia, serif; font-size: 10.5pt; font-style: italic; color: #333333; }
+</style>
+</head>
+<body>
+
+<!-- ================= CAPA ================= -->
+<p class="cover-title">Documentação Técnica da Aplicação Móvel CashCtrl — Sprint 2</p>
+<p class="cover-sub">Proposta A — Comparação de Fornecedores<br>
+(ofertas por insumo, ticket com oferta ativa e logs de auditoria de preços)</p>
+<p class="cover-authors">Equipe CashCtrl</p>
+<p class="cover-authors">autoria: github.com/JoaoVikthor</p>
+<p class="cover-seal">RELATÓRIOS TÉCNICOS DO CASHCTRL</p>
+<p class="cover-place">São Carlos</p>
+<p class="cover-place">Outubro/2026</p>
+
+<!-- ================= ÍNDICE ================= -->
+<h1 style="page-break-before: always">Indice</h1>
+<p class="toc1">1. Introdução</p>
+<p class="toc1">2. Visão Geral do CashCtrl</p>
+<p class="toc1">3. Requisitos do CashCtrl</p>
+<p class="toc2">3.1 Requisitos não-funcionais</p>
+<p class="toc2">3.2 Requisitos funcionais do Sprint 2</p>
+<p class="toc1">4. Projeto Lógico e Implementação do Sprint 2</p>
+<p class="toc2">4.1 Separação de Interesses (SoC) — arquitetura Flutter + Firebase</p>
+<p class="toc2">4.2 Estrutura de diretórios e subdiretórios</p>
+<p class="toc2">4.3 Descrição da Implementação</p>
+<p class="toc2">4.4 Modelo de Dados — IngredientOffer embutido no insumo</p>
+<p class="toc2">4.5 Logs de Auditoria de Preços</p>
+<p class="toc2">4.6 Diagrama Entidade-Relacionamento</p>
+<p class="toc2">4.7 Esquema do Banco de Dados (Firestore)</p>
+<p class="toc1">5. Instalação do CashCtrl</p>
+<p class="toc1">6. Manual do usuário</p>
+<p class="toc2">6.1 Comparativo de fornecedores</p>
+<p class="toc2">6.2 Ticket do produto com oferta ativa</p>
+<p class="toc2">6.3 Histórico de auditoria</p>
+<p class="toc1">7. Considerações Finais</p>
+
+<!-- ================= 1. INTRODUÇÃO ================= -->
+<h1 style="page-break-before: always">1. Introdução</h1>
+<p>Este relatório apresenta a documentação técnica do <b>Sprint 2</b> do CashCtrl,
+aplicativo móvel desenvolvido em Flutter com backend Firebase, referente à
+implementação da <b>Proposta A — Comparação de Fornecedores</b>. Neste relatório estão
+os principais documentos para o entendimento técnico da solução: o modelo de dados de
+ofertas por insumo, os logs de auditoria de preços, as regras de negócio do ticket e os
+detalhes de implementação das telas.</p>
+<p>O objetivo dessa documentação é propiciar uma visão abrangente dos recursos
+implementados no Sprint 2 e incentivar que a ferramenta seja rapidamente compreendida
+por desenvolvedores interessados em evoluir suas características. Todo o conteúdo
+reflete o código efetivamente entregue (<code>lib/</code>, <code>firestore.rules</code>,
+<code>test/</code>) na data de outubro de 2026: nomes de arquivos, classes, assinaturas
+e microcopy foram extraídos diretamente do repositório.</p>
+
+<!-- ================= 2. VISÃO GERAL ================= -->
+<h1 style="page-break-before: always">2. Visão Geral do CashCtrl</h1>
+<p>O CashCtrl é um aplicativo móvel (Flutter/Firebase, tema escuro com acentos verdes e
+dourados) para microempreendedores, com gestão financeira (transações, orçamentos,
+relatórios) e cálculo de ficha técnica de produtos ("ticket"), que aponta lucro ou
+prejuízo por produto.</p>
+<p>No Sprint 1 o insumo possuía um único preço (<code>purchasePrice</code> +
+<code>packageQuantity</code> → <code>pricePerUnit</code>), lido ao vivo pelo
+<code>ProductCalculator</code>. O Sprint 2 (Proposta A) evolui o parque de insumos para
+suportar <b>múltiplas ofertas de fornecedores por insumo</b>, com comparação por
+preço/unidade, oferta ativa escolhida pelo usuário alimentando o ticket, alerta de
+economia e logs de auditoria append-only.</p>
+<p>A versão do aplicativo no <code>pubspec.yaml</code> é <code>1.0.0+1</code>, com Dart
+SDK <code>^3.11.5</code>. O escopo entregue no Sprint 2 inclui: modelo
+<code>IngredientOffer</code> embutido em array no documento do insumo (teto de 15),
+lógica pura de comparação em <code>lib/utils/offer_comparator.dart</code>, operações de
+oferta e migração no <code>FirestoreService</code> com log de auditoria gravado no
+mesmo batch da mutação, três rotas novas (<code>/ingredient-offers</code>,
+<code>/offer-form</code>, <code>/audit-logs</code>), treze widgets reutilizáveis novos
+e 23 testes unitários da lógica pura (suíte completa: 24/24 aprovados).</p>
+
+<!-- ================= 3. REQUISITOS ================= -->
+<h1 style="page-break-before: always">3. Requisitos do CashCtrl</h1>
+<h2>3.1 Requisitos não-funcionais</h2>
+<p>Requisitos prioritários considerados para o Sprint 2 (mantidos do Sprint 1 e
+estendidos):</p>
+<ul>
+  <li><b>Isolamento (RN02):</b> todos os dados continuam sob <code>users/{uid}/...</code>;
+  nenhum usuário acessa dados de outro (Firestore e Storage).</li>
+  <li><b>Auditabilidade:</b> toda mutação de preço gera log append-only com retenção
+  definida (<code>expireAt</code> = criação + 180 dias), gravado <b>no mesmo batch</b>
+  da mutação.</li>
+  <li><b>Zero regressão:</b> o cálculo do ticket legado não pode mudar de resultado
+  para insumos migrados — o <code>ProductCalculator</code> consome
+  <code>Ingredient.pricePerUnit</code>, que cai para o fallback
+  <code>purchasePrice / packageQuantity</code> quando não há oferta ativa.</li>
+  <li><b>Política manual:</b> o app nunca troca a oferta ativa sozinho; toda troca
+  exige confirmação explícita do usuário.</li>
+  <li><b>Manutenibilidade:</b> SoC mantido — models, lógica pura em
+  <code>lib/utils/</code>, services, providers e screens/widgets em camadas separadas;
+  sem comentários novos no código.</li>
+  <li><b>Segurança:</b> regras Firestore atualizadas (coleção
+  <code>price_audit_logs</code>, append-only) e <b>deployadas antes do app</b>; chaves
+  apenas em <code>.env</code> (nunca hardcoded).</li>
+</ul>
+
+<h2>3.2 Requisitos funcionais do Sprint 2</h2>
+<p>Lista validada contra o código final (nenhum item do MVP foi cortado):</p>
+<ul>
+  <li>suporte a múltiplas ofertas de fornecedor por insumo (teto de <b>15</b> ofertas,
+  validado no formulário e no serviço com <code>StateError</code>);</li>
+  <li>comparação de ofertas por preço/unidade (<code>pricePerUnit = packagePrice /
+  packageQuantity</code>) com ranking ascendente;</li>
+  <li>oferta ativa (<code>activeOfferId</code>) escolhida manualmente pelo usuário para
+  alimentar o ticket, com flag <code>isActive</code> exclusiva entre as ofertas;</li>
+  <li>marcadores "ATIVA" (<code>ActiveOfferMarker</code>) e "melhor" com estrela
+  (<code>BestPriceChip</code>) no comparativo e na lista de insumos;</li>
+  <li>cartão de economia no ticket (<code>EconomySummaryCard</code>) calculado por
+  <code>OfferComparator.bestSupplierScenario</code> — informativo, nunca altera o
+  veredito;</li>
+  <li>upsert por fornecedor normalizado (<code>trim().toLowerCase()</code> — mesmo
+  fornecedor atualiza em vez de duplicar);</li>
+  <li>logs de auditoria append-only com retenção de 180 dias (<code>expireAt</code>);</li>
+  <li>migração lazy e idempotente dos insumos legados sem <code>offers[]</code>
+  (<code>migrateLegacyPrice</code>), criando a oferta "Fornecedor padrão" com
+  <code>source='migration'</code>;</li>
+  <li>tela de histórico de auditoria (<code>AuditLogsScreen</code>, somente leitura);</li>
+  <li>exclusão de oferta individual (<code>deleteOffer</code>) com limpeza de
+  <code>activeOfferId</code> quando necessário — evento <code>offer.delete</code>
+  incluído no escopo real.</li>
+</ul>
+<p class="note">Itens previstos no esqueleto e não implementados (registrados para
+rastreabilidade): o evento <code>offer.defaultRecalculated</code> (o recálculo de
+default foi resolvido com a flag exclusiva <code>isActive</code> +
+<code>activeOfferId</code>, sem evento próprio) e os campos sintéticos persistidos
+<code>lowestPricePerUnit</code>/<code>bestSupplier</code>/<code>offersCount</code> no
+documento do insumo (que no código final são getters calculados:
+<code>lowestActivePricePerUnit</code>, <code>bestActiveOffer</code>,
+<code>offersCount</code>).</p>
+
+<!-- ================= 4. PROJETO LÓGICO ================= -->
+<h1 style="page-break-before: always">4. Projeto Lógico e Implementação do Sprint 2</h1>
+
+<h2>4.1 Separação de Interesses (SoC) — arquitetura Flutter + Firebase</h2>
+<p>Para garantir manutenibilidade, foi mantida a abordagem de Separação de Interesses
+(Separation of Concerns — SoC) em camadas:</p>
+<ul>
+  <li><b>Lógica:</b> classes puras em Dart, sem dependência de Widgets —
+  <code>lib/utils/offer_comparator.dart</code> (ranking <code>rank</code>/<code>rankAll</code>,
+  melhor oferta <code>bestOffer</code>, oferta sintética legado
+  <code>syntheticLegacyOffer</code>, detecção de embalagens de tamanhos diferentes
+  <code>hasDifferentPackageSizes</code>, cenário informativo
+  <code>bestSupplierScenario</code>) e <code>lib/utils/product_calculator.dart</code>
+  (ticket, inalterado no Sprint 2).</li>
+  <li><b>Dados:</b> models (<code>lib/models/ingredient_offer.dart</code>,
+  <code>lib/models/price_audit_log.dart</code>, <code>lib/models/ingredient.dart</code>)
+  e acesso ao Firestore (<code>lib/services/firestore_service.dart</code>), com dados
+  isolados por UID sob <code>users/{uid}/...</code>, streams em tempo real e logs de
+  auditoria gravados em batch junto com cada mutação.</li>
+  <li><b>Apresentação:</b> provider (<code>lib/providers/ingredient_provider.dart</code>),
+  telas (<code>lib/screens/</code>) e widgets (<code>lib/widgets/</code>), tema escuro
+  com a paleta existente (<code>colorBackground 0xFF0D1E16</code>,
+  <code>colorGreenPrimary 0xFF165A41</code>, <code>colorGold 0xFFB89775</code>,
+  <code>colorCard 0xFF142A20</code>, <code>colorTextSec 0xFF7A8B83</code>), moeda e
+  datas sempre via <code>lib/utils/format.dart</code>.</li>
+</ul>
+
+<h2>4.2 Estrutura de diretórios e subdiretórios</h2>
+<p>Arquivos criados ou modificados pelo Sprint 2 (árvore real extraída do
+repositório):</p>
+<p class="cap">Figura 1. Estrutura de diretórios afetada pelo Sprint 2.</p>
+<pre>
+lib/
+|-- main.dart                     (modificado: rotas /ingredient-offers, /offer-form, /audit-logs)
+|-- models/
+|   |-- ingredient.dart           (modificado: offers[], activeOfferId + getters sintéticos)
+|   |-- ingredient_offer.dart     (novo: modelo IngredientOffer)
+|   |-- price_audit_log.dart      (novo: modelo PriceAuditLog)
+|-- utils/
+|   |-- offer_comparator.dart     (novo: ranking, delta, cenário best — lógica pura)
+|-- services/
+|   |-- firestore_service.dart    (modificado: CRUD ofertas + log em batch + migração lazy)
+|-- providers/
+|   |-- ingredient_provider.dart  (modificado: upsertOffer, setActiveOffer, toggleOfferActive,
+|   |                              deleteOffer, migrateLegacyPrice, auditLogs)
+|-- screens/
+|   |-- ingredients_screen.dart          (modificado: OfferCountBadge, marcadores, atalho de ofertas)
+|   |-- ingredient_form_screen.dart      (modificado: seções "Fornecedor padrão" e "Ofertas")
+|   |-- ingredient_offers_screen.dart    (novo: comparativo/ranking)
+|   |-- offer_form_screen.dart           (novo: formulário de oferta)
+|   |-- product_detail_screen.dart       (modificado: EconomySummaryCard após o veredito)
+|   |-- audit_logs_screen.dart           (novo: histórico de auditoria, leitura)
+|-- widgets/
+    |-- offer_count_badge.dart      (novo)  |-- section_header.dart       (novo)
+    |-- best_price_chip.dart        (novo)  |-- search_field.dart         (novo)
+    |-- active_offer_marker.dart    (novo)  |-- filter_chip_row.dart      (novo)
+    |-- delta_price_text.dart       (novo)  |-- empty_state.dart          (novo)
+    |-- offer_card.dart             (novo)  |-- error_state.dart          (novo)
+    |-- offer_limit_banner.dart     (novo)  |-- confirm_action_dialog.dart (novo)
+    |-- audit_entry_tile.dart       (novo)  |-- economy_summary_card.dart (novo)
+
+firestore.rules                   (modificado: match /price_audit_logs antes do catch-all)
+test/offer_comparator_test.dart   (novo: 23 testes da lógica pura)
+</pre>
+<p class="note">Sem screenshot aplicável a esta figura (árvore de diretórios); a
+Figura 1 acima é a representação textual adotada no lugar da captura. Capturas de tela
+das telas (Figuras 3 a 8) permanecem pendentes por não haver device/emulador no
+ambiente de documentação.</p>
+
+<h2>4.3 Descrição da Implementação</h2>
+
+<h3>4.3.1 Diretório lib/models</h3>
+<ul>
+  <li><code>ingredient_offer.dart</code>: modelo da oferta embutida. Classe imutável
+  <code>IngredientOffer</code> com <code>id</code> (String), <code>supplier</code>
+  (String), <code>packagePrice</code> (double, &gt; 0 validado no serviço),
+  <code>packageQuantity</code> (double, &gt; 0 validado no serviço),
+  <code>isActive</code> (bool, padrão <code>false</code>), <code>source</code>
+  (String, <code>'manual'</code> | <code>'migration'</code>, padrão
+  <code>'manual'</code>), <code>notes</code> (String, padrão <code>''</code>),
+  <code>createdAt</code>/<code>updatedAt</code> (DateTime). O preço por unidade
+  <b>não é campo armazenado</b>: é o getter calculado <code>pricePerUnit =&gt;
+  packageQuantity &gt; 0 ? packagePrice / packageQuantity : 0</code>. Serialização
+  <code>fromMap</code>/<code>toMap</code> + <code>copyWith</code>; o <code>toMap</code>
+  persiste datas como <b>ISO 8601 string</b> e o <code>fromMap</code> aceita
+  <code>Timestamp</code> do Firestore, <code>DateTime</code> ou string ISO
+  (tolerante). Não há campo <code>isDefault</code> nem <code>pricePerUnitCache</code>
+  no código final — a oferta "padrão" é representada por
+  <code>source == 'migration'</code> e o cache por unidade é calculado.</li>
+  <li><code>price_audit_log.dart</code>: modelo do log de auditoria.
+  <code>PriceAuditLog</code> com <code>action</code>, <code>entityType</code>,
+  <code>entityId</code>, <code>summary</code>, <code>supplier?</code>,
+  <code>previousPrice?</code>, <code>newPrice?</code>, <code>pricePerUnit?</code>,
+  <code>source</code> (padrão <code>'manual'</code>) e <code>timestamp?</code>
+  (DateTime lido). O <code>toMap(DateTime expireAt)</code> grava
+  <code>timestamp</code> como <b><code>FieldValue.serverTimestamp()</code></b> (nunca
+  o relógio do cliente) e <code>expireAt</code> como ISO 8601 string. O
+  <code>fromMap</code> aceita <code>Timestamp</code>/<code>DateTime</code>/string. Não
+  há campo <code>uid</code> no documento (a posse é garantida pelo caminho
+  <code>users/{uid}/price_audit_logs/</code>), nem <code>entityName</code> nem campos
+  de quantidade — contexto fica no <code>summary</code>.</li>
+  <li><code>ingredient.dart</code>: <code>Ingredient</code> estendido com
+  <code>offers</code> (<code>List&lt;IngredientOffer&gt;</code>, padrão
+  <code>const []</code>) e <code>activeOfferId</code> (<code>String?</code>). Getters
+  sintéticos calculados: <code>activeOffer</code> (procura <code>activeOfferId</code>
+  com <code>isActive</code>, senão a primeira <code>isActive</code>),
+  <code>pricePerUnit</code> (oferta ativa, senão legado
+  <code>purchasePrice / packageQuantity</code>), <code>offersCount</code>,
+  <code>lowestActivePricePerUnit</code> e <code>bestActiveOffer</code>. O
+  <code>toMap</code> persiste <code>offers</code> (via
+  <code>IngredientOffer.toMap</code>), <code>activeOfferId</code> e datas como ISO
+  8601; o <code>fromMap</code> reconstrói a lista tolerando documentos legados sem
+  <code>offers</code>.</li>
+</ul>
+
+<h3>4.3.2 Diretório lib/utils</h3>
+<ul>
+  <li><code>offer_comparator.dart</code>: lógica pura de comparação (nome real do
+  arquivo; o plano inicial chamava <code>offer_logic.dart</code>). Classes de
+  resultado: <code>RankedOffer</code> (<code>offer</code>, <code>isBest</code>,
+  <code>isActive</code>, <code>deltaVsActive</code>), <code>TicketLineSaving</code>
+  (<code>ingredientId</code>, <code>ingredientName</code>, <code>supplier</code>,
+  <code>currentUnitPrice</code>, <code>bestUnitPrice</code>, <code>quantity</code>;
+  getter <code>saving = (currentUnitPrice − bestUnitPrice) × quantity</code>) e
+  <code>TicketScenario</code> (<code>totalSaving</code>, <code>simulatedProfit</code>,
+  <code>salePrice</code>, <code>stillLoss</code>, <code>lines</code>). Métodos
+  estáticos de <code>OfferComparator</code>: <code>rank</code> (ordena por
+  <code>pricePerUnit</code> ascendente, apenas ofertas <code>isActive</code> por
+  padrão — <code>considerInactive: true</code> inclui inativas; delta calculado contra
+  a oferta ativa, <code>0.0</code> quando não há ativa), <code>rankAll</code>,
+  <code>bestOffer</code> (ignora <code>packageQuantity &lt;= 0</code>;
+  <code>activeOnly: true</code> por padrão), <code>syntheticLegacyOffer(ing, {id =
+  'legacy'})</code> (oferta sintética "Fornecedor padrão" espelhando o preço legado,
+  <code>isActive: true</code>, <code>source: 'migration'</code>, notas "Preço
+  cadastrado migrado automaticamente"), <code>pricePerUnitWithFallback(ing)</code>
+  (oferta ativa, senão legado), <code>hasDifferentPackageSizes</code> (≥ 2 ofertas com
+  quantidades distintas), <code>bestSupplierScenario(ticket)</code> (cenário
+  informativo: para cada linha não-<code>missing</code> com melhor oferta mais barata
+  que o preço usado — tolerância <code>0.005</code> — acumula economia, arredonda para
+  2 centavos via <code>_round2</code>, retorna <code>null</code> se economia total
+  <code>&lt;= 0.01</code>, calcula <code>simulatedProfit = ticket.profit +
+  totalSaving</code> e marca <code>stillLoss</code>) e <code>deltaUnit(a, b)</code>.</li>
+  <li><code>product_calculator.dart</code>: inalterado como cálculo — o ticket
+  continua consumindo <code>Ingredient.pricePerUnit</code>, que agora resolve para o
+  preço da oferta ativa e cai no fallback legado
+  (<code>purchasePrice / packageQuantity</code>) quando não há oferta ativa. O cenário
+  "melhor fornecedor" vive no <code>OfferComparator</code> e é sempre paralelo ao
+  <code>TicketResult</code>, nunca o substitui.</li>
+</ul>
+
+<h3>4.3.3 Diretório lib/services</h3>
+<ul>
+  <li><code>firestore_service.dart</code>: <code>FirestoreService</code> estendido com
+  o bloco de ofertas e auditoria, sempre sob <code>users/{uid}/...</code>:
+  <ul>
+    <li><code>addIngredient</code>: batch com <code>set</code> do insumo + log
+    <code>ingredient.create</code> ("Insumo {name} criado").</li>
+    <li><code>updateIngredient</code>: batch com <code>merge</code> do insumo + log
+    <code>ingredient.update</code> ("Insumo {name} atualizado"). Antes do merge, o
+    mapa é limpo com <code>data.remove('offers')</code> e
+    <code>data.remove('activeOfferId')</code> — <b>proteção contra overwrite</b>:
+    editar o insumo (nome/unidade/preço base) nunca apaga nem sobrescreve as ofertas
+    persistidas.</li>
+    <li><code>deleteIngredient</code>: batch com <code>delete</code> + log
+    <code>ingredient.delete</code> ("Insumo removido").</li>
+    <li><code>upsertOffer(uid, ingredientId, offer)</code>: valida
+    <code>packagePrice &gt; 0</code> e <code>packageQuantity &gt; 0</code> (senão
+    <code>StateError</code>); normaliza o fornecedor
+    (<code>trim().toLowerCase()</code>) e atualiza a oferta existente do mesmo
+    fornecedor preservando <code>id</code> e <code>createdAt</code> (log
+    <code>offer.update</code>) ou cria uma nova — se <code>current.length &gt;= 15</code>,
+    lança <code>StateError('Limite de 15 ofertas por insumo atingido.')</code> (log
+    <code>offer.create</code>). Grava <code>offers</code> + <code>activeOfferId</code>
+    preservado e o log <b>no mesmo batch</b>.</li>
+    <li><code>setActiveOffer(uid, ingredientId, offerId)</code>: escolhe a oferta
+    (<code>orElse</code> primeira; no-op quando <code>offers</code> vazio e
+    <code>offerId == 'legacy'</code>), grava a flag <code>isActive</code>
+    <b>exclusiva</b> (<code>o.id == chosen.id</code>) e
+    <code>activeOfferId = chosen.id</code>, com log <code>offer.setActive</code>
+    ("Oferta de {supplier} definida como ativa — X.XX/un").</li>
+    <li><code>toggleOfferActive(uid, ingredientId, offerId, isActive)</code>:
+    liga/desliga a oferta; ao <b>desativar a ativa</b>, limpa
+    <code>activeOfferId</code> (o ticket volta ao preço base) e o summary do log
+    <code>offer.toggleActive</code> registra "Oferta de {supplier} desativada; ticket
+    volta ao preço base"; caso contrário "Oferta de {supplier} ativada/desativada".</li>
+    <li><code>deleteOffer(uid, ingredientId, offerId)</code>: remove a oferta; se ela
+    era a ativa, limpa <code>activeOfferId</code>; log <code>offer.delete</code>
+    ("Oferta de {supplier} removida").</li>
+    <li><code>migrateLegacyPrice(uid, ing)</code>: <b>idempotente</b> — retorna cedo
+    se o documento já tiver <code>offers</code> não vazio; cria a oferta "Fornecedor
+    padrão" com o preço legado, <code>isActive: true</code>,
+    <code>source: 'migration'</code>, notas "Preço cadastrado migrado
+    automaticamente", define <code>activeOfferId</code> e grava o log
+    <code>migration.legacyToOffer</code> ("Preço legado de {name} migrado para
+    oferta").</li>
+    <li><code>writeAuditLog</code>: gravação avulsa de log (usada por mutações fora
+    dos métodos acima). Todos os logs recebem <code>expireAt = agora + 180 dias</code>
+    e são gravados no <b>mesmo batch</b> da mutação do insumo — não existe preço
+    alterado sem log.</li>
+    <li><code>priceAuditLogsStream(uid, {limit = 100})</code>: stream ordenado por
+    <code>timestamp</code> descendente para a tela de auditoria.</li>
+  </ul></li>
+</ul>
+
+<h3>4.3.4 Diretório lib/providers</h3>
+<ul>
+  <li><code>ingredient_provider.dart</code>: <code>IngredientProvider</code>
+  (ChangeNotifier) expõe <code>list</code>, <code>loading</code>, <code>error</code>,
+  <code>asMap</code> (mapa id → <code>Ingredient</code> consumido pelo
+  <code>ProductProvider</code> e pelas calculadoras) e os métodos assíncronos
+  <code>addIngredient</code>, <code>updateIngredient</code>,
+  <code>deleteIngredient</code>, <code>upsertOffer</code>,
+  <code>setActiveOffer</code>, <code>toggleOfferActive</code>,
+  <code>deleteOffer</code>, <code>migrateLegacyPrice</code> e o stream
+  <code>auditLogs</code> (delega para o <code>FirestoreService</code> com
+  <code>limit = 100</code>). Todos lançam <code>StateError('Usuário não
+  autenticado.')</code> quando não há UID; o stream reconecta quando o usuário logado
+  muda (<code>attach</code> + listener no <code>UserProvider</code>).</li>
+</ul>
+
+<h3>4.3.5 Diretório lib/screens</h3>
+<ul>
+  <li><code>ingredients_screen.dart</code> (modificada): card do insumo preservado;
+  abaixo do nome, <code>OfferCountBadge(count: ing.offersCount)</code> ("N ofertas" ou
+  "sem ofertas"); na coluna direita, sob o preço por unidade (que agora representa a
+  oferta ativa via getter), quando <code>offers.length &gt;= 2</code> aparecem
+  <code>ActiveOfferMarker</code> e, se a ativa não for a melhor,
+  <code>BestPriceChip</code>; novo ícone <code>Icons.storefront_outlined</code>
+  (dourado, tooltip "Ver ofertas") e <code>onLongPress</code> navegam para
+  <code>/ingredient-offers</code> com <code>ing.id</code>. Exclusão continua com
+  diálogo "Excluir insumo?" e SnackBar "Insumo excluído.".</li>
+  <li><code>ingredient_form_screen.dart</code> (modificada): campos base e preview
+  inalterados (preço legado = fallback). Nova seção "Fornecedor padrão"
+  (<code>SectionHeader</code> com <code>Icons.storefront_outlined</code>): com oferta
+  ativa, card "Ativa agora" com fornecedor, pill ATIVA, linha de preço ("R$ X · qtd
+  un · R$/un") e os links "Editar oferta" e "Ver todas (N)"; com ofertas sem nenhuma
+  ativa, aviso laranja "Nenhuma oferta ativa. O ticket usa o preço base deste
+  insumo."; sem ofertas, ícone inline + texto "Salve o insumo antes de adicionar
+  ofertas." (insumo novo, botão desabilitado) ou "Nenhuma oferta cadastrada." + botão
+  "Adicionar primeira oferta". Nova seção "Ofertas" com contador "X/15", até 3 cards
+  compactos (fornecedor + R$/un + marcadores ATIVA e ★ melhor) e link "Ver todas as N
+  ofertas →" quando houver mais de 3 ("Nenhuma oferta ainda." quando vazia). Salvar o
+  insumo nunca cria oferta; o preview exibe a sub-linha "Com oferta ativa, o ticket
+  usa R$ X/un (fornecedor Y).".</li>
+  <li><code>ingredient_offers_screen.dart</code> (nova):
+  <code>IngredientOffersScreen({required String ingredientId})</code>. AppBar "Ofertas
+  de {insumo}"; card resumo com nome do insumo, "Preço por unidade de referência: R$
+  X/un", chips da oferta ativa (ou o aviso laranja "Nenhuma oferta ativa") e "também é
+  a melhor" / "melhor: {fornecedor}"; banner condicional laranja "Atenção: embalagens
+  de tamanhos diferentes. Compare o preço por unidade."; linha de política "Você
+  escolhe qual oferta entra no ticket. O app não troca sozinho."; filtros
+  <code>AppSearchField</code> ("Buscar fornecedor…") + <code>AppFilterChipRow</code>
+  [Todas, Ativas, Inativas, Padrão] (o filtro "Padrão" mapeia
+  <code>source == 'migration'</code>) + toggle dourado "só com economia" (somente
+  inativas com delta &lt; −0,005); contador "{n} de 15 ofertas" com "Limite de 15
+  atingido" em laranja; ranking via <code>OfferComparator.rankAll</code>
+  (preço/unidade ascendente, inativas com opacidade 0,55) renderizado por
+  <code>OfferCard</code>; estado vazio <code>EmptyState</code> ("Nenhuma oferta
+  cadastrada" / "Cadastre fornecedores para comparar preços e escolher quem entra no
+  ticket." / CTA "Adicionar oferta"), card de referência do preço legado ("Preço base
+  do insumo" / "Cadastre ofertas para comparar.") quando não há ofertas mas há preço
+  base, e "Nenhuma oferta corresponde aos filtros." + "Limpar filtros" quando o
+  filtro zera a lista; <code>OfferLimitBanner</code> quando 15/15; CTA inferior
+  "Adicionar oferta" desabilitado no limite. A ação "Usar no ticket" abre
+  <code>ConfirmActionDialog</code> — título <b>"Usar esta oferta no ticket?"</b>,
+  corpo com "{fornecedor} · R$ X/un" + "Economia de R$ X por unidade em relação à
+  ativa." ou "Ficará R$ X mais caro por unidade." — e nota "Você pode trocar de volta
+  quando quiser. O app não altera automaticamente."; confirmado, chama
+  <code>provider.setActiveOffer</code> com SnackBar dourada "Oferta de {fornecedor}
+  agora é a ativa." ou vermelha "Não foi possível trocar a oferta.". Estados de
+  loading (spinner dourado) e erro (<code>ErrorState</code> / "Insumo não
+  encontrado.") cobertos.</li>
+  <li><code>offer_form_screen.dart</code> (nova):
+  <code>OfferFormScreen({required String ingredientId, IngredientOffer? offer})</code>,
+  títulos "Nova oferta"/"Editar oferta". Legenda "Informe o que você paga e quanto vem
+  na embalagem. O app calcula o preço por unidade." Campos: "Nome do fornecedor"
+  (helper "Ex.: Distribuidora Central, Atacado do Zé"), "Preço da embalagem (R$)",
+  "Qtd. da embalagem" e chip read-only "unidade: {unidade do insumo}". Preview ao vivo
+  no padrão do formulário de insumo: "Preço por unidade" → "R$ X / un" (ou "Informe a
+  quantidade" quando qtd = 0). "Notas (opcional)" multiline com contador "n/200"
+  acima de 160 caracteres. Em edição, card "Comparado com a oferta ativa" com
+  <code>DeltaPriceText</code> e sub-linha "Ativa: {fornecedor} · R$ X/un". Validação
+  dura: "Informe o nome do fornecedor.", "Informe um preço maior que zero.", "Informe
+  uma quantidade maior que zero." (errorText no campo + SnackBar vermelha); 16ª
+  oferta bloqueada com o toast "Limite de 15 ofertas por insumo." e
+  <code>OfferLimitBanner</code>; parsing aceita vírgula
+  (<code>replaceAll(',', '.')</code>). Salvar chama <code>provider.upsertOffer</code>
+  (id <code>''</code> no create) e fecha com SnackBar dourada "Oferta salva."/"Oferta
+  atualizada."; nova oferta nasce <code>isActive: true</code>,
+  <code>source: 'manual'</code>.</li>
+  <li><code>product_detail_screen.dart</code> (modificada): insere
+  <code>EconomySummaryCard</code> imediatamente após o card de veredito, com
+  <code>scenario: OfferComparator.bestSupplierScenario(t)</code> — cálculo
+  <b>informativo e paralelo</b>: o <code>TicketResult</code> (custo, lucro, margem,
+  markup) nunca muda por causa do cartão. O callback <code>onViewOffers</code> navega
+  para <code>/ingredient-offers</code> do insumo de maior economia ou, com id vazio,
+  para <code>/ingredients</code>.</li>
+  <li><code>audit_logs_screen.dart</code> (nova): <code>AuditLogsScreen()</code>,
+  somente leitura. Cabeçalho "Auditoria" (<code>AppBrandedHeader</code>); subcabeçalho
+  "Registro de ações" + "Tudo que altera custos, ofertas e produtos aparece aqui.";
+  busca "Buscar por ação, produto ou fornecedor…" e filtros [Tudo, Insumos, Ofertas,
+  Produtos, Sistema] ("Sistema" agrupa <code>entityType == 'migration'</code>,
+  <code>source == 'system'</code> e tipos fora de ingredient/offer/product); linha do
+  tempo agrupada por dia ("Hoje"/"Ontem"/data via <code>formatDate</code>), itens
+  <code>AuditEntryTile</code> e toque abre bottom sheet de detalhes com timestamp
+  completo ("{data} às HH:MM"), "Anterior: R$ X → Novo: R$ Y" ou "Novo valor: R$ X" e
+  "Fornecedor: {fornecedor}". Estado vazio "Nenhuma ação registrada" / "Alterações em
+  insumos, ofertas e produtos aparecerão aqui."; erro
+  <code>ErrorState("Erro ao carregar auditoria: ...")</code>. Ícones por evento:
+  criação <code>add_circle_outline</code>, edição <code>edit_outlined</code>,
+  exclusão <code>delete_outline</code> (vermelho), ativação
+  <code>check_circle_outline</code>, migração <code>sync</code>. Nunca exibe uid/IDs
+  brutos.</li>
+</ul>
+
+<h3>4.3.6 Diretório lib/widgets</h3>
+<p>Widgets novos (todos reutilizáveis, sem dependência de screens):</p>
+<ul>
+  <li><code>offer_count_badge.dart</code>: <code>OfferCountBadge({required int
+  count})</code> — pill "N ofertas" (fundo verde @0,2, texto dourado 11 bold);
+  <code>count == 0</code> → "sem ofertas" em cinza.</li>
+  <li><code>best_price_chip.dart</code>: <code>BestPriceChip({String label =
+  'melhor'})</code> — estrela dourada, borda dourada 1,2, fundo card.</li>
+  <li><code>active_offer_marker.dart</code>: <code>ActiveOfferMarker({bool active =
+  true})</code> — pill "ATIVA" (fundo verde primário) ou "INATIVA" (contorno
+  <code>white24</code>).</li>
+  <li><code>delta_price_text.dart</code>: <code>DeltaPriceText({required double delta,
+  double fontSize = 12})</code> — negativo "−R$ X" em verde, positivo "+R$ X" em
+  vermelho, zero "—" em cinza; com <code>Semantics</code> ("economia de R$ X" /
+  "aumento de R$ X" / "sem diferença").</li>
+  <li><code>section_header.dart</code>: <code>SectionHeader({required IconData icon,
+  required String title, Widget? trailing})</code> — ícone dourado 18 + título branco
+  bold 16.</li>
+  <li><code>search_field.dart</code>: <code>AppSearchField({required String hint,
+  required ValueChanged&lt;String&gt; onChanged})</code> — campo card, ícone de busca
+  dourado, raio 12.</li>
+  <li><code>filter_chip_row.dart</code>: <code>AppFilterChipRow({required
+  List&lt;String&gt; options, required int selectedIndex, required
+  ValueChanged&lt;int&gt; onSelected})</code> — chips horizontais altura 40;
+  selecionado fundo verde + branco.</li>
+  <li><code>empty_state.dart</code>: <code>EmptyState({required IconData icon,
+  required String title, required String message, String? actionLabel, VoidCallback?
+  onAction})</code> — ícone 56 + CTA verde opcional.</li>
+  <li><code>error_state.dart</code>: <code>ErrorState({required String message,
+  VoidCallback? onRetry})</code> — ícone de erro vermelho + botão "Tentar
+  novamente".</li>
+  <li><code>offer_limit_banner.dart</code>: <code>OfferLimitBanner({required int
+  current})</code> — banner laranja "Restam X ofertas" / "Limite de 15 ofertas
+  atingido".</li>
+  <li><code>confirm_action_dialog.dart</code>: <code>ConfirmActionDialog.show(context,
+  {required String title, required String body, String? note}) → Future&lt;bool&gt;</code>
+  — AlertDialog escuro com "Cancelar" (dourado) / "Confirmar" (verde) e nota
+  destacada.</li>
+  <li><code>offer_card.dart</code>: <code>OfferCard({required RankedOffer ranked,
+  required int totalOffers, required VoidCallback onSet, required VoidCallback onEdit,
+  required VoidCallback onToggle})</code> — card da oferta: fornecedor + "R$ X · qtd",
+  R$/un dourado bold + delta (<code>DeltaPriceText</code> ou "sem referência"), pills
+  ATIVA/★ melhor, ações com tooltip e alvos 44×44 ("Usar no ticket", "Editar",
+  "Ativar/Desativar"); inativa com opacidade 0,55; sem swipe-to-delete.</li>
+  <li><code>audit_entry_tile.dart</code>: <code>AuditEntryTile({required PriceAuditLog
+  log})</code> — ícone dourado por tipo (vermelho nas destrutivas
+  <code>.delete</code>), <code>summary</code> branco 14, detalhe "de R$ X para R$ Y" /
+  "novo valor: R$ X" / fornecedor em cinza 12 e hora "dd/MM/yyyy · HH:MM" em cinza
+  11.</li>
+  <li><code>economy_summary_card.dart</code>: <code>EconomySummaryCard({required
+  TicketScenario? scenario, required TicketResult ticket, required void
+  Function(String ingredientId) onViewOffers})</code> — quatro estados: economia
+  ("Melhor fornecedor possível" + "−R$ X no custo dos ingredientes" + "Nada foi
+  alterado no ticket." + CTA "Ver ofertas de {insumo}"), estável ("Fornecedores já
+  estáveis" + "As ofertas ativas deste produto já são as melhores entre as
+  cadastradas." + variante para poucas ofertas), ainda-prejuízo ("Ainda dá prejuízo
+  com o melhor preço" + "−R$ X ainda de prejuízo" + orientação para revisar preço de
+  venda/custos + CTA "Ver ofertas") e sem dados ("Sem dados de fornecedores" + CTA
+  "Gerenciar insumos").</li>
+</ul>
+
+<h3>4.3.7 Regras de segurança (firestore.rules)</h3>
+<p>Novo <code>match /users/{uid}/price_audit_logs/{logId}</code> inserido <b>antes</b>
+do catch-all <code>match /{document=**}</code>:</p>
+<pre>
+match /price_audit_logs/{logId} {
+  allow read, create: if request.auth != null &amp;&amp; request.auth.uid == uid;
+  allow update, delete: if false;
+}
+</pre>
+<ul>
+  <li><code>allow read, create</code> restrito ao dono (a posse é garantida pelo
+  caminho <code>users/{uid}/...</code>); <code>allow update, delete: if false</code>
+  garante o <b>append-only</b>.</li>
+  <li>A validação dos "campos mínimos" no <code>create</code> ficou a cargo do app (o
+  <code>PriceAuditLog.toMap</code> sempre grava o conjunto completo) — endurecimento
+  por campo nas rules é evolução futura.</li>
+  <li>O <code>match /ingredients/{ingredientId}</code> existente permanece
+  <code>allow read, write</code> do dono; a validação dura de
+  <code>packagePrice &gt; 0</code> e <code>packageQuantity &gt; 0</code> é feita no
+  serviço (<code>upsertOffer</code>) e no formulário.</li>
+</ul>
+
+<h2 style="page-break-before: always">4.4 Modelo de Dados — IngredientOffer embutido no insumo</h2>
+<p>Decisão do gate mantida no MVP: array <code>offers[]</code> no documento do insumo;
+migração para subcoleção é caminho de evolução (v1.1+).</p>
+<p>Caminho: <code>users/{uid}/ingredients/{ingredientId}</code> (documento existente,
+estendido).</p>
+<p>Campos novos persistidos no documento do insumo:</p>
+<table>
+  <tr><th width="24%">Campo</th><th width="14%">Tipo</th><th width="62%">Descrição</th></tr>
+  <tr><td><code>activeOfferId</code></td><td>String?</td><td>Oferta que alimenta o
+  ticket (escolha manual do usuário); <code>null</code> quando a ativa é
+  desativada/removida</td></tr>
+  <tr><td><code>offers</code></td><td>Array</td><td>Lista de ofertas (teto duro:
+  <b>15</b>)</td></tr>
+</table>
+<p>Getters sintéticos calculados (não persistidos): <code>activeOffer</code>,
+<code>pricePerUnit</code>, <code>offersCount</code>,
+<code>lowestActivePricePerUnit</code>, <code>bestActiveOffer</code>.</p>
+<p>Estrutura de cada item de <code>offers[]</code> (<code>IngredientOffer</code> —
+código final):</p>
+<table>
+  <tr><th width="24%">Campo</th><th width="14%">Tipo</th><th width="62%">Descrição</th></tr>
+  <tr><td><code>id</code></td><td>String</td><td>Identificador da oferta (id de
+  documento do Firestore no create)</td></tr>
+  <tr><td><code>supplier</code></td><td>String</td><td>Nome do fornecedor
+  (normalizado para upsert)</td></tr>
+  <tr><td><code>packagePrice</code></td><td>double</td><td>Preço pago pela embalagem
+  (<b>&gt; 0</b>, validação dura no serviço)</td></tr>
+  <tr><td><code>packageQuantity</code></td><td>double</td><td>Quantidade da embalagem
+  (<b>&gt; 0</b>, validação dura no serviço)</td></tr>
+  <tr><td><code>isActive</code></td><td>bool</td><td>Oferta habilitada para
+  comparação; exclusiva da oferta ativa do ticket</td></tr>
+  <tr><td><code>source</code></td><td>String</td><td><code>manual</code> (criada pelo
+  usuário) ou <code>migration</code> (gerada na migração)</td></tr>
+  <tr><td><code>notes</code></td><td>String</td><td>Observações ("Preço cadastrado
+  migrado automaticamente" na migração)</td></tr>
+  <tr><td><code>createdAt</code></td><td>DateTime</td><td>Criação — persistida como
+  ISO 8601 string</td></tr>
+  <tr><td><code>updatedAt</code></td><td>DateTime</td><td>Última atualização —
+  persistida como ISO 8601 string</td></tr>
+</table>
+<p>Tipos de data (padrão real do projeto): as datas de insumo e oferta são gravadas
+como <b>ISO 8601 string</b> no <code>toMap</code> e o <code>fromMap</code> tolera
+<code>Timestamp</code> do Firestore, <code>DateTime</code> e string ISO. Exceção: o
+<code>timestamp</code> do log de auditoria é gravado como
+<b><code>FieldValue.serverTimestamp()</code></b> (Firestore Timestamp) para nunca
+depender do relógio do cliente. <code>pricePerUnit</code> não é armazenado — é getter
+calculado (<code>packagePrice / packageQuantity</code>), eliminando risco de cache
+dessincronizado.</p>
+<p>Justificativa do MVP em array: 1 leitura, ticket sem join, menor complexidade;
+limites conhecidos (~1 MB por documento, concorrência last-write-wins) são
+aceitáveis para 3–10 fornecedores típicos, com teto de 15.</p>
+
+<h2>4.5 Logs de Auditoria de Preços</h2>
+<p>Caminho: <code>users/{uid}/price_audit_logs/{logId}</code> — coleção
+<b>append-only</b> (regras negam update/delete; só o app cria).</p>
+<p>Tabela de eventos auditados (conforme o código final — não existe
+<code>offer.defaultRecalculated</code>; o evento <code>offer.delete</code> foi
+acrescentado):</p>
+<table>
+  <tr><th width="26%">Ação do usuário</th><th width="26%"><code>action</code> do log</th><th width="48%"><code>summary</code> gravado</th></tr>
+  <tr><td>Criar insumo</td><td><code>ingredient.create</code></td><td>"Insumo {name} criado"</td></tr>
+  <tr><td>Editar insumo</td><td><code>ingredient.update</code></td><td>"Insumo {name} atualizado"</td></tr>
+  <tr><td>Excluir insumo</td><td><code>ingredient.delete</code></td><td>"Insumo removido"</td></tr>
+  <tr><td>Criar oferta</td><td><code>offer.create</code></td><td>"Oferta de {supplier} criada"</td></tr>
+  <tr><td>Editar oferta (upsert)</td><td><code>offer.update</code></td><td>"Oferta de {supplier} atualizada"</td></tr>
+  <tr><td>Excluir oferta</td><td><code>offer.delete</code></td><td>"Oferta de {supplier} removida"</td></tr>
+  <tr><td>Ativar/desativar oferta</td><td><code>offer.toggleActive</code></td><td>"Oferta de {supplier} ativada" / "Oferta de {supplier} desativada" / "Oferta de {supplier} desativada; ticket volta ao preço base"</td></tr>
+  <tr><td>Definir oferta ativa do ticket</td><td><code>offer.setActive</code></td><td>"Oferta de {supplier} definida como ativa — X.XX/un"</td></tr>
+  <tr><td>Migração legado → oferta</td><td><code>migration.legacyToOffer</code></td><td>"Preço legado de {name} migrado para oferta"</td></tr>
+</table>
+<p>Campos do documento de log (conforme <code>PriceAuditLog.toMap(expireAt)</code>):</p>
+<table>
+  <tr><th width="24%">Campo</th><th width="14%">Tipo</th><th width="62%">Descrição</th></tr>
+  <tr><td><code>timestamp</code></td><td>Timestamp</td><td><code>FieldValue.serverTimestamp()</code>
+  (nunca relógio do cliente)</td></tr>
+  <tr><td><code>action</code></td><td>String</td><td>Um dos eventos da tabela
+  acima</td></tr>
+  <tr><td><code>entityType</code></td><td>String</td><td><code>ingredient</code>,
+  <code>offer</code> ou <code>migration</code></td></tr>
+  <tr><td><code>entityId</code></td><td>String</td><td>ID do insumo/oferta
+  afetada</td></tr>
+  <tr><td><code>supplier</code></td><td>String?</td><td>Fornecedor da oferta, quando
+  aplicável</td></tr>
+  <tr><td><code>previousPrice</code> / <code>newPrice</code></td><td>double?</td><td>Preço
+  da embalagem antes/depois</td></tr>
+  <tr><td><code>pricePerUnit</code></td><td>double?</td><td>Preço/unidade
+  resultante</td></tr>
+  <tr><td><code>source</code></td><td>String</td><td><code>manual</code> ou
+  <code>migration</code></td></tr>
+  <tr><td><code>summary</code></td><td>String</td><td>Resumo legível em PT-BR (coluna
+  própria na tabela de eventos)</td></tr>
+  <tr><td><code>expireAt</code></td><td>String (ISO 8601)</td><td>Retenção: <b>180
+  dias</b> após a criação</td></tr>
+</table>
+<p>Observações: o campo <code>uid</code> do plano inicial não é gravado — a posse é
+garantida pelo caminho <code>users/{uid}/price_audit_logs/</code> e pelas regras;
+<code>entityName</code> e as quantidades de embalagem antes/depois não entraram no MVP
+(o contexto fica no <code>summary</code>).</p>
+<p>Política de gravação: o log é gravado <b>no mesmo batch</b> da mutação do documento
+(update do insumo + add do log), garantindo que não exista mudança de preço sem log.
+Expiração: o <code>expireAt</code> (+180 dias) é gravado em todos os logs para uma
+futura política de TTL/limpeza; no MVP o app não exclui nem oculta registros expirados
+na leitura (limpeza sob demanda é evolução).</p>
+
+<h2>4.6 Diagrama Entidade-Relacionamento</h2>
+<p>A modelagem do banco de dados do CashCtrl após o Sprint 2 mantém a hierarquia com
+isolamento por usuário e acrescenta as ofertas embutidas e a coleção de auditoria:</p>
+<p class="cap">Figura 2. Diagrama Entidade-Relacionamento (representação textual) do
+Firestore do CashCtrl após o Sprint 2.</p>
+<pre>
+users (coleção principal)
+  |
+  |-- {uid} (documento do usuário)
+        |
+        |-- transactions (subcoleção)      {txId}
+        |-- budgets (subcoleção)           {budgetId}
+        |-- ingredients (subcoleção)       {ingredientId}
+        |     |-- offers[] (array embutido no documento do insumo)
+        |-- products (subcoleção)          {productId}
+        |-- price_audit_logs (subcoleção)  {logId}   [NOVO — append-only]
+</pre>
+<p>Relações:</p>
+<ul>
+  <li><code>products.recipe[].ingredientId</code> → <code>ingredients.id</code>
+  (referência ao insumo);</li>
+  <li><code>ingredients.activeOfferId</code> → <code>ingredients.offers[].id</code>
+  (oferta que alimenta o ticket; a oferta vive embutida no próprio documento, sem
+  join);</li>
+  <li><code>price_audit_logs.entityId</code> → insumo/oferta auditada (referência
+  lógica, sem join);</li>
+  <li><code>transactions.budgetId</code> → <code>budgets.id</code> (referência
+  opcional, pré-existente).</li>
+</ul>
+<p class="note">A versão desenhada da Figura 2 fica pendente de ferramenta gráfica; a
+representação textual acima é a entregue nesta versão.</p>
+
+<h2>4.7 Esquema do Banco de Dados (Firestore)</h2>
+<p>Esquema conferido contra o código final (<code>fromMap</code>/<code>toMap</code> dos
+models):</p>
+<pre>
+users = {nome, email, empresa?, cnpj?, segmento?, telefone?, endereco?, photoUrl?}
+
+users/{uid}/transactions/{txId} = {type, category, description, amount, date,
+  paymentMethod, recurring, notes?, receiptUrl?, budgetId?}
+
+users/{uid}/budgets/{budgetId} = {category, limit, monthly, createdAt}
+
+users/{uid}/ingredients/{ingredientId} = {name, unit, purchasePrice, packageQuantity,
+  createdAt (ISO 8601 string),
+  offers: [ {id, supplier, packagePrice, packageQuantity, isActive, source,
+             notes, createdAt (ISO), updatedAt (ISO)} ],
+  activeOfferId?}                                          [estendido no Sprint 2]
+
+users/{uid}/products/{productId} = {name, description, recipe[], laborCost,
+  packagingCost, salePrice, photoUrl?, barcode?, createdAt}
+
+users/{uid}/price_audit_logs/{logId} = {timestamp (serverTimestamp), action,
+  entityType, entityId, supplier?, previousPrice?, newPrice?, pricePerUnit?,
+  source, summary, expireAt (ISO 8601, +180 dias)}         [NOVO — append-only]
+</pre>
+
+<!-- ================= 5. INSTALAÇÃO ================= -->
+<h1 style="page-break-before: always">5. Instalação do CashCtrl</h1>
+<h4>Requisitos:</h4>
+<ul>
+  <li>Flutter (Dart SDK ^3.11.5) e Android SDK (plataforma principal; web
+  opcional);</li>
+  <li>Projeto Firebase com Authentication (Email/Senha, Google, Facebook), Firestore
+  e Storage ativados;</li>
+  <li>Arquivo <code>.env</code> com as chaves (a partir de <code>.env.example</code>;
+  <b>nunca versionado</b>);</li>
+  <li>CLI Firebase (para aplicar as regras) ou Firebase Console.</li>
+</ul>
+<h4>Passo a passo:</h4>
+<h5>(1.) Clonar o repositório e entrar na pasta:</h5>
+<pre>git clone https://github.com/JoaoVikthor/ctrlcash.git
+cd ctrlcash</pre>
+<h5>(2.) Copiar .env.example → .env e preencher as chaves do Firebase</h5>
+<p>(o <code>.env</code> está no <code>.gitignore</code> e não deve ser
+versionado):</p>
+<pre>cp .env.example .env</pre>
+<h5>(3.) Aplicar as regras do Firestore ANTES de distribuir/executar o app novo</h5>
+<p>(política de deploy do Sprint 2). O app atualizado já grava logs em
+<code>price_audit_logs</code> na primeira mutação; com o catch-all antigo
+(<code>allow ... if false</code>) a coleção permaneceria bloqueada e todas as mutações
+de insumo falhariam em batch. Publicar o <code>firestore.rules</code> atualizado (com
+o match <code>price_audit_logs</code>):</p>
+<pre>firebase deploy --only firestore:rules</pre>
+<p>Alternativa manual: colar o conteúdo de <code>firestore.rules</code> no Console do
+Firebase → Firestore Database → Rules → Publish. <b>Ordem obrigatória: rules primeiro,
+app depois.</b></p>
+<h5>(4.) Instalar as dependências:</h5>
+<pre>flutter pub get</pre>
+<h5>(5.) Executar o app:</h5>
+<pre>flutter run            (Android/emulador)
+flutter run -d chrome  (web, opcional)</pre>
+<h4>Observações do ambiente de desenvolvimento:</h4>
+<ul>
+  <li>A migração dos insumos legados é <b>lazy e automática</b>
+  (<code>migrateLegacyPrice</code> executada pelo próprio app quando um insumo sem
+  <code>offers</code> é manipulado) — não exige passo manual de dados.</li>
+  <li>Verificação estática: neste workspace o <code>flutter analyze</code> encerra com
+  crash porque o caminho da pasta contém "(Cópia)". Usar <b><code>dart analyze .</code></b>
+  (saída limpa: "No issues found!").</li>
+  <li>Testes: <code>flutter test</code> — suíte 24/24 aprovada (23 testes de lógica em
+  <code>test/offer_comparator_test.dart</code> + testes de widget).</li>
+</ul>
+
+<!-- ================= 6. MANUAL DO USUÁRIO ================= -->
+<h1 style="page-break-before: always">6. Manual do usuário</h1>
+<p class="note">As capturas de tela (Figuras 3 a 8) permanecem pendentes por não haver
+device/emulador no ambiente de documentação; cada ponto de captura está marcado.
+Textos entre aspas são a microcopy exata exibida pelo app.</p>
+
+<h2>6.1 Comparativo de fornecedores</h2>
+<ul>
+  <li>Acesso: menu lateral &gt; Insumos &gt; ícone de loja no card do insumo (tooltip
+  "Ver ofertas" ou toque longo), ou dentro do formulário do insumo nos links "Editar
+  oferta" / "Ver todas (N)" / "Ver todas as N ofertas" / botão "Adicionar primeira
+  oferta".</li>
+</ul>
+<p class="cap">[Figura 3 — captura de tela pendente: lista de insumos com badge
+"N ofertas" e ícone de loja]</p>
+<ul>
+  <li>A tela "Ofertas de {insumo}" abre com o card resumo (nome, "Preço por unidade de
+  referência: R$ X/un", chips da oferta ativa e da melhor) e a linha de política:
+  "Você escolhe qual oferta entra no ticket. O app não troca sozinho."</li>
+</ul>
+<p class="cap">[Figura 4 — captura de tela pendente: tela Ofertas de {insumo} com
+ranking]</p>
+<ul>
+  <li>Ranking por preço/unidade ascendente; cada card mostra fornecedor, embalagem,
+  R$/un em dourado, delta vs. ativa (verde para economia, vermelho para aumento, "sem
+  referência" sem ativa) e os marcadores "ATIVA" e "★ melhor" ("também é a melhor"
+  quando coincidem). Ofertas inativas aparecem esmaecidas.</li>
+  <li>Adicionar oferta: botão "Adicionar oferta" (CTA inferior) abre o formulário —
+  fornecedor, preço da embalagem, quantidade e preview ao vivo de R$/un; mesmo
+  fornecedor (nome normalizado) atualiza a oferta existente em vez de duplicar; a 16ª
+  oferta é bloqueada ("Limite de 15 ofertas por insumo.") e o CTA fica desabilitado
+  com o banner "Limite de 15 ofertas atingido" / "Restam X ofertas".</li>
+  <li>Ações por card: "Usar no ticket" abre a confirmação "Usar esta oferta no
+  ticket?" (com economia/custo por unidade e a nota "Você pode trocar de volta quando
+  quiser. O app não altera automaticamente."); "Editar" abre o formulário preenchido
+  (com o card "Comparado com a oferta ativa"); "Ativar/Desativar" liga ou desliga a
+  oferta para comparação. Ao desativar a oferta ativa, o ticket volta ao preço base do
+  insumo. Editar uma oferta nunca apaga as demais.</li>
+  <li>Filtros: busca por fornecedor ("Buscar fornecedor…"), chips [Todas, Ativas,
+  Inativas, Padrão] ("Padrão" = oferta migrada do preço legado) e o toggle "só com
+  economia" (só ofertas inativas mais baratas que a ativa). Sem resultado: "Nenhuma
+  oferta corresponde aos filtros." + "Limpar filtros". Embalagens de tamanhos
+  diferentes disparam o aviso "Atenção: embalagens de tamanhos diferentes. Compare o
+  preço por unidade."</li>
+  <li>Insumo legado sem ofertas: card de referência "Preço base do insumo" / "Cadastre
+  ofertas para comparar."; sem preço legado: estado vazio "Nenhuma oferta cadastrada"
+  com CTA "Adicionar oferta".</li>
+</ul>
+
+<h2>6.2 Ticket do produto com oferta ativa</h2>
+<ul>
+  <li>O ticket continua calculando com a oferta ativa de cada insumo (fallback legado
+  quando não houver oferta ativa — custo inalterado); o formulário do insumo mostra a
+  seção "Fornecedor padrão" com a oferta "Ativa agora" ou o aviso "Nenhuma oferta
+  ativa. O ticket usa o preço base deste insumo."</li>
+</ul>
+<p class="cap">[Figura 5 — captura de tela pendente: formulário do insumo com seções
+"Fornecedor padrão" e "Ofertas"]</p>
+<ul>
+  <li>Após o veredito de lucro/prejuízo, o <code>EconomySummaryCard</code> exibe um
+  dos quatro estados: economia possível ("Melhor fornecedor possível", "−R$ X no custo
+  dos ingredientes", "Nada foi alterado no ticket.", CTA "Ver ofertas de {insumo}"),
+  fornecedores estáveis ("Fornecedores já estáveis" / "As ofertas ativas deste produto
+  já são as melhores entre as cadastradas."), ainda-prejuízo ("Ainda dá prejuízo com o
+  melhor preço" + orientação para revisar preço de venda ou custos) e sem dados ("Sem
+  dados de fornecedores", CTA "Gerenciar insumos"). O cartão é informativo: <b>o
+  veredicto, margem e markup do ticket nunca mudam sozinhos.</b></li>
+</ul>
+<p class="cap">[Figura 6 — captura de tela pendente: ticket com EconomySummaryCard]</p>
+
+<h2>6.3 Histórico de auditoria</h2>
+<ul>
+  <li>Acesso: rota nomeada <code>/audit-logs</code> (tela "Auditoria", registrada no
+  <code>main.dart</code>; no MVP não há entrada nova no menu lateral — evolução
+  prevista).</li>
+</ul>
+<p class="cap">[Figura 7 — captura de tela pendente: tela Auditoria com timeline]</p>
+<ul>
+  <li>Lista somente leitura dos eventos
+  (<code>ingredient.create/update/delete</code>,
+  <code>offer.create/update/delete/toggleActive/setActive</code>,
+  <code>migration.legacyToOffer</code>) agrupada por dia ("Hoje"/"Ontem"/data), com
+  ícone dourado por tipo (vermelho nas exclusões), resumo em PT-BR, detalhe "de R$ X
+  para R$ Y" e hora; toque abre o detalhe completo (timestamp, valores anterior →
+  novo, fornecedor).</li>
+  <li>Filtros: busca "Buscar por ação, produto ou fornecedor…" e chips [Tudo, Insumos,
+  Ofertas, Produtos, Sistema]. Estado vazio: "Nenhuma ação registrada". Registros
+  recebem <code>expireAt</code> de 180 dias (retenção definida; limpeza automática é
+  evolução).</li>
+</ul>
+<p class="cap">[Figura 8 — captura de tela pendente: bottom sheet de detalhe de um
+log]</p>
+
+<!-- ================= 7. CONSIDERAÇÕES FINAIS ================= -->
+<h1 style="page-break-before: always">7. Considerações Finais</h1>
+<p>O Sprint 2 entregou a Proposta A completa: comparativo de fornecedores por
+preço/unidade com ranking, oferta ativa escolhida manualmente alimentando o ticket,
+cartão de economia informativo, auditoria append-only de todas as mutações de preço e
+migração lazy/idempotente dos insumos legados. A política de deploy ficou definida e
+deve ser seguida a cada atualização: <b>publicar <code>firestore.rules</code> antes de
+distribuir o app</b>, porque o app novo grava em <code>price_audit_logs</code> desde a
+primeira mutação e o batch falharia com as regras antigas.</p>
+<p>Critérios de aceite verificados: o comparativo ordena por preço/unidade ascendente;
+os marcadores "ATIVA" e "★ melhor" aparecem no comparativo e na lista de insumos;
+<code>packagePrice &lt;= 0</code> ou <code>packageQuantity &lt;= 0</code> são
+rejeitados (validação no formulário e <code>StateError</code> no serviço); o ticket
+usa a oferta ativa com o cartão de economia informativo ("Nada foi alterado no
+ticket."); upsert por fornecedor normalizado não duplica; editar/excluir uma oferta
+não afeta as demais; documento legado sem <code>offers</code> recebe 1 oferta
+sintética com custo do ticket inalterado; os logs são append-only (update/delete
+negados nas regras) e outro UID não lê logs nem ofertas; a ordenação é estável com
+empate por centavos (tolerância de 0,005); o formulário bloqueia a 16ª oferta;
+<code>dart analyze .</code> limpo (o <code>flutter analyze</code> crasha apenas por o
+caminho do workspace conter "(Cópia)") e sem comentários novos no Dart.</p>
+<p>Testes: 23 testes unitários da lógica pura em
+<code>test/offer_comparator_test.dart</code> cobrindo <code>rank</code> (5),
+<code>bestOffer</code> (5), <code>syntheticLegacyOffer</code> (1),
+<code>hasDifferentPackageSizes</code> (4), <code>bestSupplierScenario</code> (7) e
+<code>deltaUnit</code> (1) — casos de ordenação ascendente, delta vs. ativa,
+<code>rankAll</code> com inativas, tolerância de 0,005, arredondamento sem falsa
+economia, <code>stillLoss</code> e linhas <code>missing</code>. Suíte completa do
+projeto: <b>24/24 aprovados</b> (<code>flutter test</code>), com
+<code>dart analyze .</code> reportando "No issues found!".</p>
+<p>Próximos passos (v1.1+): migração de <code>offers[]</code> para subcoleção quando o
+volume de ofertas justificar, endurecimento das rules com validação de campos do log,
+política de TTL/limpeza dos registros com <code>expireAt</code>, entrada da Auditoria
+no menu, histórico completo de preços por insumo, lista de compras por fornecedor,
+exportação CSV da auditoria e paginação ("Carregar mais") da tela de auditoria.</p>
+
+</body>
+</html>

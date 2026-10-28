@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protótipo Redesign · Produtos / Insumos / Ofertas · CashCtrl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0D1E16;
+  --green:#165A41;
+  --gold:#B89775;
+  --card:#142A20;
+  --txt2:#7A8B83;
+  --border:#1E3A2C;
+  --success:#6FCF97;
+  --danger:#E4726D;
+  --warning:#D9A05B;
+  --txt3:#5E6E66;
+  --txt-body:#E8EFEA;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background:#07120d;
+  color:var(--txt-body);
+  font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  padding:40px 24px;
+  min-height:100vh;
+}
+
+h1 { font-size:20px; font-weight:700; color:#fff; }
+h1 span { color:var(--gold); }
+.sub { color:var(--txt2); font-size:14px; margin:8px 0 10px; max-width:980px; line-height:1.55; }
+.legend { font-size:12px; color:var(--txt2); margin-bottom:28px; max-width:980px; line-height:1.65; }
+.legend b { color:var(--gold); font-weight:600; }
+.legend ul { margin:8px 0 0 18px; }
+.legend li { margin-bottom:6px; }
+
+.row { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+.caption { font-size:12px; color:var(--txt2); margin-top:10px; text-align:center; max-width:330px; line-height:1.5; }
+.caption b { color:#fff; }
+
+.phone {
+  width:330px;
+  border:8px solid #000;
+  border-radius:34px;
+  box-shadow:0 0 0 1px var(--border), 0 20px 50px rgba(0,0,0,.55);
+  background:var(--bg);
+  overflow:hidden;
+  flex-shrink:0;
+  position:relative;
+}
+
+.status { display:flex; justify-content:space-between; padding:8px 18px 2px; font-size:11px; font-weight:600; color:var(--txt2); }
+.status .batt { display:inline-block; width:18px; height:9px; border:1px solid var(--txt2); border-radius:2px; position:relative; }
+.status .batt::after { content:''; position:absolute; top:2px; left:2px; right:6px; bottom:2px; background:var(--gold); border-radius:1px; }
+
+.appbar { display:flex; align-items:center; justify-content:center; position:relative; padding:12px 16px 10px; }
+.appbar .title { font-size:16px; font-weight:700; color:#fff; }
+.appbar .back { position:absolute; left:12px; color:#fff; width:40px; height:40px; display:flex; align-items:center; justify-content:center; }
+.appbar .action { position:absolute; right:12px; color:var(--gold); width:40px; height:40px; display:flex; align-items:center; justify-content:center; }
+
+.screen-body { padding:16px 16px 90px; }
+
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+
+.alert-banner {
+  display:flex;
+  gap:10px;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(217,160,91,.12);
+  border-left:3px solid var(--warning);
+  margin-bottom:12px;
+}
+.alert-banner .icon { color:var(--warning); flex-shrink:0; margin-top:1px; }
+.alert-banner .text { font-size:12px; color:var(--warning); line-height:1.5; }
+.alert-banner .text b { color:#fff; }
+
+.ing-card {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px;
+  margin-bottom:10px;
+}
+.ing-avatar {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--gold);
+  flex-shrink:0;
+}
+.ing-info { flex:1; min-width:0; }
+.ing-name { font-size:14px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ing-row { display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap; }
+.ing-price { font-size:16px; font-weight:700; color:var(--gold); font-variant-numeric:tabular-nums; }
+.ing-unit { font-size:12px; color:var(--txt2); }
+
+.pill {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  height:20px;
+  padding:0 8px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:700;
+}
+.pill-active { background:var(--green); color:#fff; }
+.pill-best { background:transparent; border:1px solid var(--gold); color:var(--gold); }
+.pill-count { background:rgba(255,255,255,.08); color:var(--txt2); }
+
+.icon-btn {
+  width:48px;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--gold);
+  background:transparent;
+  border:none;
+  flex-shrink:0;
+}
+
+.fab {
+  position:absolute;
+  right:16px;
+  bottom:20px;
+  width:56px;
+  height:56px;
+  border-radius:16px;
+  background:var(--green);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+}
+
+.search {
+  height:48px;
+  padding:0 14px;
+  border-radius:12px;
+  background:var(--card);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--txt2);
+  font-size:14px;
+  margin-bottom:10px;
+}
+
+.chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:4px; }
+.chip {
+  height:32px;
+  padding:0 14px;
+  border-radius:999px;
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--txt2);
+  font-size:12px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.chip.sel { background:var(--green); border-color:var(--green); color:#fff; }
+.chip.gold { border-color:var(--gold); color:var(--gold); }
+.chip.gold.sel { background:rgba(184,151,117,.16); }
+
+.filter-label { font-size:11px; color:var(--txt2); margin:12px 0 6px 2px; }
+
+.summary-card {
+  padding:16px;
+  margin-bottom:12px;
+}
+.summary-card .label { font-size:12px; color:var(--txt2); }
+.summary-card .value { font-size:20px; font-weight:700; color:var(--gold); margin-top:4px; font-variant-numeric:tabular-nums; }
+.summary-card .unit { font-size:12px; color:var(--txt2); font-weight:500; }
+
+.offer-card {
+  padding:14px;
+  margin-bottom:10px;
+}
+.offer-header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.offer-supplier { font-size:14px; font-weight:600; color:#fff; }
+.offer-pkg { font-size:12px; color:var(--txt2); margin-top:2px; font-variant-numeric:tabular-nums; }
+.offer-price-row { display:flex; align-items:baseline; gap:8px; margin-top:10px; }
+.offer-price { font-size:16px; font-weight:700; color:var(--gold); font-variant-numeric:tabular-nums; }
+.offer-delta { font-size:12px; font-weight:700; color:var(--success); font-variant-numeric:tabular-nums; }
+.offer-actions { display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
+
+.btn-sm {
+  height:36px;
+  padding:0 14px;
+  border-radius:12px;
+  background:transparent;
+  border:1px solid var(--gold);
+  color:var(--gold);
+  font-size:14px;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-family:inherit;
+}
+.btn-sm.primary { background:var(--green); border-color:var(--green); color:#fff; }
+
+.bottom-cta {
+  position:absolute;
+  left:16px;
+  right:16px;
+  bottom:16px;
+  height:52px;
+  border-radius:12px;
+  background:var(--green);
+  color:#fff;
+  font-size:16px;
+  font-weight:600;
+  border:none;
+  font-family:inherit;
+}
+
+.eco-line {
+  padding:16px;
+  border-radius:16px;
+  background:var(--card);
+  border:1px solid var(--success);
+  margin-bottom:12px;
+}
+.eco-line .label { font-size:12px; color:var(--txt2); }
+.eco-line .value { font-size:20px; font-weight:700; color:var(--gold); margin-top:4px; font-variant-numeric:tabular-nums; }
+.eco-line .note { font-size:11px; color:var(--txt2); margin-top:2px; }
+
+.tabs { display:flex; gap:8px; margin-bottom:12px; }
+.tab { flex:1; height:40px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--txt2); font-size:14px; font-weight:600; font-family:inherit; }
+.tab.sel { background:var(--green); border-color:var(--green); color:#fff; }
+
+.panel-card {
+  padding:14px;
+  margin-bottom:10px;
+}
+.panel-name { font-size:14px; font-weight:600; color:#fff; margin-bottom:8px; }
+.panel-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.panel-label { font-size:12px; color:var(--txt2); }
+.panel-val { font-size:12px; color:#fff; font-weight:600; font-variant-numeric:tabular-nums; }
+.panel-best { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--gold); margin-top:8px; font-variant-numeric:tabular-nums; }
+.panel-delta { font-size:12px; font-weight:700; color:var(--success); font-variant-numeric:tabular-nums; }
+
+.verdict-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height:26px;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(111,207,151,.14);
+  color:var(--success);
+  font-size:12px;
+  font-weight:600;
+}
+
+.policy-note {
+  font-size:12px;
+  color:var(--txt2);
+  margin:12px 0;
+  line-height:1.5;
+}
+
+.review {
+  margin-top:42px;
+  padding:20px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  max-width:980px;
+}
+.review h3 { font-size:16px; font-weight:600; color:#fff; margin-bottom:12px; }
+.review ol { margin-left:18px; color:var(--txt-body); font-size:12px; line-height:1.7; }
+.review li span { color:var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>Redesign · <span>CashCtrl</span> Produtos / Insumos / Ofertas</h1>
+<p class="sub">Protótipo das três telas do domínio de produtos: lista de insumos, ranking de ofertas de um insumo e comparativo geral de preços.</p>
+<p class="legend">
+  <b>O que MUDOU vs app atual:</b>
+  <ul>
+    <li>AlertBanner unificado substitui os 4 banners laranja inline duplicados em <code>ingredient_offers</code>, <code>compare_prices</code>, <code>product_detail</code> e <code>ingredient_form</code>.</li>
+    <li>Toggle "só com economia" movido da linha solitária para a <span>mesma linha de chips</span> de filtro, reduzindo scroll.</li>
+    <li>Comparar preços ganha labels de seção "Ordenar por" / "Fornecedor" separando as duas linhas de chips.</li>
+    <li>Veredito de sentence case "Dá lucro" / "Dá prejuízo" (era ALL CAPS).</li>
+    <li>Ícone de loja explícito no card de insumo elimina o gesto oculto de long-press.</li>
+    <li>Todo preço/un e delta usa <code>tabular-nums</code> e a cor --gold.</li>
+  </ul>
+  <b>Itens para sua aprovação:</b>
+  <ul>
+    <li>AlertBanner com borda esquerda 3 px --warning e fundo 12 % (proposto) ou banner full-border?</li>
+    <li>Cor --warning <span>#D9A05B</span> como token definitivo para avisos.</li>
+    <li>Chips de fornecedor no comparativo: manter iniciais (SJ, DC) ou nomes completos?</li>
+  </ul>
+</p>
+
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
+        <span class="title">Insumos</span>
+        <span class="action"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+      </div>
+      <div class="screen-body">
+        <div class="alert-banner">
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg></span>
+          <span class="text"><b>Atenção:</b> embalagens de tamanhos diferentes. Compare o preço por unidade.</span>
+        </div>
+
+        <div class="card ing-card">
+          <div class="ing-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+          <div class="ing-info">
+            <div class="ing-name">Queijo mussarela</div>
+            <div class="ing-row">
+              <span class="pill pill-count">3 ofertas</span>
+              <span class="pill pill-active">ATIVA</span>
+              <span class="pill pill-best">melhor</span>
+            </div>
+          </div>
+          <div style="text-align:right; margin-right:6px;">
+            <div class="ing-price">R$ 37,80<span class="ing-unit">/kg</span></div>
+            <div style="font-size:11px; color:var(--txt2); margin-top:2px;">toque p/ editar</div>
+          </div>
+          <button class="icon-btn" title="Ver ofertas"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg></button>
+        </div>
+
+        <div class="card ing-card">
+          <div class="ing-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22h20M2 6h20M2 10h20M2 14h20M2 18h20"/></svg></div>
+          <div class="ing-info">
+            <div class="ing-name">Pão de forma</div>
+            <div class="ing-row">
+              <span class="pill pill-count">5 ofertas</span>
+              <span class="pill pill-active">ATIVA</span>
+            </div>
+          </div>
+          <div style="text-align:right; margin-right:6px;">
+            <div class="ing-price">R$ 0,21<span class="ing-unit">/un</span></div>
+          </div>
+          <button class="icon-btn" title="Ver ofertas"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg></button>
+        </div>
+
+        <div class="card ing-card">
+          <div class="ing-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 12h8M12 8v8"/></svg></div>
+          <div class="ing-info">
+            <div class="ing-name">Fermento gói</div>
+            <div class="ing-row">
+              <span class="pill pill-count">2 ofertas</span>
+              <span class="pill pill-best">melhor</span>
+            </div>
+          </div>
+          <div style="text-align:right; margin-right:6px;">
+            <div class="ing-price">R$ 1,45<span class="ing-unit">/un</span></div>
+          </div>
+          <button class="icon-btn" title="Ver ofertas"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg></button>
+        </div>
+
+        <div class="card ing-card">
+          <div class="ing-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg></div>
+          <div class="ing-info">
+            <div class="ing-name">Café torrado</div>
+            <div class="ing-row">
+              <span class="pill pill-count">4 ofertas</span>
+              <span class="pill pill-active">ATIVA</span>
+            </div>
+          </div>
+          <div style="text-align:right; margin-right:6px;">
+            <div class="ing-price">R$ 79,80<span class="ing-unit">/kg</span></div>
+          </div>
+          <button class="icon-btn" title="Ver ofertas"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M5 14v6h14v-6"/></svg></button>
+        </div>
+      </div>
+      <button class="fab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+    <p class="caption"><b>Insumos</b> — card com nome, contagem de ofertas, preço/un --gold tabular, chip ATIVA/melhor e ícone de loja 48 dp explícito. Toque no card edita.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
+        <span class="title">Ofertas de Queijo mussarela</span>
+      </div>
+      <div class="screen-body">
+        <div class="card summary-card">
+          <div class="label">Economia possível</div>
+          <div class="value">R$ 4,20 <span class="unit">/kg</span></div>
+        </div>
+
+        <div class="alert-banner">
+          <span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg></span>
+          <span class="text"><b>Limite de 15 ofertas atingido.</b> Para adicionar outra, remova uma existente.</span>
+        </div>
+
+        <div class="policy-note">Você escolhe qual oferta entra no ticket. O app não troca sozinho.</div>
+
+        <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Buscar fornecedor…</div>
+
+        <div class="chips">
+          <span class="chip sel">Todas</span>
+          <span class="chip">Ativas</span>
+          <span class="chip">Inativas</span>
+          <span class="chip">Padrão</span>
+          <span class="chip gold"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> só com economia</span>
+        </div>
+
+        <div class="offer-card card">
+          <div class="offer-header">
+            <div>
+              <div class="offer-supplier">Distribuidora Central</div>
+              <div class="offer-pkg">R$ 37,80 · 1 kg</div>
+            </div>
+            <span class="pill pill-active">ATIVA</span>
+          </div>
+          <div class="offer-price-row">
+            <span class="offer-price">R$ 37,80<span style="font-size:12px; color:var(--txt2); font-weight:500;">/kg</span></span>
+          </div>
+          <div class="offer-actions">
+            <button class="btn-sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
+          </div>
+        </div>
+
+        <div class="offer-card card">
+          <div class="offer-header">
+            <div>
+              <div class="offer-supplier">Atacão São Jorge</div>
+              <div class="offer-pkg">R$ 79,80 · 2 kg</div>
+            </div>
+            <span class="pill pill-best">melhor</span>
+          </div>
+          <div class="offer-price-row">
+            <span class="offer-price">R$ 39,90<span style="font-size:12px; color:var(--txt2); font-weight:500;">/kg</span></span>
+            <span class="offer-delta">−5,3%</span>
+          </div>
+          <div class="offer-actions">
+            <button class="btn-sm primary">Usar no ticket</button>
+            <button class="btn-sm">Editar</button>
+          </div>
+        </div>
+
+        <div class="offer-card card">
+          <div class="offer-header">
+            <div>
+              <div class="offer-supplier">Maciel &amp; Filhos</div>
+              <div class="offer-pkg">R$ 212,50 · 5 kg</div>
+            </div>
+          </div>
+          <div class="offer-price-row">
+            <span class="offer-price">R$ 42,50<span style="font-size:12px; color:var(--txt2); font-weight:500;">/kg</span></span>
+            <span class="offer-delta">−12,4%</span>
+          </div>
+          <div class="offer-actions">
+            <button class="btn-sm primary">Usar no ticket</button>
+            <button class="btn-sm">Editar</button>
+          </div>
+        </div>
+      </div>
+      <button class="bottom-cta">Adicionar oferta</button>
+    </div>
+    <p class="caption"><b>Ofertas</b> — summary econômico, AlertBanner unificado, toggle "só com economia" na linha de chips e cards com preço/un tabular + delta --success.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="status"><span>09:41</span><span class="batt"></span></div>
+      <div class="appbar">
+        <span class="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
+        <span class="title">Comparar preços</span>
+      </div>
+      <div class="screen-body">
+        <div class="tabs">
+          <button class="tab sel">Por produto</button>
+          <button class="tab">Por fornecedor</button>
+        </div>
+
+        <div class="eco-line">
+          <div class="label">Economia se tudo no melhor fornecedor:</div>
+          <div class="value">R$ 14,32</div>
+          <div class="note">por unidade · 3 insumos</div>
+        </div>
+
+        <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Buscar produto ou fornecedor…</div>
+
+        <div class="filter-label">Ordenar por</div>
+        <div class="chips">
+          <span class="chip sel">Maior economia</span>
+          <span class="chip">Menor preço</span>
+          <span class="chip">Nome</span>
+        </div>
+
+        <div class="filter-label">Fornecedor</div>
+        <div class="chips">
+          <span class="chip sel">Todos</span>
+          <span class="chip">SJ</span>
+          <span class="chip">DC</span>
+          <span class="chip">BF</span>
+          <span class="chip">MC</span>
+        </div>
+
+        <div class="panel-card card">
+          <div class="panel-name">Café torrado</div>
+          <div class="panel-row"><span class="panel-label">No ticket</span><span class="panel-val">Empório do Café · R$ 88,00/kg</span></div>
+          <div class="panel-row"><span class="panel-label">Melhor</span><span class="panel-val panel-best"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Atacão São Jorge · R$ 79,80/kg</span></div>
+          <div class="panel-row" style="margin-top:8px;"><span class="panel-label">Delta por insumo</span><span class="panel-delta">−R$ 8,20/kg</span></div>
+        </div>
+
+        <div class="panel-card card">
+          <div class="panel-name">Queijo mussarela</div>
+          <div class="panel-row"><span class="panel-label">No ticket</span><span class="panel-val">Atacão São Jorge · R$ 39,90/kg</span></div>
+          <div class="panel-row"><span class="panel-label">Melhor</span><span class="panel-val panel-best"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Distribuidora Central · R$ 37,80/kg</span></div>
+          <div class="panel-row" style="margin-top:8px;"><span class="panel-label">Delta por insumo</span><span class="panel-delta">−R$ 4,20/kg</span></div>
+        </div>
+
+        <div class="panel-card card">
+          <div class="panel-name">Copo descartável 200 ml</div>
+          <div class="panel-row"><span class="panel-label">No ticket</span><span class="panel-val">Atacão São Jorge · R$ 0,19/un</span></div>
+          <div class="panel-row"><span class="panel-label">Melhor</span><span class="panel-val panel-best"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Distribuidora Central · R$ 0,17/un</span></div>
+          <div class="panel-row" style="margin-top:8px;"><span class="panel-label">Delta por insumo</span><span class="panel-delta">−R$ 1,92/un</span></div>
+        </div>
+
+        <div class="card" style="padding:14px; margin-top:12px;">
+          <div style="font-size:12px; color:var(--txt2); margin-bottom:8px;">Exemplo de veredito no ticket:</div>
+          <span class="verdict-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Dá lucro</span>
+          <div style="font-size:11px; color:var(--txt2); margin-top:8px; line-height:1.5;">Era "ESTE PRODUTO DÁ LUCRO" em ALL CAPS. Proposta: sentence case.</div>
+        </div>
+
+        <div class="policy-note">Você escolhe qual oferta entra no ticket. O app não troca sozinho.</div>
+      </div>
+    </div>
+    <p class="caption"><b>Comparar preços</b> — eco-line hero com borda --success, labels de seção separando as duas linhas de chips e painel por produto com delta por insumo.</p>
+  </div>
+
+</div>
+
+<div class="review">
+  <h3>Decisões pendentes</h3>
+  <ol>
+    <li>AlertBanner: manter <span>borda esquerda 3 px</span> e fundo 12 % (proposto) ou usar full border?</li>
+    <li>Aprovar cor derivada <span>--warning #D9A05B</span> para todos os avisos do app?</li>
+    <li>Chips de fornecedor no comparativo: manter <span>iniciais</span> (SJ, DC) com legenda ou exibir nome completo?</li>
+  </ol>
+</div>
+
+</body>
+</html>
