@@ -20,7 +20,6 @@ void main() {
         packagingCost: 5.5,
         salePrice: 80.0,
         barcode: '7891234567890',
-        photoUrl: 'https://example.com/bolo.png',
         createdAt: DateTime(2024, 6, 15, 10, 30),
       );
 
@@ -39,7 +38,6 @@ void main() {
       expect(restored.packagingCost, original.packagingCost);
       expect(restored.salePrice, original.salePrice);
       expect(restored.barcode, original.barcode);
-      expect(restored.photoUrl, original.photoUrl);
       expect(restored.createdAt, original.createdAt);
       expect(restored.toMap(), map);
     });
