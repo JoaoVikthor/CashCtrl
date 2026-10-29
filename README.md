@@ -1,4 +1,4 @@
-# ctrlcash
+# CashCtrl
 
 A new Flutter project.
 
