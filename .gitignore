@@ -70,3 +70,9 @@ app.*.map.json
 *.aab
 # Widget Preview related
 .widget_preview/
+
+# Artefatos locais fora do repositorio
+Banner ctrlCash.jpeg
+Lembretes para a versao web
+flutter_01.png
+imagens/
