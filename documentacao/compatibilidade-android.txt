@@ -1,0 +1,63 @@
+CASHCTRL — COMPATIBILIDADE DE VERSÕES DO ANDROID
+=================================================
+Gerado em: 29/10/2026
+Fontes: android/app/build.gradle.kts, pubspec.yaml, Flutter SDK 3.47.2 (estável)
+
+1. RESUMO DO SUPORTE
+--------------------
+O app CashCtrl roda em qualquer dispositivo Android com:
+
+  - Mínimo: Android 7.0 (Nougat) — API 24
+  - Alvo:   Android 16 (API 36)
+  - Testado/compilado contra o SDK Android 16 (API 36)
+
+Ou seja, qualquer celular ou tablet com Android 7.0 ou mais recente
+(Android 7, 8, 9, 10, 11, 12, 12L, 13, 14, 15, 16) é compatível.
+
+2. ONDE ISSO É DEFINIDO
+-----------------------
+O projeto não fixa números manualmente. Em android/app/build.gradle.kts:
+
+    compileSdk = flutter.compileSdkVersion   // = 36 (Android 16)
+    minSdk     = flutter.minSdkVersion       // = 24 (Android 7.0)
+    targetSdk  = flutter.targetSdkVersion    // = 36 (Android 16)
+
+Esses valores vêm do Flutter SDK instalado (Flutter 3.47.2, Dart 3.13.2).
+Se o Flutter for atualizado no futuro, os tetos podem subir junto.
+
+3. TABELA API NÍVEL x VERSÃO ANDROID (referência)
+-------------------------------------------------
+  API 24  Android 7.0        Nougat      <- mínimo do app
+  API 26  Android 8.0        Oreo
+  API 28  Android 9          Pie
+  API 29  Android 10         Quiche Island
+  API 31  Android 12         Snow Cone
+  API 33  Android 13         Tiramisu
+  API 34  Android 14         Upside Down Cake
+  API 35  Android 15         Vanilla Ice Cream
+  API 36  Android 16         <- alvo do app (target/compile)
+
+4. REGRAS DE DISTRIBUIÇÃO (Google Play)
+---------------------------------------
+- A Play Store exige apps novos/atualizados com targetSdk alto
+  (a política atual exige API >= 35 para novos envios; o app está em 36, ok).
+- Dispositivos abaixo da API 24 não recebem o app na loja (filtro de minSdk).
+
+5. OBSERVAÇÕES
+--------------
+- A linha "min_sdk_android: 21" no pubspec.yaml NÃO controla o build:
+  ela é apenas a configuração do gerador de ícones (flutter_launcher_icons),
+  que serve só para gerar o ícone adaptativo. O minSdk real do app é 24
+  (padrão do Flutter 3.47.2).
+- O build do app é habilitado apenas para Android ("android: true");
+  iOS está desabilitado ("ios: false") no mesmo bloco de ícones, e o foco
+  do projeto é Android + web (a versão web tem requisitos próprios de
+  navegador, não cobertos neste documento).
+- Firebase (Auth/Firestore/Storage) via firebase_core ^3.0.0 não impõe
+  requisito acima do minSdk do Flutter na prática (Play Services necessário
+  apenas para fluxos específicos de login social).
+
+6. COMO CONFERIR/ATUALIZAR
+--------------------------
+  flutter --version          # mostra o SDK e seus padrões
+  cat android/app/build.gradle.kts | grep -E "minSdk|targetSdk|compileSdk"
