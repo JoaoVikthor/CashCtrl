@@ -262,7 +262,7 @@ class ProductDetailScreen extends StatelessWidget {
                               fontSize: AppTypography.caption))
                     else
                       Text(
-                          '${line.item.quantity.toStringAsFixed(line.item.quantity % 1 == 0 ? 0 : 2)} ${line.ingredient?.unit.label ?? ''} × ${formatCurrencyAbs(line.unitPrice)}/${line.ingredient?.unit.label ?? ''}',
+                          '${formatQuantity(line.item.quantity)} ${line.item.inputUnit ?? line.ingredient?.unit.label ?? ''}',
                           style: const TextStyle(
                               color: AppColors.textSec,
                               fontSize: AppTypography.caption)),
@@ -279,7 +279,7 @@ class ProductDetailScreen extends StatelessWidget {
                             color: AppColors.textSec,
                             fontSize: AppTypography.caption)),
                     Text(
-                        line.missing
+                        line.missing || line.inconvertible
                             ? '—'
                             : formatCurrencyAbs(line.lineCost),
                         style: const TextStyle(

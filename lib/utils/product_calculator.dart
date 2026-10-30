@@ -1,5 +1,7 @@
 import '../models/ingredient.dart';
 import '../models/product.dart';
+import 'sebrae_rules.dart';
+import 'unit_converter.dart';
 
 /// Resultado do calculo do ticket de um produto.
 class TicketResult {
@@ -41,6 +43,7 @@ class LineCost {
   final double unitPrice;
   final double lineCost;
   final bool missing;
+  final bool inconvertible;
 
   const LineCost({
     required this.item,
@@ -48,6 +51,7 @@ class LineCost {
     required this.unitPrice,
     required this.lineCost,
     required this.missing,
+    this.inconvertible = false,
   });
 }
 
@@ -79,14 +83,34 @@ class ProductCalculator {
         continue;
       }
       final unitPrice = ing.pricePerUnit;
-      final lineCost = unitPrice * item.quantity;
-      ingredientsTotal += lineCost;
+      final inputUnit = item.inputUnit ?? ing.unit.label;
+      final conversion = UnitConverter.convertToIngredientUnit(
+        item.quantity,
+        inputUnit,
+        ing.unit.label,
+        averageUnitWeightGrams: ing.averageUnitWeightGrams,
+      );
+      final inconvertible = !conversion.converted &&
+          inputUnit.trim().toLowerCase() !=
+              ing.unit.label.trim().toLowerCase();
+      final effQty = SebraeRules.effectiveQuantity(
+        raw: item.quantity,
+        inputUnit: inputUnit,
+        baseUnit: ing.unit.label,
+        averageUnitWeightGrams: ing.averageUnitWeightGrams,
+        correctionFactor: ing.correctionFactor,
+      );
+      final lineCost = inconvertible ? 0.0 : effQty * unitPrice;
+      if (!inconvertible) {
+        ingredientsTotal += lineCost;
+      }
       lines.add(LineCost(
         item: item,
         ingredient: ing,
         unitPrice: unitPrice,
         lineCost: lineCost,
         missing: false,
+        inconvertible: inconvertible,
       ));
     }
 

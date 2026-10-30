@@ -13,8 +13,8 @@ void main() {
         name: 'Bolo de Chocolate',
         description: 'Bolo caseiro',
         recipe: [
-          RecipeItem(ingredientId: 'farinha', ingredientName: 'Farinha', quantity: 500),
-          RecipeItem(ingredientId: 'acucar', ingredientName: 'Acucar', quantity: 200),
+          RecipeItem(ingredientId: 'farinha', ingredientName: 'Farinha', quantity: 500, inputUnit: 'g'),
+          RecipeItem(ingredientId: 'acucar', ingredientName: 'Acucar', quantity: 200, inputUnit: 'kg'),
         ],
         laborCost: 15.0,
         packagingCost: 5.5,
@@ -33,7 +33,9 @@ void main() {
       expect(restored.recipe[0].ingredientId, original.recipe[0].ingredientId);
       expect(restored.recipe[0].ingredientName, original.recipe[0].ingredientName);
       expect(restored.recipe[0].quantity, original.recipe[0].quantity);
+      expect(restored.recipe[0].inputUnit, original.recipe[0].inputUnit);
       expect(restored.recipe[1].quantity, original.recipe[1].quantity);
+      expect(restored.recipe[1].inputUnit, original.recipe[1].inputUnit);
       expect(restored.laborCost, original.laborCost);
       expect(restored.packagingCost, original.packagingCost);
       expect(restored.salePrice, original.salePrice);
@@ -67,6 +69,8 @@ void main() {
         createdAt: now,
         offers: [offer],
         activeOfferId: 'o1',
+        averageUnitWeightGrams: 1000.0,
+        correctionFactor: 1.05,
       );
 
       final map = original.toMap();
@@ -79,6 +83,8 @@ void main() {
       expect(restored.packageQuantity, original.packageQuantity);
       expect(restored.createdAt, original.createdAt);
       expect(restored.activeOfferId, original.activeOfferId);
+      expect(restored.averageUnitWeightGrams, original.averageUnitWeightGrams);
+      expect(restored.correctionFactor, original.correctionFactor);
       expect(restored.offers.length, 1);
       expect(restored.offers[0].id, offer.id);
       expect(restored.offers[0].supplier, offer.supplier);
@@ -91,6 +97,129 @@ void main() {
       expect(restored.offers[0].createdAt, offer.createdAt);
       expect(restored.offers[0].updatedAt, offer.updatedAt);
       expect(restored.toMap(), map);
+    });
+
+    test('documento legado sem chaves novas usa defaults corretos', () {
+      final legacyMap = <String, dynamic>{
+        'name': 'Acucar',
+        'unit': 'kg',
+        'purchasePrice': 10.0,
+        'packageQuantity': 1.0,
+        'createdAt': DateTime(2024, 6, 15, 10, 30).toIso8601String(),
+        'offers': [],
+      };
+
+      final restored = Ingredient.fromMap('ing_legacy', legacyMap);
+
+      expect(restored.averageUnitWeightGrams, isNull);
+      expect(restored.correctionFactor, 1.0);
+      expect(restored.toMap()['averageUnitWeightGrams'], isNull);
+      expect(restored.toMap()['correctionFactor'], 1.0);
+    });
+
+    test('correctionFactor invalido ou <= 0 vira 1.0', () {
+      final baseMap = <String, dynamic>{
+        'name': 'Farinha',
+        'unit': 'kg',
+        'purchasePrice': 20.0,
+        'packageQuantity': 1.0,
+        'createdAt': DateTime(2024, 6, 15, 10, 30).toIso8601String(),
+        'offers': [],
+      };
+
+      final zero = Ingredient.fromMap('ing_zero', {...baseMap, 'correctionFactor': 0.0});
+      final negative = Ingredient.fromMap('ing_neg', {...baseMap, 'correctionFactor': -2.0});
+      final text = Ingredient.fromMap('ing_text', {...baseMap, 'correctionFactor': 'invalido'});
+
+      expect(zero.correctionFactor, 1.0);
+      expect(negative.correctionFactor, 1.0);
+      expect(text.correctionFactor, 1.0);
+    });
+
+    test('averageUnitWeightGrams <= 0 ou nao numerico vira null', () {
+      final baseMap = <String, dynamic>{
+        'name': 'Farinha',
+        'unit': 'kg',
+        'purchasePrice': 20.0,
+        'packageQuantity': 1.0,
+        'createdAt': DateTime(2024, 6, 15, 10, 30).toIso8601String(),
+        'offers': [],
+      };
+
+      final zero = Ingredient.fromMap('ing_w0', {...baseMap, 'averageUnitWeightGrams': 0.0});
+      final negative = Ingredient.fromMap('ing_wneg', {...baseMap, 'averageUnitWeightGrams': -100.0});
+      final text = Ingredient.fromMap('ing_wtext', {...baseMap, 'averageUnitWeightGrams': 'pesado'});
+
+      expect(zero.averageUnitWeightGrams, isNull);
+      expect(negative.averageUnitWeightGrams, isNull);
+      expect(text.averageUnitWeightGrams, isNull);
+    });
+
+    test('copyWith limpa averageUnitWeightGrams para null via sentinela', () {
+      final original = Ingredient(
+        id: 'ing1',
+        name: 'Ovo',
+        unit: IngredientUnit.unidade,
+        purchasePrice: 12.0,
+        packageQuantity: 12,
+        createdAt: DateTime(2024, 6, 15),
+        averageUnitWeightGrams: 55.0,
+      );
+
+      final cleared = original.copyWith(averageUnitWeightGrams: null);
+
+      expect(cleared.averageUnitWeightGrams, isNull);
+      expect(cleared.correctionFactor, original.correctionFactor);
+      expect(cleared.name, original.name);
+    });
+
+    test('copyWith preserva averageUnitWeightGrams quando sentinela nao e passada', () {
+      final original = Ingredient(
+        id: 'ing1',
+        name: 'Ovo',
+        unit: IngredientUnit.unidade,
+        purchasePrice: 12.0,
+        packageQuantity: 12,
+        createdAt: DateTime(2024, 6, 15),
+        averageUnitWeightGrams: 55.0,
+      );
+
+      final updated = original.copyWith(name: 'Ovo Grande');
+
+      expect(updated.averageUnitWeightGrams, 55.0);
+    });
+  });
+
+  group('RecipeItem roundtrip', () {
+    test('toMap seguido de fromMap preserva inputUnit', () {
+      final original = RecipeItem(
+        ingredientId: 'leite',
+        ingredientName: 'Leite',
+        quantity: 250,
+        inputUnit: 'ml',
+      );
+
+      final map = original.toMap();
+      final restored = RecipeItem.fromMap(map);
+
+      expect(restored.ingredientId, original.ingredientId);
+      expect(restored.ingredientName, original.ingredientName);
+      expect(restored.quantity, original.quantity);
+      expect(restored.inputUnit, original.inputUnit);
+      expect(restored.toMap(), map);
+    });
+
+    test('documento legado sem inputUnit mantem null', () {
+      final legacyMap = <String, dynamic>{
+        'ingredientId': 'manteiga',
+        'ingredientName': 'Manteiga',
+        'quantity': 100,
+      };
+
+      final restored = RecipeItem.fromMap(legacyMap);
+
+      expect(restored.inputUnit, isNull);
+      expect(restored.toMap()['inputUnit'], isNull);
     });
   });
 

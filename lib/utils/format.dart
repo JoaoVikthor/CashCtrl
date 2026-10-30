@@ -30,6 +30,16 @@ String formatCurrency(double value) {
 
 String formatCurrencyAbs(double value) => 'R\$ ${_fmt(value)}';
 
+String formatQuantity(double value) {
+  var s = value.toStringAsFixed(2);
+  if (s.endsWith('.00')) {
+    s = s.substring(0, s.length - 3);
+  } else if (s.endsWith('0')) {
+    s = s.substring(0, s.length - 1);
+  }
+  return s.replaceAll('.', ',');
+}
+
 String _pad(int n) => n < 10 ? '0$n' : '$n';
 
 String formatDate(DateTime d) =>

@@ -10,34 +10,40 @@ class RecipeItem {
   final String ingredientId;
   final String ingredientName;
   final double quantity;
+  final String? inputUnit;
 
   const RecipeItem({
     required this.ingredientId,
     required this.ingredientName,
     required this.quantity,
+    this.inputUnit,
   });
 
   factory RecipeItem.fromMap(Map<String, dynamic> m) => RecipeItem(
         ingredientId: (m['ingredientId'] ?? '') as String,
         ingredientName: (m['ingredientName'] ?? '') as String,
         quantity: ((m['quantity'] ?? 0) as num).toDouble(),
+        inputUnit: m['inputUnit'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
         'ingredientId': ingredientId,
         'ingredientName': ingredientName,
         'quantity': quantity,
+        'inputUnit': inputUnit,
       };
 
   RecipeItem copyWith({
     String? ingredientId,
     String? ingredientName,
     double? quantity,
+    String? inputUnit,
   }) =>
       RecipeItem(
         ingredientId: ingredientId ?? this.ingredientId,
         ingredientName: ingredientName ?? this.ingredientName,
         quantity: quantity ?? this.quantity,
+        inputUnit: inputUnit ?? this.inputUnit,
       );
 }
 

@@ -38,7 +38,7 @@ void main() {
       expect(result.converted, false);
     });
 
-    test('familias incompativeis nao convertem', () {
+    test('familias incompativeis nao convertem sem peso medio', () {
       final result = UnitConverter.convertToIngredientUnit(10, 'un', 'kg');
       expect(result.value, 10);
       expect(result.unit, 'un');
@@ -62,6 +62,73 @@ void main() {
       expect(result.value, 1);
       expect(result.unit, 'Kg');
       expect(result.converted, true);
+    });
+
+    group('com peso medio', () {
+      test('un para g', () {
+        final result = UnitConverter.convertToIngredientUnit(
+          2,
+          'un',
+          'g',
+          averageUnitWeightGrams: 120,
+        );
+        expect(result.value, 240);
+        expect(result.unit, 'g');
+        expect(result.converted, true);
+      });
+
+      test('un para kg', () {
+        final result = UnitConverter.convertToIngredientUnit(
+          0.5,
+          'un',
+          'kg',
+          averageUnitWeightGrams: 120,
+        );
+        expect(result.value, 0.06);
+        expect(result.unit, 'kg');
+        expect(result.converted, true);
+      });
+
+      test('g para un', () {
+        final result = UnitConverter.convertToIngredientUnit(
+          60,
+          'g',
+          'un',
+          averageUnitWeightGrams: 120,
+        );
+        expect(result.value, 0.5);
+        expect(result.unit, 'un');
+        expect(result.converted, true);
+      });
+
+      test('kg para un', () {
+        final result = UnitConverter.convertToIngredientUnit(
+          0.12,
+          'kg',
+          'un',
+          averageUnitWeightGrams: 120,
+        );
+        expect(result.value, 1);
+        expect(result.unit, 'un');
+        expect(result.converted, true);
+      });
+
+      test('un sem peso medio nao converte', () {
+        final resultNoPm = UnitConverter.convertToIngredientUnit(
+          1,
+          'un',
+          'g',
+        );
+        expect(resultNoPm.converted, false);
+
+        final resultZeroPm = UnitConverter.convertToIngredientUnit(
+          1,
+          'un',
+          'g',
+          averageUnitWeightGrams: 0,
+        );
+        expect(resultZeroPm.converted, false);
+      });
     });
   });
 
@@ -90,6 +157,29 @@ void main() {
     test('case-insensitive para litro', () {
       expect(UnitConverter.compatibleUnits('litro'), ['L', 'ml']);
       expect(UnitConverter.compatibleUnits('l'), ['L', 'ml']);
+    });
+
+    group('com peso medio', () {
+      test('kg inclui un', () {
+        expect(
+          UnitConverter.compatibleUnits('kg', hasAverageUnitWeight: true),
+          ['kg', 'g', 'un'],
+        );
+      });
+
+      test('g inclui un', () {
+        expect(
+          UnitConverter.compatibleUnits('g', hasAverageUnitWeight: true),
+          ['g', 'kg', 'un'],
+        );
+      });
+
+      test('volume nao inclui un', () {
+        expect(
+          UnitConverter.compatibleUnits('ml', hasAverageUnitWeight: true),
+          ['ml', 'L'],
+        );
+      });
     });
   });
 }

@@ -38,6 +38,27 @@ Product _product({
   );
 }
 
+Ingredient _sebraeIngredient({
+  required String id,
+  required String name,
+  required IngredientUnit unit,
+  required double purchasePrice,
+  required double packageQuantity,
+  double? averageUnitWeightGrams,
+  double correctionFactor = 1.0,
+}) {
+  return Ingredient(
+    id: id,
+    name: name,
+    unit: unit,
+    purchasePrice: purchasePrice,
+    packageQuantity: packageQuantity,
+    createdAt: DateTime(2024, 1, 1),
+    averageUnitWeightGrams: averageUnitWeightGrams,
+    correctionFactor: correctionFactor,
+  );
+}
+
 void main() {
   group('ProductCalculator.calculate', () {
     test('custo por ingrediente é quantidade vezes preco unitario', () {
@@ -251,6 +272,150 @@ void main() {
       final ticket = ProductCalculator.calculate(product, {});
 
       expect(ticket.markup, 0.0);
+    });
+  });
+
+  group('ProductCalculator com unidade digitada, Peso Médio e Fator', () {
+    test('cenário tomate: 0,5 un com pm 120 g e FC 1,5 custa R\$ 0,72', () {
+      final tomate = _sebraeIngredient(
+        id: 'tomate',
+        name: 'Tomate',
+        unit: IngredientUnit.kilo,
+        purchasePrice: 8,
+        packageQuantity: 1,
+        averageUnitWeightGrams: 120,
+        correctionFactor: 1.5,
+      );
+      final product = _product(
+        id: 'p1',
+        recipe: [
+          RecipeItem(
+              ingredientId: 'tomate',
+              ingredientName: 'Tomate',
+              quantity: 0.5,
+              inputUnit: 'un'),
+        ],
+      );
+
+      final ticket = ProductCalculator.calculate(product, {'tomate': tomate});
+      final line = ticket.lines.first;
+
+      expect(line.inconvertible, false);
+      expect(line.missing, false);
+      expect(line.lineCost, closeTo(0.72, 1e-9));
+      expect(ticket.ingredientsTotal, closeTo(0.72, 1e-9));
+      expect(ticket.hasMissingIngredients, false);
+    });
+
+    test('mesmo cenário sem Fator de Correção custa R\$ 0,48', () {
+      final tomate = _sebraeIngredient(
+        id: 'tomate',
+        name: 'Tomate',
+        unit: IngredientUnit.kilo,
+        purchasePrice: 8,
+        packageQuantity: 1,
+        averageUnitWeightGrams: 120,
+        correctionFactor: 1.0,
+      );
+      final product = _product(
+        id: 'p1',
+        recipe: [
+          RecipeItem(
+              ingredientId: 'tomate',
+              ingredientName: 'Tomate',
+              quantity: 0.5,
+              inputUnit: 'un'),
+        ],
+      );
+
+      final ticket = ProductCalculator.calculate(product, {'tomate': tomate});
+
+      expect(ticket.lines.first.lineCost, closeTo(0.48, 1e-9));
+      expect(ticket.ingredientsTotal, closeTo(0.48, 1e-9));
+    });
+
+    test('item legado sem inputUnit e FC 1,0 mantém o comportamento antigo', () {
+      final farinha = _sebraeIngredient(
+        id: 'farinha',
+        name: 'Farinha',
+        unit: IngredientUnit.kilo,
+        purchasePrice: 10,
+        packageQuantity: 2,
+        averageUnitWeightGrams: 120,
+        correctionFactor: 1.0,
+      );
+      final product = _product(
+        id: 'p1',
+        recipe: [
+          RecipeItem(
+              ingredientId: 'farinha', ingredientName: 'Farinha', quantity: 3),
+        ],
+      );
+
+      final ticket =
+          ProductCalculator.calculate(product, {'farinha': farinha});
+      final line = ticket.lines.first;
+
+      expect(line.inconvertible, false);
+      expect(line.unitPrice, 5.0);
+      expect(line.lineCost, 15.0);
+      expect(ticket.ingredientsTotal, 15.0);
+      expect(ticket.hasMissingIngredients, false);
+    });
+
+    test('un sem Peso Médio é inconvertível: custo zero e fora do total', () {
+      final tomate = _sebraeIngredient(
+        id: 'tomate',
+        name: 'Tomate',
+        unit: IngredientUnit.kilo,
+        purchasePrice: 8,
+        packageQuantity: 1,
+        correctionFactor: 1.5,
+      );
+      final product = _product(
+        id: 'p1',
+        recipe: [
+          RecipeItem(
+              ingredientId: 'tomate',
+              ingredientName: 'Tomate',
+              quantity: 0.5,
+              inputUnit: 'un'),
+        ],
+      );
+
+      final ticket = ProductCalculator.calculate(product, {'tomate': tomate});
+      final line = ticket.lines.first;
+
+      expect(line.inconvertible, true);
+      expect(line.missing, false);
+      expect(line.lineCost, 0.0);
+      expect(ticket.ingredientsTotal, 0.0);
+      expect(ticket.hasMissingIngredients, false);
+    });
+
+    test('volume com FC 1,5 ignora o Fator de Correção no custo', () {
+      final leite = _sebraeIngredient(
+        id: 'leite',
+        name: 'Leite',
+        unit: IngredientUnit.mililitro,
+        purchasePrice: 10,
+        packageQuantity: 1000,
+        correctionFactor: 1.5,
+      );
+      final product = _product(
+        id: 'p1',
+        recipe: [
+          RecipeItem(
+              ingredientId: 'leite', ingredientName: 'Leite', quantity: 1, inputUnit: 'L'),
+        ],
+      );
+
+      final ticket = ProductCalculator.calculate(product, {'leite': leite});
+      final line = ticket.lines.first;
+
+      expect(line.inconvertible, false);
+      expect(line.lineCost, closeTo(10.0, 1e-9));
+      expect(ticket.ingredientsTotal, closeTo(10.0, 1e-9));
     });
   });
 }

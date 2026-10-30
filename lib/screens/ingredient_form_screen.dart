@@ -37,6 +37,9 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       TextEditingController();
   final TextEditingController _offerPriceController = TextEditingController();
   final TextEditingController _offerQtyController = TextEditingController();
+  final TextEditingController _avgWeightController = TextEditingController();
+  final TextEditingController _correctionFactorController =
+      TextEditingController();
   final List<IngredientOffer> _pendingOffers = [];
   IngredientUnit _unit = IngredientUnit.grama;
   bool _saving = false;
@@ -60,6 +63,9 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
           e.packageQuantity.toStringAsFixed(e.packageQuantity % 1 == 0 ? 0 : 2)
               .replaceAll('.', ',');
       _unit = e.unit;
+      final pm = e.averageUnitWeightGrams;
+      _avgWeightController.text = pm != null ? formatQuantity(pm) : '';
+      _correctionFactorController.text = formatQuantity(e.correctionFactor);
     }
   }
 
@@ -72,6 +78,8 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     _offerProductNameController.dispose();
     _offerPriceController.dispose();
     _offerQtyController.dispose();
+    _avgWeightController.dispose();
+    _correctionFactorController.dispose();
     super.dispose();
   }
 
@@ -101,6 +109,22 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       AppToast.error(context, 'Informe a quantidade da embalagem (> 0).');
       return false;
     }
+    final pmText = _avgWeightController.text.trim();
+    if (pmText.isNotEmpty) {
+      final pm = double.tryParse(pmText.replaceAll(',', '.'));
+      if (pm == null || pm <= 0) {
+        AppToast.error(context, 'Peso médio da unidade inválido.');
+        return false;
+      }
+    }
+    final fcText = _correctionFactorController.text.trim();
+    if (fcText.isNotEmpty) {
+      final fc = double.tryParse(fcText.replaceAll(',', '.'));
+      if (fc == null || fc <= 0) {
+        AppToast.error(context, 'Fator de correção inválido.');
+        return false;
+      }
+    }
     return true;
   }
 
@@ -117,11 +141,19 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
           double.parse(_priceController.text.trim().replaceAll(',', '.'));
       final packageQuantity =
           double.parse(_qtyController.text.trim().replaceAll(',', '.'));
+      final pmText = _avgWeightController.text.trim();
+      final double? avgWeight =
+          pmText.isEmpty ? null : double.parse(pmText.replaceAll(',', '.'));
+      final fcText = _correctionFactorController.text.trim();
+      final double correctionFactor =
+          fcText.isEmpty ? 1.0 : double.parse(fcText.replaceAll(',', '.'));
       final ing = widget.editing?.copyWith(
             name: name,
             unit: _unit,
             purchasePrice: purchasePrice,
             packageQuantity: packageQuantity,
+            averageUnitWeightGrams: avgWeight,
+            correctionFactor: correctionFactor,
           ) ??
           Ingredient(
             id: '',
@@ -130,6 +162,8 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
             purchasePrice: purchasePrice,
             packageQuantity: packageQuantity,
             createdAt: DateTime.now(),
+            averageUnitWeightGrams: avgWeight,
+            correctionFactor: correctionFactor,
           );
       final prov2 = context.read<IngredientProvider>();
       if (widget.editing == null) {
@@ -338,6 +372,17 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
               ],
             ),
             const SizedBox(height: 16),
+            _field(_avgWeightController, 'Peso médio da unidade (g)',
+                Icons.scale_outlined,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true)),
+            const SizedBox(height: 16),
+            _field(_correctionFactorController, 'Fator de correção',
+                Icons.percent,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                hint: '1,0 = sem perdas'),
+            const SizedBox(height: 16),
             _buildPreview(),
             const SizedBox(height: 24),
             _buildDefaultSupplierSection(context),
@@ -363,6 +408,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       {TextInputType keyboardType = TextInputType.text,
       String? errorText,
       String? helperText,
+      String? hint,
       int? maxLength}) {
     return AppTextField(
       controller: c,
@@ -371,6 +417,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       keyboardType: keyboardType,
       errorText: errorText,
       helperText: helperText,
+      hint: hint,
       maxLength: maxLength,
     );
   }

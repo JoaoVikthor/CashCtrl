@@ -40,6 +40,8 @@ extension IngredientUnitExt on IngredientUnit {
 /// (quantidade da embalagem). O preco por unidade base e calculado em
 /// [pricePerUnit] e usado pelas fichas tecnicas para o ticket do produto.
 class Ingredient {
+  static const _unset = Object();
+
   final String id;
   final String name;
   final IngredientUnit unit;
@@ -48,6 +50,8 @@ class Ingredient {
   final DateTime createdAt;
   final List<IngredientOffer> offers;
   final String? activeOfferId;
+  final double? averageUnitWeightGrams;
+  final double correctionFactor;
 
   const Ingredient({
     required this.id,
@@ -58,6 +62,8 @@ class Ingredient {
     required this.createdAt,
     this.offers = const [],
     this.activeOfferId,
+    this.averageUnitWeightGrams,
+    this.correctionFactor = 1.0,
   });
 
   IngredientOffer? get activeOffer {
@@ -113,6 +119,18 @@ class Ingredient {
               IngredientOffer.fromMap(Map<String, dynamic>.from(e)))
           .toList();
     }
+    final rawAverageWeight = m['averageUnitWeightGrams'];
+    final parsedAverageWeight = rawAverageWeight is num ? rawAverageWeight.toDouble() : null;
+
+    final rawCorrectionFactor = m['correctionFactor'];
+    double correctionFactor;
+    if (rawCorrectionFactor is num) {
+      correctionFactor = rawCorrectionFactor.toDouble();
+      if (correctionFactor <= 0) correctionFactor = 1.0;
+    } else {
+      correctionFactor = 1.0;
+    }
+
     return Ingredient(
       id: id,
       name: (m['name'] ?? '') as String,
@@ -122,6 +140,8 @@ class Ingredient {
       createdAt: date,
       offers: offers,
       activeOfferId: m['activeOfferId'] as String?,
+      averageUnitWeightGrams: parsedAverageWeight != null && parsedAverageWeight > 0 ? parsedAverageWeight : null,
+      correctionFactor: correctionFactor,
     );
   }
 
@@ -133,6 +153,8 @@ class Ingredient {
         'createdAt': createdAt.toIso8601String(),
         'offers': offers.map((o) => o.toMap()).toList(),
         'activeOfferId': activeOfferId,
+        'averageUnitWeightGrams': averageUnitWeightGrams,
+        'correctionFactor': correctionFactor,
       };
 
   Ingredient copyWith({
@@ -143,6 +165,8 @@ class Ingredient {
     DateTime? createdAt,
     List<IngredientOffer>? offers,
     String? activeOfferId,
+    Object? averageUnitWeightGrams = _unset,
+    double? correctionFactor,
   }) =>
       Ingredient(
         id: id,
@@ -153,5 +177,7 @@ class Ingredient {
         createdAt: createdAt ?? this.createdAt,
         offers: offers ?? this.offers,
         activeOfferId: activeOfferId ?? this.activeOfferId,
+        averageUnitWeightGrams: averageUnitWeightGrams == _unset ? this.averageUnitWeightGrams : averageUnitWeightGrams as double?,
+        correctionFactor: correctionFactor ?? this.correctionFactor,
       );
 }

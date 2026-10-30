@@ -16,8 +16,9 @@ class UnitConverter {
   static UnitConversion convertToIngredientUnit(
     double rawValue,
     String inputUnit,
-    String ingredientUnit,
-  ) {
+    String ingredientUnit, {
+    double? averageUnitWeightGrams,
+  }) {
     if (rawValue <= 0) {
       return UnitConversion(value: rawValue, unit: inputUnit, converted: false);
     }
@@ -31,6 +32,39 @@ class UnitConverter {
 
     final massUnits = {'kg', 'g'};
     final volumeUnits = {'l', 'ml'};
+
+    final hasPm = averageUnitWeightGrams != null && averageUnitWeightGrams > 0;
+
+    if (hasPm && (input == 'un' || target == 'un')) {
+      if (input == 'un' && target == 'g') {
+        return UnitConversion(
+          value: rawValue * averageUnitWeightGrams,
+          unit: ingredientUnit,
+          converted: true,
+        );
+      }
+      if (input == 'un' && target == 'kg') {
+        return UnitConversion(
+          value: rawValue * averageUnitWeightGrams / 1000,
+          unit: ingredientUnit,
+          converted: true,
+        );
+      }
+      if (input == 'g' && target == 'un') {
+        return UnitConversion(
+          value: rawValue / averageUnitWeightGrams,
+          unit: ingredientUnit,
+          converted: true,
+        );
+      }
+      if (input == 'kg' && target == 'un') {
+        return UnitConversion(
+          value: rawValue * 1000 / averageUnitWeightGrams,
+          unit: ingredientUnit,
+          converted: true,
+        );
+      }
+    }
 
     if (massUnits.contains(input) && massUnits.contains(target)) {
       if (input == 'kg' && target == 'g') {
@@ -69,13 +103,20 @@ class UnitConverter {
     return UnitConversion(value: rawValue, unit: inputUnit, converted: false);
   }
 
-  static List<String> compatibleUnits(String ingredientUnit) {
+  static List<String> compatibleUnits(
+    String ingredientUnit, {
+    bool hasAverageUnitWeight = false,
+  }) {
     final unit = ingredientUnit.trim().toLowerCase();
     switch (unit) {
       case 'kg':
-        return const ['kg', 'g'];
+        return hasAverageUnitWeight
+            ? const ['kg', 'g', 'un']
+            : const ['kg', 'g'];
       case 'g':
-        return const ['g', 'kg'];
+        return hasAverageUnitWeight
+            ? const ['g', 'kg', 'un']
+            : const ['g', 'kg'];
       case 'l':
       case 'litro':
         return const ['L', 'ml'];

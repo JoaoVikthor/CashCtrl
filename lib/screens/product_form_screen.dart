@@ -10,6 +10,7 @@ import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
 import '../utils/format.dart';
 import '../utils/product_calculator.dart';
+import '../utils/sebrae_rules.dart';
 import '../utils/unit_converter.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_toast.dart';
@@ -54,6 +55,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           e.packagingCost.toStringAsFixed(2).replaceAll('.', ',');
       for (final r in e.recipe) {
         _recipe.add(r);
+        _recipeInputUnits.add(r.inputUnit ?? '');
         _qtyControllers.add(TextEditingController(
             text: r.quantity.toStringAsFixed(r.quantity % 1 == 0 ? 0 : 2)
                 .replaceAll('.', ',')));
@@ -88,8 +90,35 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       raw,
       _recipeInputUnits[index],
       ing?.unit.label ?? _recipeInputUnits[index],
+      averageUnitWeightGrams: ing?.averageUnitWeightGrams,
     );
     return result.value;
+  }
+
+  double _lineCost(int index, Map<String, Ingredient> ingredients) {
+    final item = _recipe[index];
+    final ing = ingredients[item.ingredientId];
+    if (ing == null) return 0.0;
+    final raw = _parse(_qtyControllers[index]);
+    final inputUnit = _recipeInputUnits[index];
+    final conversion = UnitConverter.convertToIngredientUnit(
+      raw,
+      inputUnit,
+      ing.unit.label,
+      averageUnitWeightGrams: ing.averageUnitWeightGrams,
+    );
+    final inconvertible = !conversion.converted &&
+        inputUnit.trim().toLowerCase() !=
+            ing.unit.label.trim().toLowerCase();
+    if (inconvertible) return 0.0;
+    final effQty = SebraeRules.effectiveQuantity(
+      raw: raw,
+      inputUnit: inputUnit,
+      baseUnit: ing.unit.label,
+      averageUnitWeightGrams: ing.averageUnitWeightGrams,
+      correctionFactor: ing.correctionFactor,
+    );
+    return effQty * ing.pricePerUnit;
   }
 
   bool _hasConversionWarning(int index, Map<String, Ingredient> ingredients) {
@@ -102,6 +131,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       raw,
       _recipeInputUnits[index],
       ing.unit.label,
+      averageUnitWeightGrams: ing.averageUnitWeightGrams,
     );
     return !result.converted && result.unit != ing.unit.label;
   }
@@ -155,16 +185,18 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     if (!_validate()) return;
     setState(() => _saving = true);
     try {
-      final ingredients = context.read<IngredientProvider>().asMap;
       final recipe = <RecipeItem>[];
       for (var i = 0; i < _recipe.length; i++) {
-        final qty = _convertedQuantity(i, ingredients);
+        final qty = _parse(_qtyControllers[i]);
         if (qty <= 0) {
           _toast('A quantidade de "${_recipe[i].ingredientName}" deve ser > 0.');
           setState(() => _saving = false);
           return;
         }
-        recipe.add(_recipe[i].copyWith(quantity: qty));
+        recipe.add(_recipe[i].copyWith(
+          quantity: qty,
+          inputUnit: _recipeInputUnits[i],
+        ));
       }
       final p = Product(
         id: widget.editing?.id ?? '',
@@ -200,8 +232,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   TicketResult _livePreview(Map<String, Ingredient> ingredients) {
     final recipe = <RecipeItem>[];
     for (var i = 0; i < _recipe.length; i++) {
-      recipe.add(_recipe[i].copyWith(
-          quantity: _convertedQuantity(i, ingredients)));
+      final item = _recipe[i];
+      recipe.add(RecipeItem(
+        ingredientId: item.ingredientId,
+        ingredientName: item.ingredientName,
+        quantity: _convertedQuantity(i, ingredients),
+      ));
     }
     final preview = Product(
       id: widget.editing?.id ?? '__preview__',
@@ -458,15 +494,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final item = _recipe[index];
     final ing = ingredients[item.ingredientId];
     if (_recipeInputUnits.length <= index) {
-      _recipeInputUnits.add(ing?.unit.label ?? 'un');
-    } else if (ing != null && _recipeInputUnits[index] == 'un') {
-      _recipeInputUnits[index] = ing.unit.label;
+      _recipeInputUnits.add(item.inputUnit ?? ing?.unit.label ?? 'un');
+    } else if (_recipeInputUnits[index].isEmpty) {
+      _recipeInputUnits[index] = item.inputUnit ?? ing?.unit.label ?? 'un';
     }
-    final qty = _convertedQuantity(index, ingredients);
-    final lineCost = ing != null ? ing.pricePerUnit * qty : 0.0;
     final compatible = ing != null
-        ? UnitConverter.compatibleUnits(ing.unit.label)
+        ? UnitConverter.compatibleUnits(
+            ing.unit.label,
+            hasAverageUnitWeight: ing.averageUnitWeightGrams != null &&
+                ing.averageUnitWeightGrams! > 0,
+          )
         : const <String>['un'];
+    if (ing != null && !compatible.contains(_recipeInputUnits[index])) {
+      _recipeInputUnits[index] = ing.unit.label;
+      _qtyControllers[index].text = '0';
+    }
+    final lineCost = _lineCost(index, ingredients);
     final showSelector = compatible.length > 1;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
