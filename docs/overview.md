@@ -2,7 +2,7 @@
 
 Aplicativo de controle financeiro pessoal e de negócio em Flutter com Firebase, focado em calcular o ticket das fichas técnicas para mostrar se cada item dá lucro ou prejuízo.
 
-**Versão definitiva: 1.0.0+1 (28/10/2026).** 30/10/2026 — Sprint 9: Desperdício (%) em lugar do Fator de Correção (fator = 100/(100−%), storage `correctionFactor` mantido) e campo de quantidade estilo calculadora (máscara por unidade); 213 testes verdes. 29/10/2026 — Sprint 8: regra Sebrae (Fator de Correção + Peso Médio) implementada de forma invisível; 176 testes verdes. Os módulos de foto (captura com `image_picker` e upload ao Firebase Storage) foram **removidos** do app, pois o upload não persistia; o avatar do perfil exibe as iniciais do nome. O leitor de código de barras também não faz mais parte do app. Login exclusivamente e-mail/senha.
+**Versão definitiva: 1.0.0+1 (30/10/2026).** 30/10/2026 — Sprint 10: custos extras divididos em Diarista/Horista/Comissionado (% sobre a venda, ao vivo), prévia de lucro dinâmica e máscara de quantidade kg/L com 2 casas; 221 testes verdes. 30/10/2026 — Sprint 9: Desperdício (%) em lugar do Fator de Correção (fator = 100/(100−%), storage `correctionFactor` mantido) e campo de quantidade estilo calculadora (máscara por unidade); 213 testes verdes. 29/10/2026 — Sprint 8: regra Sebrae (Peso Médio + Desperdício, à época "Fator de Correção") implementada de forma invisível; 176 testes verdes. Os módulos de foto (captura com `image_picker` e upload ao Firebase Storage) foram **removidos** do app, pois o upload não persistia; o avatar do perfil exibe as iniciais do nome. O leitor de código de barras também não faz mais parte do app. Login exclusivamente e-mail/senha. Fechamento 30/10: seção única 'Fornecedor' no cadastro de produto (duplicata 'Ofertas 0/15' removida na criação; contador N/15 e aviso de opcionalidade) e prévia 'Preço por unidade base' dinâmica no cadastro de produto; E2E validado no emulador (tomate R$10/1000 g com Desperdício 3% → 60 g custam R$ 0,62); APK release atual.
 
 ## Visão Geral
 
@@ -15,11 +15,12 @@ O CashCtrl é um app mobile/web de gestão financeira que permite ao usuário:
 - Analisar o desempenho em uma página única de relatórios (KPIs, receitas vs custos, custos por categoria e top 5) e exportar os dados para Excel (3 abas: Resumo, Mensal e Transações).
 - Cadastrar um parque de produtos (itens comprados para fabricar as fichas técnicas), com cálculo automático de preço por unidade.
 - Comparar ofertas de fornecedores por produto (preço por unidade, ranking com badges "ATIVA"/"melhor"), com nome do produto anunciado pelo fornecedor, escolhendo manualmente a oferta ativa que alimenta o ticket, com cartão informativo de economia possível.
-- Cadastrar ofertas já na criação do produto (mini-form inline de fornecedor + produto + preço + quantidade, até 15 ofertas).
+- Cadastrar ofertas já na criação do produto na seção única "Fornecedor" (opcional, até 15 ofertas).
 - Consultar o histórico de auditoria de preços (logs append-only em `price_audit_logs`; o campo `expireAt` é reservado para política TTL de 180 dias, a ativar no console).
-- Criar fichas técnicas (ex.: um sanduíche), selecionando produtos, quantidades, mão de obra e embalagem.
-- Visualizar o ticket da ficha técnica: custo por item com participação percentual no custo, custo total, ganho/perda e veredito final de lucro ou prejuízo.
-- O cadastro de produto admite Peso Médio da unidade (g) e Desperdício (%) (regra Sebrae) opcionais; na montagem da ficha a quantidade é digitada em campo estilo calculadora com máscara por unidade (un/pct com 1 casa, g/ml inteiro, kg/L com 3 casas) e o sistema converte e aplica o fator de correção de forma invisível (storage `correctionFactor` mantido), exibindo na linha do ticket apenas o valor final em dinheiro.
+- Criar fichas técnicas (ex.: um sanduíche), selecionando produtos, quantidades, custos extras (Diarista, Horista e Comissionado) e embalagem.
+- Visualizar o ticket da ficha técnica: custo por item com participação percentual no custo, custo total, ganho/perda e veredito final de lucro ou prejuízo; os custos extras são exibidos separados em Diarista, Horista e Comissionado, sendo o comissionado recalculado ao vivo sobre o preço de venda.
+- Todos os campos da ficha técnica (preço de venda, custos extras e quantidades) atualizam a prévia de lucro em tempo real.
+- O cadastro de produto admite Peso Médio da unidade (g) e Desperdício (%) (regra Sebrae) opcionais; na montagem da ficha a quantidade é digitada em campo estilo calculadora com máscara por unidade (un/pct com 1 casa, g/ml inteiro, kg/L com 2 casas) e o sistema converte e aplica o fator de correção de forma invisível (storage `correctionFactor` mantido), exibindo na linha do ticket apenas o valor final em dinheiro.
 - Editar perfil, configurar notificações, segurança e acessar a central de ajuda.
 
 ## Stack / Tecnologias
@@ -66,7 +67,7 @@ lib/
     ingredient.dart              # Produto (preço de compra → preço por unidade; ofertas[]; peso médio e Desperdício (%); storage `correctionFactor`)
     ingredient_offer.dart        # Oferta de fornecedor (supplier, productName, preço/qtd)
     price_audit_log.dart         # Log de auditoria de preços (append-only)
-    product.dart                 # Ficha técnica (receita + custos + venda; barcode legado)
+    product.dart                 # Ficha técnica (receita + custos extras em três tipos — Diarista, Horista, Comissionado — + venda; barcode legado)
   providers/                     # Estado global (ChangeNotifier + streams)
     user_provider.dart           # Perfil + negócio (Firestore)
     transaction_provider.dart    # Stream de transações
@@ -83,7 +84,7 @@ lib/
     transaction_form_screen.dart # Nova/editar transação
     budget_form_screen.dart      # Novo/editar orçamento
     ingredients_screen.dart      # Lista de produtos + atalho de comparação de preços
-    ingredient_form_screen.dart  # Cadastrar/editar produto (ofertas inline na criação)
+    ingredient_form_screen.dart  # Cadastrar/editar produto (fornecedor único inline na criação)
     ingredient_offers_screen.dart # Comparativo de fornecedores do produto
     offer_form_screen.dart       # Nova/editar oferta de fornecedor
     audit_logs_screen.dart       # Histórico de auditoria de preços, somente leitura
@@ -139,7 +140,7 @@ Todos os dados ficam sob `users/{uid}/...`, garantindo isolamento total por usu�
 - `users/{uid}/transactions/{txId}` — transações (tipo, categoria, valor, data, método de pagamento, recorrência)
 - `users/{uid}/budgets/{budgetId}` — orçamentos (categoria, limite mensal)
 - `users/{uid}/ingredients/{ingredientId}` — produtos (nome, unidade, preço de compra, quantidade da embalagem, `offers[]` com até 15 ofertas de fornecedores, `activeOfferId`, `averageUnitWeightGrams` (opcional) e `correctionFactor` (padrão 1.0; interface como Desperdício (%)))
-- `users/{uid}/products/{productId}` — fichas técnicas (nome, receita[] — cujas linhas guardam `inputUnit`, a unidade digitada, quando informada —, mão de obra, embalagem, preço de venda; `barcode` mantido apenas para legado)
+- `users/{uid}/products/{productId}` — fichas técnicas (nome, receita[] — cujas linhas guardam `inputUnit`, a unidade digitada, quando informada —, custos extras: `dailyRate`/`dailyDays`, `hourlyRate`/`hourlyHours`, `commissionPercent`; `laborCost` mantido como espelho do getter derivado; embalagem, preço de venda; `barcode` mantido apenas para legado; registros legados sem os novos campos são lidos como Diarista — rate = laborCost, dias = 1 — sem migração no Firestore)
 - `users/{uid}/price_audit_logs/{logId}` — logs de auditoria de preços (append-only: `action`, `entityType`, `entityId`, `summary`, preços antes/depois, `timestamp` serverTimestamp, `expireAt` +180 dias)
 
 ## O Ticket da Ficha Técnica (recurso central)
@@ -147,11 +148,11 @@ Todos os dados ficam sob `users/{uid}/...`, garantindo isolamento total por usu�
 O coração do app é mostrar ao usuário o ticket de cada ficha técnica. O fluxo:
 
 1. Usuário cadastra produtos no parque (ex.: pão R$ 10,00/20un → R$ 0,50/un), opcionalmente já com ofertas de fornecedores.
-2. Cria uma ficha técnica (ex.: "Sanduíche X") selecionando produtos e quantidades (2 fatias de pão, 100g de queijo, etc.), mão de obra e embalagem.
+2. Cria uma ficha técnica (ex.: "Sanduíche X") selecionando produtos e quantidades (2 fatias de pão, 100g de queijo, etc.), custos extras (Diarista, Horista, Comissionado) e embalagem.
 3. O app calcula: custo por item (qtd × preço por unidade), participação percentual de cada item no custo total, subtotal, custo total, preço de venda, lucro/prejuízo e margem. Quando o produto tem Peso Médio/Desperdício (%), a quantidade é convertida para a unidade-base e multiplicada pelo fator de correção (bruto = líquido × fator) antes de precificar — sem nada disso aparecer na tela; exemplo canônico: tomate R$ 10,00/kg, 3% de desperdício (fator ≈ 1,0309), 60 g líquidos → ~61,86 g brutos → ~R$ 0,62.
 4. O ticket mostra o veredito: "Dá lucro" ou "Dá prejuízo", com margem e markup.
 
-A fórmula exata: `custoTotal = Σ(qtd × preço/un) + mão de obra + embalagem`. Por isso o custo de uma ficha pode ser maior que a soma dos preços de compra dos insumos — mão de obra e embalagem entram no cálculo.
+A fórmula exata: `custoTotal = Σ(qtd × preço/un) + custosExtras + embalagem`, onde `custosExtras` é a soma de Diarista (`dailyRate × dailyDays`), Horista (`hourlyRate × hourlyHours`) e Comissionado (`commissionPercent` sobre o preço de venda). `laborCost` é o espelho persistido desse total. Por isso o custo de uma ficha pode ser maior que a soma dos preços de compra dos insumos — os custos extras e a embalagem entram no cálculo.
 
 ## Relatórios e Exportação
 

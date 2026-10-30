@@ -24,7 +24,12 @@ Product _product({
   required String id,
   required List<RecipeItem> recipe,
   double salePrice = 100,
-  double laborCost = 0,
+  double laborTotal = 0,
+  double dailyRate = 0,
+  double dailyDays = 0,
+  double hourlyRate = 0,
+  double hourlyHours = 0,
+  double commissionPercent = 0,
   double packagingCost = 0,
 }) {
   return Product(
@@ -32,7 +37,11 @@ Product _product({
     name: 'Produto $id',
     description: '',
     recipe: recipe,
-    laborCost: laborCost,
+    dailyRate: laborTotal > 0 ? laborTotal : dailyRate,
+    dailyDays: laborTotal > 0 ? 1 : dailyDays,
+    hourlyRate: hourlyRate,
+    hourlyHours: hourlyHours,
+    commissionPercent: commissionPercent,
     packagingCost: packagingCost,
     salePrice: salePrice,
     createdAt: DateTime(2024, 1, 1),
@@ -110,7 +119,7 @@ void main() {
         recipe: [
           RecipeItem(ingredientId: 'ing1', ingredientName: 'Ingrediente', quantity: 2),
         ],
-        laborCost: 10,
+        laborTotal: 10,
         packagingCost: 5,
       );
 
@@ -131,7 +140,7 @@ void main() {
         recipe: [
           RecipeItem(ingredientId: 'ing1', ingredientName: 'Ingrediente', quantity: 1),
         ],
-        laborCost: 20,
+        laborTotal: 20,
         packagingCost: 10,
       );
 
@@ -447,6 +456,113 @@ void main() {
       expect(line.inconvertible, false);
       expect(line.lineCost, closeTo(10.0, 1e-9));
       expect(ticket.ingredientsTotal, closeTo(10.0, 1e-9));
+    });
+  });
+
+  group('ProductCalculator com custos extras desagregados', () {
+    test('comissao de 10% sobre venda R\$ 25 reduz lucro em 2,5', () {
+      final product = _product(
+        id: 'p1',
+        recipe: [],
+        salePrice: 25,
+        commissionPercent: 10,
+      );
+
+      final ticket = ProductCalculator.calculate(product, {});
+
+      expect(ticket.commissionCost, 2.5);
+      expect(ticket.laborCost, 2.5);
+      expect(ticket.totalCost, 2.5);
+      expect(ticket.profit, 22.5);
+    });
+
+    test('comissao com preco de venda zero fica zero', () {
+      final product = _product(
+        id: 'p1',
+        recipe: [],
+        salePrice: 0,
+        commissionPercent: 10,
+      );
+
+      final ticket = ProductCalculator.calculate(product, {});
+
+      expect(ticket.commissionCost, 0.0);
+      expect(ticket.laborCost, 0.0);
+      expect(ticket.totalCost, 0.0);
+    });
+
+    test('diarista 2 dias x R\$ 100 custa 200', () {
+      final product = _product(
+        id: 'p1',
+        recipe: [],
+        salePrice: 500,
+        dailyRate: 100,
+        dailyDays: 2,
+      );
+
+      final ticket = ProductCalculator.calculate(product, {});
+
+      expect(ticket.dailyCost, 200.0);
+      expect(ticket.laborCost, 200.0);
+      expect(ticket.totalCost, 200.0);
+      expect(ticket.profit, 300.0);
+    });
+
+    test('horista 3h x R\$ 25 custa 75', () {
+      final product = _product(
+        id: 'p1',
+        recipe: [],
+        salePrice: 200,
+        hourlyRate: 25,
+        hourlyHours: 3,
+      );
+
+      final ticket = ProductCalculator.calculate(product, {});
+
+      expect(ticket.hourlyCost, 75.0);
+      expect(ticket.laborCost, 75.0);
+      expect(ticket.totalCost, 75.0);
+      expect(ticket.profit, 125.0);
+    });
+
+    test('soma dos tres custos no laborCost e totalCost', () {
+      final product = _product(
+        id: 'p1',
+        recipe: [],
+        salePrice: 1000,
+        dailyRate: 100,
+        dailyDays: 1,
+        hourlyRate: 25,
+        hourlyHours: 2,
+        commissionPercent: 5,
+      );
+
+      final ticket = ProductCalculator.calculate(product, {});
+
+      expect(ticket.dailyCost, 100.0);
+      expect(ticket.hourlyCost, 50.0);
+      expect(ticket.commissionCost, 50.0);
+      expect(ticket.laborCost, 200.0);
+      expect(ticket.totalCost, 200.0);
+      expect(ticket.profit, 800.0);
+    });
+
+    test('fromMap legado com laborCost mapeia para diarista', () {
+      final product = Product.fromMap('p_legacy', <String, dynamic>{
+        'name': 'Produto antigo',
+        'description': '',
+        'recipe': [],
+        'laborCost': 30.0,
+        'packagingCost': 0.0,
+        'salePrice': 100.0,
+        'createdAt': DateTime(2024, 1, 1).toIso8601String(),
+      });
+
+      expect(product.dailyRate, 30.0);
+      expect(product.dailyDays, 1.0);
+      expect(product.hourlyRate, 0.0);
+      expect(product.commissionPercent, 0.0);
+      expect(product.laborCost, 30.0);
     });
   });
 }

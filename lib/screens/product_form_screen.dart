@@ -33,7 +33,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _saleController = TextEditingController();
-  final TextEditingController _laborController = TextEditingController();
+  final TextEditingController _dailyRateController = TextEditingController();
+  final TextEditingController _dailyDaysController = TextEditingController();
+  final TextEditingController _hourlyRateController = TextEditingController();
+  final TextEditingController _hourlyHoursController = TextEditingController();
+  final TextEditingController _commissionController = TextEditingController();
   final TextEditingController _packController = TextEditingController();
   final List<RecipeItem> _recipe = [];
   final List<TextEditingController> _qtyControllers = [];
@@ -50,31 +54,62 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       _descController.text = e.description;
       _saleController.text =
           e.salePrice.toStringAsFixed(2).replaceAll('.', ',');
-      _laborController.text =
-          e.laborCost.toStringAsFixed(2).replaceAll('.', ',');
+      _dailyRateController.text =
+          e.dailyRate.toStringAsFixed(2).replaceAll('.', ',');
+      _dailyDaysController.text = _formatQty(e.dailyDays);
+      _hourlyRateController.text =
+          e.hourlyRate.toStringAsFixed(2).replaceAll('.', ',');
+      _hourlyHoursController.text = _formatQty(e.hourlyHours);
+      _commissionController.text =
+          e.commissionPercent.toStringAsFixed(2).replaceAll('.', ',');
       _packController.text =
           e.packagingCost.toStringAsFixed(2).replaceAll('.', ',');
       for (final r in e.recipe) {
         _recipe.add(r);
         _recipeInputUnits.add(r.inputUnit ?? '');
         final inputUnit = r.inputUnit?.isNotEmpty == true ? r.inputUnit! : 'un';
-        _qtyControllers.add(TextEditingController(
-            text: QuantityMask.fromValue(r.quantity, inputUnit)));
+        final controller = TextEditingController(
+            text: QuantityMask.fromValue(r.quantity, inputUnit));
+        controller.addListener(_onInputChanged);
+        _qtyControllers.add(controller);
       }
     } else {
-      _laborController.text = '0,00';
+      _dailyRateController.text = '0,00';
+      _dailyDaysController.text = '0';
+      _hourlyRateController.text = '0,00';
+      _hourlyHoursController.text = '0';
+      _commissionController.text = '0,00';
       _packController.text = '0,00';
     }
+    _saleController.addListener(_onInputChanged);
+    _dailyRateController.addListener(_onInputChanged);
+    _dailyDaysController.addListener(_onInputChanged);
+    _hourlyRateController.addListener(_onInputChanged);
+    _hourlyHoursController.addListener(_onInputChanged);
+    _commissionController.addListener(_onInputChanged);
+    _packController.addListener(_onInputChanged);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descController.dispose();
+    _saleController.removeListener(_onInputChanged);
     _saleController.dispose();
-    _laborController.dispose();
+    _dailyRateController.removeListener(_onInputChanged);
+    _dailyRateController.dispose();
+    _dailyDaysController.removeListener(_onInputChanged);
+    _dailyDaysController.dispose();
+    _hourlyRateController.removeListener(_onInputChanged);
+    _hourlyRateController.dispose();
+    _hourlyHoursController.removeListener(_onInputChanged);
+    _hourlyHoursController.dispose();
+    _commissionController.removeListener(_onInputChanged);
+    _commissionController.dispose();
+    _packController.removeListener(_onInputChanged);
     _packController.dispose();
     for (final c in _qtyControllers) {
+      c.removeListener(_onInputChanged);
       c.dispose();
     }
     super.dispose();
@@ -82,6 +117,17 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   double _parse(TextEditingController c) =>
       double.tryParse(c.text.trim().replaceAll(',', '.')) ?? 0;
+
+  String _formatQty(double value) {
+    if (value == 0) return '0';
+    return value % 1 == 0
+        ? value.toInt().toString()
+        : value.toStringAsFixed(2).replaceAll('.', ',');
+  }
+
+  void _onInputChanged() {
+    if (mounted) setState(() {});
+  }
 
   double _qtyValue(int index) => QuantityMask.toValue(
         _qtyControllers[index].text,
@@ -156,13 +202,16 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ingredientId: ing.id,
           ingredientName: ing.name,
           quantity: 0));
-      _qtyControllers.add(TextEditingController(text: ''));
+      final controller = TextEditingController(text: '');
+      controller.addListener(_onInputChanged);
+      _qtyControllers.add(controller);
       _recipeInputUnits.add(ing.unit.label);
     });
   }
 
   void _removeAt(int index) {
     setState(() {
+      _qtyControllers[index].removeListener(_onInputChanged);
       _qtyControllers[index].dispose();
       _qtyControllers.removeAt(index);
       _recipeInputUnits.removeAt(index);
@@ -209,7 +258,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         name: _nameController.text.trim(),
         description: _descController.text.trim(),
         recipe: recipe,
-        laborCost: _parse(_laborController),
+        dailyRate: _parse(_dailyRateController),
+        dailyDays: _parse(_dailyDaysController),
+        hourlyRate: _parse(_hourlyRateController),
+        hourlyHours: _parse(_hourlyHoursController),
+        commissionPercent: _parse(_commissionController),
         packagingCost: _parse(_packController),
         salePrice: _parse(_saleController),
         createdAt: widget.editing?.createdAt ?? DateTime.now(),
@@ -252,7 +305,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           : _nameController.text.trim(),
       description: _descController.text.trim(),
       recipe: recipe,
-      laborCost: _parse(_laborController),
+      dailyRate: _parse(_dailyRateController),
+      dailyDays: _parse(_dailyDaysController),
+      hourlyRate: _parse(_hourlyRateController),
+      hourlyHours: _parse(_hourlyHoursController),
+      commissionPercent: _parse(_commissionController),
       packagingCost: _parse(_packController),
       salePrice: _parse(_saleController),
       createdAt: DateTime.now(),
@@ -328,18 +385,43 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 Row(
                   children: [
                     Expanded(
-                        child: _field(_laborController, 'Mão de obra',
+                        child: _field(_dailyRateController,
+                            'Diarista (R\$ por dia)',
                             Icons.engineering_outlined,
                             keyboardType: const TextInputType
                                 .numberWithOptions(decimal: true))),
                     const SizedBox(width: 12),
                     Expanded(
-                        child: _field(_packController, 'Embalagem',
-                            Icons.inventory_outlined,
+                        child: _field(_dailyDaysController, 'Dias',
+                            Icons.calendar_today_outlined,
                             keyboardType: const TextInputType
                                 .numberWithOptions(decimal: true))),
                   ],
                 ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                        child: _field(_hourlyRateController,
+                            'Horista (R\$ por hora)',
+                            Icons.schedule_outlined,
+                            keyboardType: const TextInputType
+                                .numberWithOptions(decimal: true))),
+                    const SizedBox(width: 12),
+                    Expanded(
+                        child: _field(_hourlyHoursController, 'Horas',
+                            Icons.timelapse_outlined,
+                            keyboardType: const TextInputType
+                                .numberWithOptions(decimal: true))),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildCommissionField(),
+                const SizedBox(height: 12),
+                _field(_packController, 'Embalagem',
+                    Icons.inventory_outlined,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true)),
                 const SizedBox(height: 24),
                 _buildLivePreview(ip.asMap),
                 const SizedBox(height: 12),
@@ -720,7 +802,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ),
           const SizedBox(height: 12),
           _previewRow('Produtos', formatCurrencyAbs(t.ingredientsTotal)),
-          _previewRow('Mão de obra', formatCurrencyAbs(t.laborCost)),
+          _previewRow('Diarista', formatCurrencyAbs(t.dailyCost)),
+          _previewRow('Horista', formatCurrencyAbs(t.hourlyCost)),
+          _previewRow('Comissionado', formatCurrencyAbs(t.commissionCost)),
           _previewRow('Embalagem', formatCurrencyAbs(t.packagingCost)),
           const Divider(color: AppColors.border, height: 16),
           _previewRow('Custo total', formatCurrencyAbs(t.totalCost),
@@ -776,6 +860,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       icon: icon,
       keyboardType: keyboardType,
       maxLines: maxLines,
+    );
+  }
+
+  Widget _buildCommissionField() {
+    final sale = _parse(_saleController);
+    final pct = _parse(_commissionController);
+    final helper = pct > 0 && sale > 0
+        ? 'Comissão: ${formatCurrencyAbs(sale * pct / 100)} sobre a venda'
+        : null;
+    return AppTextField(
+      controller: _commissionController,
+      label: 'Comissionado (% da venda)',
+      icon: Icons.percent_outlined,
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true),
+      helperText: helper,
     );
   }
 

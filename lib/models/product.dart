@@ -49,16 +49,20 @@ class RecipeItem {
 
 /// Produto / ficha tecnica (ticket).
 ///
-/// Consta de: lista de produtos ([recipe]) + [laborCost] (mao de obra) +
-/// [packagingCost] (embalagem) + [salePrice] (preco de venda). O app
-/// calcula o custo total, lucro/prejuizo e margem para mostrar ao
-/// usuario se o produto deu lucro ou prejuizo.
+/// Consta de: lista de produtos ([recipe]) + custos extras (diarista,
+/// horista e comissionado) + [packagingCost] (embalagem) + [salePrice]
+/// (preco de venda). O app calcula o custo total, lucro/prejuizo e
+/// margem para mostrar ao usuario se o produto deu lucro ou prejuizo.
 class Product {
   final String id;
   final String name;
   final String description;
   final List<RecipeItem> recipe;
-  final double laborCost;
+  final double dailyRate;
+  final double dailyDays;
+  final double hourlyRate;
+  final double hourlyHours;
+  final double commissionPercent;
   final double packagingCost;
   final double salePrice;
   final String? barcode;
@@ -69,7 +73,11 @@ class Product {
     required this.name,
     required this.description,
     required this.recipe,
-    required this.laborCost,
+    this.dailyRate = 0.0,
+    this.dailyDays = 0.0,
+    this.hourlyRate = 0.0,
+    this.hourlyHours = 0.0,
+    this.commissionPercent = 0.0,
     required this.packagingCost,
     required this.salePrice,
     this.barcode,
@@ -96,12 +104,37 @@ class Product {
               RecipeItem.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList();
     }
+    final bool hasNewKeys = m.containsKey('dailyRate') ||
+        m.containsKey('hourlyRate') ||
+        m.containsKey('commissionPercent');
+    final double dailyRate;
+    final double dailyDays;
+    final double hourlyRate;
+    final double hourlyHours;
+    final double commissionPercent;
+    if (hasNewKeys) {
+      dailyRate = ((m['dailyRate'] ?? 0) as num).toDouble();
+      dailyDays = ((m['dailyDays'] ?? 0) as num).toDouble();
+      hourlyRate = ((m['hourlyRate'] ?? 0) as num).toDouble();
+      hourlyHours = ((m['hourlyHours'] ?? 0) as num).toDouble();
+      commissionPercent = ((m['commissionPercent'] ?? 0) as num).toDouble();
+    } else {
+      dailyRate = ((m['laborCost'] ?? 0) as num).toDouble();
+      dailyDays = 1.0;
+      hourlyRate = 0.0;
+      hourlyHours = 0.0;
+      commissionPercent = 0.0;
+    }
     return Product(
       id: id,
       name: (m['name'] ?? '') as String,
       description: (m['description'] ?? '') as String,
       recipe: recipe,
-      laborCost: ((m['laborCost'] ?? 0) as num).toDouble(),
+      dailyRate: dailyRate,
+      dailyDays: dailyDays,
+      hourlyRate: hourlyRate,
+      hourlyHours: hourlyHours,
+      commissionPercent: commissionPercent,
       packagingCost: ((m['packagingCost'] ?? 0) as num).toDouble(),
       salePrice: ((m['salePrice'] ?? 0) as num).toDouble(),
       barcode: m['barcode'] as String?,
@@ -113,6 +146,11 @@ class Product {
         'name': name,
         'description': description,
         'recipe': recipe.map((r) => r.toMap()).toList(),
+        'dailyRate': dailyRate,
+        'dailyDays': dailyDays,
+        'hourlyRate': hourlyRate,
+        'hourlyHours': hourlyHours,
+        'commissionPercent': commissionPercent,
         'laborCost': laborCost,
         'packagingCost': packagingCost,
         'salePrice': salePrice,
@@ -124,7 +162,11 @@ class Product {
     String? name,
     String? description,
     List<RecipeItem>? recipe,
-    double? laborCost,
+    double? dailyRate,
+    double? dailyDays,
+    double? hourlyRate,
+    double? hourlyHours,
+    double? commissionPercent,
     double? packagingCost,
     double? salePrice,
     String? barcode,
@@ -134,14 +176,29 @@ class Product {
         name: name ?? this.name,
         description: description ?? this.description,
         recipe: recipe ?? this.recipe,
-        laborCost: laborCost ?? this.laborCost,
+        dailyRate: dailyRate ?? this.dailyRate,
+        dailyDays: dailyDays ?? this.dailyDays,
+        hourlyRate: hourlyRate ?? this.hourlyRate,
+        hourlyHours: hourlyHours ?? this.hourlyHours,
+        commissionPercent: commissionPercent ?? this.commissionPercent,
         packagingCost: packagingCost ?? this.packagingCost,
         salePrice: salePrice ?? this.salePrice,
         barcode: barcode ?? this.barcode,
         createdAt: createdAt,
       );
 
-  /// Custo fixo (mao de obra + embalagem), sem ingredientes.
+  double get dailyCost => dailyRate * dailyDays;
+
+  double get hourlyCost => hourlyRate * hourlyHours;
+
+  double get commissionCost =>
+      salePrice > 0 && commissionPercent > 0
+          ? salePrice * commissionPercent / 100
+          : 0.0;
+
+  double get laborCost => dailyCost + hourlyCost + commissionCost;
+
+  /// Custo fixo (diarista + horista + comissionado + embalagem), sem ingredientes.
   double get fixedCost => laborCost + packagingCost;
 
   /// Margem brutaSobreCustoFixo: (preco - custo fixo) / preco * 100.

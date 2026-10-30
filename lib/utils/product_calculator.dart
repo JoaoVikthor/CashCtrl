@@ -8,6 +8,9 @@ class TicketResult {
   final Product product;
   final List<LineCost> lines;
   final double ingredientsTotal;
+  final double dailyCost;
+  final double hourlyCost;
+  final double commissionCost;
   final double laborCost;
   final double packagingCost;
   final double totalCost;
@@ -20,6 +23,9 @@ class TicketResult {
     required this.product,
     required this.lines,
     required this.ingredientsTotal,
+    required this.dailyCost,
+    required this.hourlyCost,
+    required this.commissionCost,
     required this.laborCost,
     required this.packagingCost,
     required this.totalCost,
@@ -125,6 +131,9 @@ class ProductCalculator {
       product: product,
       lines: lines,
       ingredientsTotal: ingredientsTotal,
+      dailyCost: product.dailyCost,
+      hourlyCost: product.hourlyCost,
+      commissionCost: product.commissionCost,
       laborCost: product.laborCost,
       packagingCost: product.packagingCost,
       totalCost: totalCost,

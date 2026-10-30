@@ -16,7 +16,11 @@ void main() {
           RecipeItem(ingredientId: 'farinha', ingredientName: 'Farinha', quantity: 500, inputUnit: 'g'),
           RecipeItem(ingredientId: 'acucar', ingredientName: 'Acucar', quantity: 200, inputUnit: 'kg'),
         ],
-        laborCost: 15.0,
+        dailyRate: 15.0,
+        dailyDays: 1.0,
+        hourlyRate: 0.0,
+        hourlyHours: 0.0,
+        commissionPercent: 0.0,
         packagingCost: 5.5,
         salePrice: 80.0,
         barcode: '7891234567890',
@@ -36,12 +40,44 @@ void main() {
       expect(restored.recipe[0].inputUnit, original.recipe[0].inputUnit);
       expect(restored.recipe[1].quantity, original.recipe[1].quantity);
       expect(restored.recipe[1].inputUnit, original.recipe[1].inputUnit);
+      expect(restored.dailyRate, original.dailyRate);
+      expect(restored.dailyDays, original.dailyDays);
+      expect(restored.hourlyRate, original.hourlyRate);
+      expect(restored.hourlyHours, original.hourlyHours);
+      expect(restored.commissionPercent, original.commissionPercent);
       expect(restored.laborCost, original.laborCost);
       expect(restored.packagingCost, original.packagingCost);
       expect(restored.salePrice, original.salePrice);
       expect(restored.barcode, original.barcode);
       expect(restored.createdAt, original.createdAt);
       expect(restored.toMap(), map);
+      expect(map['laborCost'], original.laborCost);
+    });
+
+    test('toMap inclui laborCost como espelho derivado', () {
+      final product = Product(
+        id: 'prod2',
+        name: 'Torta',
+        description: '',
+        recipe: [],
+        dailyRate: 100.0,
+        dailyDays: 2.0,
+        hourlyRate: 25.0,
+        hourlyHours: 3.0,
+        commissionPercent: 10.0,
+        packagingCost: 5.0,
+        salePrice: 500.0,
+        createdAt: DateTime(2024, 6, 15),
+      );
+
+      final map = product.toMap();
+
+      expect(map['dailyRate'], 100.0);
+      expect(map['dailyDays'], 2.0);
+      expect(map['hourlyRate'], 25.0);
+      expect(map['hourlyHours'], 3.0);
+      expect(map['commissionPercent'], 10.0);
+      expect(map['laborCost'], 325.0);
     });
   });
 

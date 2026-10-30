@@ -53,6 +53,10 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
   String? _offerPriceError;
   String? _offerQtyError;
 
+  void _onInputChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -71,10 +75,16 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
           SebraeRules.wastePercentFromFactor(e.correctionFactor).round();
       _wastePercentController.text = percent > 0 ? percent.toString() : '';
     }
+    _priceController.addListener(_onInputChanged);
+    _qtyController.addListener(_onInputChanged);
+    _avgWeightController.addListener(_onInputChanged);
   }
 
   @override
   void dispose() {
+    _priceController.removeListener(_onInputChanged);
+    _qtyController.removeListener(_onInputChanged);
+    _avgWeightController.removeListener(_onInputChanged);
     _nameController.dispose();
     _priceController.dispose();
     _qtyController.dispose();
@@ -393,9 +403,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
             const SizedBox(height: 24),
             _buildDefaultSupplierSection(context),
             const SizedBox(height: 24),
-            isEdit
-                ? _buildOffersSection(context)
-                : _buildPendingOffersSection(),
+            if (isEdit) _buildOffersSection(context),
             const SizedBox(height: 16),
             const Text(
               'Você escolhe qual oferta entra no ticket. O app não troca sozinho.',
@@ -521,6 +529,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     final ing = widget.editing;
     final active = ing?.activeOffer;
     final bool isNew = ing == null;
+    final atLimit = !canAddPendingOffer(_pendingOffers.length);
 
     if (active != null) {
       final current = ing!;
@@ -635,6 +644,13 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
               color: AppColors.textSec, fontSize: AppTypography.secondary),
         ),
         if (isNew) ...[
+          const SizedBox(height: 4),
+          const Text(
+            'Você pode adicionar mais ofertas, se quiser — é opcional.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: AppColors.textSec, fontSize: AppTypography.secondary),
+          ),
           const SizedBox(height: 12),
           _registerSupplierHint(),
         ],
@@ -663,8 +679,18 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(
-            icon: Icons.storefront_outlined, title: 'Fornecedor padrão'),
+        SectionHeader(
+          icon: Icons.storefront_outlined,
+          title: isNew ? 'Fornecedor' : 'Fornecedor padrão',
+          trailing: isNew
+              ? Text(
+                  '${_pendingOffers.length}/$maxOffersPerIngredient',
+                  style: const TextStyle(
+                      color: AppColors.textSec,
+                      fontSize: AppTypography.secondary),
+                )
+              : null,
+        ),
         const SizedBox(height: 12),
         if (isNew)
           Material(
@@ -693,6 +719,30 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
                 borderRadius: BorderRadius.circular(AppRadius.md)),
             child: content,
           ),
+        if (isNew && _pendingOffers.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          for (var i = 0; i < _pendingOffers.length; i++) _pendingOfferCard(i),
+          const SizedBox(height: 4),
+          const Text(
+            'A primeira oferta adicionada fica como ativa; as demais entram na comparação de preços.',
+            style: TextStyle(
+                color: AppColors.textSec,
+                fontSize: AppTypography.secondary),
+          ),
+        ],
+        if (isNew && _showOfferForm) ...[
+          const SizedBox(height: 16),
+          _buildPendingOfferForm(),
+        ],
+        if (isNew && atLimit) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Limite de $maxOffersPerIngredient ofertas por produto atingido.',
+            style: const TextStyle(
+                color: AppColors.textSec,
+                fontSize: AppTypography.secondary),
+          ),
+        ],
       ],
     );
   }
@@ -710,92 +760,6 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
               fontSize: AppTypography.secondary,
               fontWeight: FontWeight.w600),
         ),
-      ],
-    );
-  }
-
-  Widget _buildPendingOffersSection() {
-    final atLimit = !canAddPendingOffer(_pendingOffers.length);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionHeader(
-          icon: Icons.storefront_outlined,
-          title: 'Ofertas',
-          trailing: Text(
-            '${_pendingOffers.length}/$maxOffersPerIngredient',
-            style: const TextStyle(
-                color: AppColors.textSec,
-                fontSize: AppTypography.secondary),
-          ),
-        ),
-        const SizedBox(height: 12),
-        if (_pendingOffers.isEmpty && !_showOfferForm) ...[
-          Material(
-            color: AppColors.card,
-            clipBehavior: Clip.antiAlias,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            child: InkWell(
-              onTap: _openOfferForm,
-              splashColor: AppColors.gold.withValues(alpha: 0.08),
-              highlightColor: AppColors.gold.withValues(alpha: 0.04),
-              child: SizedBox(
-                width: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.storefront_outlined,
-                          color: AppColors.textSec, size: 28),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Nenhum fornecedor adicionado ainda.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: AppColors.textSec,
-                            fontSize: AppTypography.secondary),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Você pode cadastrar as ofertas agora: elas serão salvas junto com o produto.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: AppColors.textSec,
-                            fontSize: AppTypography.secondary),
-                      ),
-                      const SizedBox(height: 12),
-                      _registerSupplierHint(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ] else if (_pendingOffers.isNotEmpty) ...[
-          for (var i = 0; i < _pendingOffers.length; i++)
-            _pendingOfferCard(i),
-          const SizedBox(height: 4),
-          const Text(
-            'A primeira oferta adicionada fica como ativa; as demais entram na comparação de preços.',
-            style: TextStyle(
-                color: AppColors.textSec,
-                fontSize: AppTypography.secondary),
-          ),
-        ],
-        if (_showOfferForm) ...[
-          const SizedBox(height: 12),
-          _buildPendingOfferForm(),
-        ],
-        if (atLimit) ...[
-          const SizedBox(height: 8),
-          Text(
-            'Limite de $maxOffersPerIngredient ofertas por produto atingido.',
-            style: const TextStyle(
-                color: AppColors.textSec,
-                fontSize: AppTypography.secondary),
-          ),
-        ],
       ],
     );
   }

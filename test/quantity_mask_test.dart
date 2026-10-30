@@ -16,11 +16,11 @@ void main() {
       expect(QuantityMask.shiftFor(' G'), 0);
     });
 
-    test('kg, l e litro usam 3 casas decimais', () {
-      expect(QuantityMask.shiftFor('kg'), 3);
-      expect(QuantityMask.shiftFor('l'), 3);
-      expect(QuantityMask.shiftFor('L'), 3);
-      expect(QuantityMask.shiftFor('litro'), 3);
+    test('kg, l e litro usam 2 casas decimais', () {
+      expect(QuantityMask.shiftFor('kg'), 2);
+      expect(QuantityMask.shiftFor('l'), 2);
+      expect(QuantityMask.shiftFor('L'), 2);
+      expect(QuantityMask.shiftFor('litro'), 2);
     });
 
     test('unidade desconhecida usa 0 casas', () {
@@ -44,9 +44,10 @@ void main() {
     });
 
     test('modo quilograma', () {
-      expect(QuantityMask.display('500', 'kg'), '0,500');
-      expect(QuantityMask.display('5000', 'kg'), '5,000');
-      expect(QuantityMask.display('5', 'kg'), '0,005');
+      expect(QuantityMask.display('500', 'kg'), '5,00');
+      expect(QuantityMask.display('5000', 'kg'), '50,00');
+      expect(QuantityMask.display('25000', 'kg'), '250,00');
+      expect(QuantityMask.display('5', 'kg'), '0,05');
     });
 
     test('modo mililitro', () {
@@ -68,8 +69,9 @@ void main() {
     });
 
     test('quilograma', () {
-      expect(QuantityMask.toValue('0,500', 'kg'), 0.5);
-      expect(QuantityMask.toValue('5,000', 'kg'), 5.0);
+      expect(QuantityMask.toValue('5,00', 'kg'), 5.0);
+      expect(QuantityMask.toValue('250,00', 'kg'), 250.0);
+      expect(QuantityMask.toValue('0,05', 'kg'), 0.05);
     });
 
     test('vazio retorna zero', () {
@@ -90,8 +92,9 @@ void main() {
     });
 
     test('quilograma', () {
-      expect(QuantityMask.fromValue(0.5, 'kg'), '500');
-      expect(QuantityMask.fromValue(5.0, 'kg'), '5000');
+      expect(QuantityMask.fromValue(0.5, 'kg'), '50');
+      expect(QuantityMask.fromValue(5.0, 'kg'), '500');
+      expect(QuantityMask.fromValue(250.0, 'kg'), '25000');
     });
 
     test('zero retorna string vazia', () {
@@ -111,7 +114,7 @@ void main() {
 
     test('round-trip kg', () {
       const unit = 'kg';
-      const displayText = '0,500';
+      const displayText = '250,00';
       final value = QuantityMask.toValue(displayText, unit);
       final digits = QuantityMask.fromValue(value, unit);
       expect(QuantityMask.display(digits, unit), displayText);
@@ -184,6 +187,31 @@ void main() {
 
       value = edit('12345678,9', '12345678,90');
       expect(value.text, '12345678,9');
+    });
+
+    test('limpa e redigita 250 kg com modelo mental de 2 casas', () {
+      final kgFormatter = QuantityMask.formatterFor('kg');
+      TextEditingValue edit(String oldText, String newText) {
+        return kgFormatter.formatEditUpdate(
+          TextEditingValue(text: oldText),
+          TextEditingValue(text: newText),
+        );
+      }
+
+      var value = edit('150,00', '');
+      expect(value.text, '0');
+
+      value = edit('0', '2');
+      expect(value.text, '0,02');
+      value = edit('0,02', '0,25');
+      expect(value.text, '0,25');
+      value = edit('0,25', '2,50');
+      expect(value.text, '2,50');
+      value = edit('2,50', '25,00');
+      expect(value.text, '25,00');
+      value = edit('25,00', '250,00');
+      expect(value.text, '250,00');
+      expect(QuantityMask.toValue(value.text, 'kg'), 250.0);
     });
   });
 }

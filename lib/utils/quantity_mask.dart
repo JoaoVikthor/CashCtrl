@@ -17,7 +17,7 @@ class QuantityMask {
       case 'kg':
       case 'l':
       case 'litro':
-        return 3;
+        return 2;
       default:
         return 0;
     }
