@@ -11,6 +11,7 @@ import '../theme/app_typography.dart';
 import '../utils/format.dart';
 import '../utils/product_calculator.dart';
 import '../utils/sebrae_rules.dart';
+import '../utils/quantity_mask.dart';
 import '../utils/unit_converter.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_toast.dart';
@@ -56,9 +57,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       for (final r in e.recipe) {
         _recipe.add(r);
         _recipeInputUnits.add(r.inputUnit ?? '');
+        final inputUnit = r.inputUnit?.isNotEmpty == true ? r.inputUnit! : 'un';
         _qtyControllers.add(TextEditingController(
-            text: r.quantity.toStringAsFixed(r.quantity % 1 == 0 ? 0 : 2)
-                .replaceAll('.', ',')));
+            text: QuantityMask.fromValue(r.quantity, inputUnit)));
       }
     } else {
       _laborController.text = '0,00';
@@ -82,10 +83,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   double _parse(TextEditingController c) =>
       double.tryParse(c.text.trim().replaceAll(',', '.')) ?? 0;
 
+  double _qtyValue(int index) => QuantityMask.toValue(
+        _qtyControllers[index].text,
+        _recipeInputUnits[index],
+      );
+
   double _convertedQuantity(int index, Map<String, Ingredient> ingredients) {
     final item = _recipe[index];
     final ing = ingredients[item.ingredientId];
-    final raw = _parse(_qtyControllers[index]);
+    final raw = _qtyValue(index);
     final result = UnitConverter.convertToIngredientUnit(
       raw,
       _recipeInputUnits[index],
@@ -99,7 +105,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final item = _recipe[index];
     final ing = ingredients[item.ingredientId];
     if (ing == null) return 0.0;
-    final raw = _parse(_qtyControllers[index]);
+    final raw = _qtyValue(index);
     final inputUnit = _recipeInputUnits[index];
     final conversion = UnitConverter.convertToIngredientUnit(
       raw,
@@ -125,7 +131,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final item = _recipe[index];
     final ing = ingredients[item.ingredientId];
     if (ing == null) return false;
-    final raw = _parse(_qtyControllers[index]);
+    final raw = _qtyValue(index);
     if (raw <= 0) return false;
     final result = UnitConverter.convertToIngredientUnit(
       raw,
@@ -150,7 +156,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ingredientId: ing.id,
           ingredientName: ing.name,
           quantity: 0));
-      _qtyControllers.add(TextEditingController(text: '0'));
+      _qtyControllers.add(TextEditingController(text: ''));
       _recipeInputUnits.add(ing.unit.label);
     });
   }
@@ -187,7 +193,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     try {
       final recipe = <RecipeItem>[];
       for (var i = 0; i < _recipe.length; i++) {
-        final qty = _parse(_qtyControllers[i]);
+        final qty = _qtyValue(i);
         if (qty <= 0) {
           _toast('A quantidade de "${_recipe[i].ingredientName}" deve ser > 0.');
           setState(() => _saving = false);
@@ -495,8 +501,16 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final ing = ingredients[item.ingredientId];
     if (_recipeInputUnits.length <= index) {
       _recipeInputUnits.add(item.inputUnit ?? ing?.unit.label ?? 'un');
+      _qtyControllers[index].text = QuantityMask.display(
+        QuantityMask.fromValue(item.quantity, _recipeInputUnits[index]),
+        _recipeInputUnits[index],
+      );
     } else if (_recipeInputUnits[index].isEmpty) {
       _recipeInputUnits[index] = item.inputUnit ?? ing?.unit.label ?? 'un';
+      _qtyControllers[index].text = QuantityMask.display(
+        QuantityMask.fromValue(item.quantity, _recipeInputUnits[index]),
+        _recipeInputUnits[index],
+      );
     }
     final compatible = ing != null
         ? UnitConverter.compatibleUnits(
@@ -507,7 +521,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         : const <String>['un'];
     if (ing != null && !compatible.contains(_recipeInputUnits[index])) {
       _recipeInputUnits[index] = ing.unit.label;
-      _qtyControllers[index].text = '0';
+      _qtyControllers[index].text =
+          QuantityMask.display('0', _recipeInputUnits[index]);
     }
     final lineCost = _lineCost(index, ingredients);
     final showSelector = compatible.length > 1;
@@ -557,7 +572,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     child: TextField(
                       controller: _qtyControllers[index],
                       keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true),
+                          decimal: false),
+                      inputFormatters: [
+                        QuantityMask.formatterFor(_recipeInputUnits[index])
+                      ],
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           color: AppColors.textPrimary,
@@ -656,7 +674,18 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               .toList(),
           onChanged: (v) {
             if (v != null) {
-              setState(() => _recipeInputUnits[index] = v);
+              final oldUnit = _recipeInputUnits[index];
+              final oldQty = QuantityMask.toValue(
+                _qtyControllers[index].text,
+                oldUnit,
+              );
+              setState(() {
+                _recipeInputUnits[index] = v;
+                _qtyControllers[index].text = QuantityMask.display(
+                  QuantityMask.fromValue(oldQty, v),
+                  v,
+                );
+              });
             }
           },
         ),

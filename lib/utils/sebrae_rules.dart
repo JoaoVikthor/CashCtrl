@@ -5,6 +5,17 @@ import 'package:ctrlcash/utils/unit_converter.dart';
 class SebraeRules {
   const SebraeRules._();
 
+  static double factorFromWastePercent(double percent) {
+    if (percent <= 0) return 1.0;
+    if (percent >= 100) return 100.0;
+    return 100 / (100 - percent);
+  }
+
+  static double wastePercentFromFactor(double factor) {
+    if (factor <= 1.0) return 0.0;
+    return 100 * (factor - 1) / factor;
+  }
+
   static double grossQuantity(double quantity, double correctionFactor) {
     return quantity * max(1.0, correctionFactor);
   }

@@ -1,6 +1,7 @@
 import 'package:ctrlcash/models/ingredient.dart';
 import 'package:ctrlcash/models/product.dart';
 import 'package:ctrlcash/utils/product_calculator.dart';
+import 'package:ctrlcash/utils/sebrae_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Ingredient _ingredient({
@@ -275,8 +276,8 @@ void main() {
     });
   });
 
-  group('ProductCalculator com unidade digitada, Peso Médio e Fator', () {
-    test('cenário tomate: 0,5 un com pm 120 g e FC 1,5 custa R\$ 0,72', () {
+  group('ProductCalculator com unidade digitada, Peso Médio e Desperdício', () {
+    test('cenário tomate: 0,5 un com pm 120 g e Desperdício 33% custa R\$ 0,72', () {
       final tomate = _sebraeIngredient(
         id: 'tomate',
         name: 'Tomate',
@@ -307,7 +308,37 @@ void main() {
       expect(ticket.hasMissingIngredients, false);
     });
 
-    test('mesmo cenário sem Fator de Correção custa R\$ 0,48', () {
+    test('cenário tomate: R\$ 10/kg, 60 g, Desperdício 3% custa ~R\$ 0,62', () {
+      final tomate = _sebraeIngredient(
+        id: 'tomate',
+        name: 'Tomate',
+        unit: IngredientUnit.grama,
+        purchasePrice: 10,
+        packageQuantity: 1000,
+        correctionFactor: SebraeRules.factorFromWastePercent(3),
+      );
+      final product = _product(
+        id: 'p1',
+        recipe: [
+          RecipeItem(
+              ingredientId: 'tomate',
+              ingredientName: 'Tomate',
+              quantity: 60,
+              inputUnit: 'g'),
+        ],
+      );
+
+      final ticket = ProductCalculator.calculate(product, {'tomate': tomate});
+      final line = ticket.lines.first;
+
+      expect(line.inconvertible, false);
+      expect(line.missing, false);
+      expect(line.lineCost, closeTo(0.62, 0.005));
+      expect(ticket.ingredientsTotal, closeTo(0.62, 0.005));
+      expect(ticket.hasMissingIngredients, false);
+    });
+
+    test('mesmo cenário sem Desperdício custa R\$ 0,48', () {
       final tomate = _sebraeIngredient(
         id: 'tomate',
         name: 'Tomate',
@@ -393,7 +424,7 @@ void main() {
       expect(ticket.hasMissingIngredients, false);
     });
 
-    test('volume com FC 1,5 ignora o Fator de Correção no custo', () {
+    test('volume com Desperdício 33% ignora o Desperdício no custo', () {
       final leite = _sebraeIngredient(
         id: 'leite',
         name: 'Leite',

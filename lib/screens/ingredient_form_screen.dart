@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../models/ingredient.dart';
@@ -10,6 +11,7 @@ import '../theme/app_typography.dart';
 import '../utils/format.dart';
 import '../utils/offer_rules.dart';
 import '../utils/pending_offers.dart';
+import '../utils/sebrae_rules.dart';
 import '../utils/unit_converter.dart';
 import '../widgets/alert_banner.dart';
 import '../widgets/app_text_field.dart';
@@ -38,7 +40,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
   final TextEditingController _offerPriceController = TextEditingController();
   final TextEditingController _offerQtyController = TextEditingController();
   final TextEditingController _avgWeightController = TextEditingController();
-  final TextEditingController _correctionFactorController =
+  final TextEditingController _wastePercentController =
       TextEditingController();
   final List<IngredientOffer> _pendingOffers = [];
   IngredientUnit _unit = IngredientUnit.grama;
@@ -65,7 +67,9 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       _unit = e.unit;
       final pm = e.averageUnitWeightGrams;
       _avgWeightController.text = pm != null ? formatQuantity(pm) : '';
-      _correctionFactorController.text = formatQuantity(e.correctionFactor);
+      final percent =
+          SebraeRules.wastePercentFromFactor(e.correctionFactor).round();
+      _wastePercentController.text = percent > 0 ? percent.toString() : '';
     }
   }
 
@@ -79,7 +83,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     _offerPriceController.dispose();
     _offerQtyController.dispose();
     _avgWeightController.dispose();
-    _correctionFactorController.dispose();
+    _wastePercentController.dispose();
     super.dispose();
   }
 
@@ -117,11 +121,11 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
         return false;
       }
     }
-    final fcText = _correctionFactorController.text.trim();
-    if (fcText.isNotEmpty) {
-      final fc = double.tryParse(fcText.replaceAll(',', '.'));
-      if (fc == null || fc <= 0) {
-        AppToast.error(context, 'Fator de correção inválido.');
+    final dpText = _wastePercentController.text.trim();
+    if (dpText.isNotEmpty) {
+      final dp = double.tryParse(dpText);
+      if (dp == null || dp < 0 || dp > 99 || dp.truncateToDouble() != dp) {
+        AppToast.error(context, 'Desperdício deve ser um número de 0 a 99.');
         return false;
       }
     }
@@ -144,9 +148,10 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       final pmText = _avgWeightController.text.trim();
       final double? avgWeight =
           pmText.isEmpty ? null : double.parse(pmText.replaceAll(',', '.'));
-      final fcText = _correctionFactorController.text.trim();
+      final dpText = _wastePercentController.text.trim();
+      final double wastePercent = dpText.isEmpty ? 0.0 : double.parse(dpText);
       final double correctionFactor =
-          fcText.isEmpty ? 1.0 : double.parse(fcText.replaceAll(',', '.'));
+          SebraeRules.factorFromWastePercent(wastePercent);
       final ing = widget.editing?.copyWith(
             name: name,
             unit: _unit,
@@ -377,11 +382,12 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true)),
             const SizedBox(height: 16),
-            _field(_correctionFactorController, 'Fator de correção',
-                Icons.percent,
+            _field(_wastePercentController, 'Desperdício (%)', Icons.percent,
                 keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                hint: '1,0 = sem perdas'),
+                    const TextInputType.numberWithOptions(decimal: false),
+                hint: '0 = sem desperdício',
+                maxLength: 2,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
             const SizedBox(height: 16),
             _buildPreview(),
             const SizedBox(height: 24),
@@ -409,7 +415,8 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       String? errorText,
       String? helperText,
       String? hint,
-      int? maxLength}) {
+      int? maxLength,
+      List<TextInputFormatter>? inputFormatters}) {
     return AppTextField(
       controller: c,
       label: label,
@@ -419,6 +426,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       helperText: helperText,
       hint: hint,
       maxLength: maxLength,
+      inputFormatters: inputFormatters,
     );
   }
 
