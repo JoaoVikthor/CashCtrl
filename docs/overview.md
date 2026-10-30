@@ -2,7 +2,7 @@
 
 Aplicativo de controle financeiro pessoal e de negócio em Flutter com Firebase, focado em calcular o ticket das fichas técnicas para mostrar se cada item dá lucro ou prejuízo.
 
-**Versão definitiva: 1.0.0+1 (28/10/2026).** Os módulos de foto (captura com `image_picker` e upload ao Firebase Storage) foram **removidos** do app, pois o upload não persistia; o avatar do perfil exibe as iniciais do nome. O leitor de código de barras também não faz mais parte do app. Login exclusivamente e-mail/senha.
+**Versão definitiva: 1.0.0+1 (28/10/2026).** 29/10/2026 — Sprint 8: regra Sebrae (Fator de Correção + Peso Médio) implementada de forma invisível; 176 testes verdes. Os módulos de foto (captura com `image_picker` e upload ao Firebase Storage) foram **removidos** do app, pois o upload não persistia; o avatar do perfil exibe as iniciais do nome. O leitor de código de barras também não faz mais parte do app. Login exclusivamente e-mail/senha.
 
 ## Visão Geral
 
@@ -19,6 +19,7 @@ O CashCtrl é um app mobile/web de gestão financeira que permite ao usuário:
 - Consultar o histórico de auditoria de preços (logs append-only em `price_audit_logs`; o campo `expireAt` é reservado para política TTL de 180 dias, a ativar no console).
 - Criar fichas técnicas (ex.: um sanduíche), selecionando produtos, quantidades, mão de obra e embalagem.
 - Visualizar o ticket da ficha técnica: custo por item com participação percentual no custo, custo total, ganho/perda e veredito final de lucro ou prejuízo.
+- O cadastro de produto admite Peso Médio da unidade (g) e Fator de Correção (regra Sebrae) opcionais; na montagem da ficha a quantidade pode ser digitada em "un" (aparece no seletor de unidades só quando há Peso Médio) e o sistema converte e aplica o Fator de Correção de forma invisível, exibindo na linha do ticket apenas o valor final em dinheiro.
 - Editar perfil, configurar notificações, segurança e acessar a central de ajuda.
 
 ## Stack / Tecnologias
@@ -62,7 +63,7 @@ lib/
     app_user.dart                # Perfil do usuário + dados do negócio
     transaction.dart             # Transação (receita/despesa, método de pagamento)
     budget.dart                  # Orçamento mensal por categoria
-    ingredient.dart              # Produto (preço de compra → preço por unidade; ofertas[])
+    ingredient.dart              # Produto (preço de compra → preço por unidade; ofertas[]; peso médio e fator de correção)
     ingredient_offer.dart        # Oferta de fornecedor (supplier, productName, preço/qtd)
     price_audit_log.dart         # Log de auditoria de preços (append-only)
     product.dart                 # Ficha técnica (receita + custos + venda; barcode legado)
@@ -109,6 +110,7 @@ lib/
     report_export_native.dart    # Salva e compartilha o .xlsx (Android)
     report_export_web.dart       # Download do .xlsx via Blob no navegador
     audit_builder.dart           # Resumos de auditoria no vocabulário da UI
+    sebrae_rules.dart          # Regra Sebrae (Peso Médio + Fator de Correção, lógica pura)
     recurrence.dart, unit_converter.dart, app_info.dart
   widgets/                       # Widgets reutilizáveis
     app_drawer.dart              # Menu lateral com navegação
@@ -135,8 +137,8 @@ Todos os dados ficam sob `users/{uid}/...`, garantindo isolamento total por usu�
 - `users/{uid}` — perfil do usuário (nome, e-mail, empresa, CNPJ, segmento, telefone, endereço)
 - `users/{uid}/transactions/{txId}` — transações (tipo, categoria, valor, data, método de pagamento, recorrência)
 - `users/{uid}/budgets/{budgetId}` — orçamentos (categoria, limite mensal)
-- `users/{uid}/ingredients/{ingredientId}` — produtos (nome, unidade, preço de compra, quantidade da embalagem, `offers[]` com até 15 ofertas de fornecedores e `activeOfferId`)
-- `users/{uid}/products/{productId}` — fichas técnicas (nome, receita[], mão de obra, embalagem, preço de venda; `barcode` mantido apenas para legado)
+- `users/{uid}/ingredients/{ingredientId}` — produtos (nome, unidade, preço de compra, quantidade da embalagem, `offers[]` com até 15 ofertas de fornecedores, `activeOfferId`, `averageUnitWeightGrams` (opcional) e `correctionFactor` (padrão 1.0))
+- `users/{uid}/products/{productId}` — fichas técnicas (nome, receita[] — cujas linhas guardam `inputUnit`, a unidade digitada, quando informada —, mão de obra, embalagem, preço de venda; `barcode` mantido apenas para legado)
 - `users/{uid}/price_audit_logs/{logId}` — logs de auditoria de preços (append-only: `action`, `entityType`, `entityId`, `summary`, preços antes/depois, `timestamp` serverTimestamp, `expireAt` +180 dias)
 
 ## O Ticket da Ficha Técnica (recurso central)
@@ -145,7 +147,7 @@ O coração do app é mostrar ao usuário o ticket de cada ficha técnica. O flu
 
 1. Usuário cadastra produtos no parque (ex.: pão R$ 10,00/20un → R$ 0,50/un), opcionalmente já com ofertas de fornecedores.
 2. Cria uma ficha técnica (ex.: "Sanduíche X") selecionando produtos e quantidades (2 fatias de pão, 100g de queijo, etc.), mão de obra e embalagem.
-3. O app calcula: custo por item (qtd × preço por unidade), participação percentual de cada item no custo total, subtotal, custo total, preço de venda, lucro/prejuízo e margem.
+3. O app calcula: custo por item (qtd × preço por unidade), participação percentual de cada item no custo total, subtotal, custo total, preço de venda, lucro/prejuízo e margem. Quando o produto tem Peso Médio/Fator de Correção, a quantidade é convertida para a unidade-base e multiplicada pelo Fator (bruto = líquido × FC) antes de precificar — sem nada disso aparecer na tela; exemplo canônico: tomate R$ 8,00/kg, PM 120 g, FC 1,5, digitado 0,5 un → 60 g líquido → 90 g bruto → R$ 0,72.
 4. O ticket mostra o veredito: "Dá lucro" ou "Dá prejuízo", com margem e markup.
 
 A fórmula exata: `custoTotal = Σ(qtd × preço/un) + mão de obra + embalagem`. Por isso o custo de uma ficha pode ser maior que a soma dos preços de compra dos insumos — mão de obra e embalagem entram no cálculo.
