@@ -65,7 +65,6 @@ class TransactionProvider extends ChangeNotifier {
     _sub?.cancel();
     if (_uid == null) {
       _transactions = const [];
-      _loading = false;
       _generationUid = null;
       if (notify) notifyListeners();
       return;
@@ -99,7 +98,10 @@ class TransactionProvider extends ChangeNotifier {
             e.toString().contains('permission-denied') &&
             _retryCount < 2) {
           _retryCount++;
-          _retryTimer = Timer(const Duration(seconds: 1), () async {
+          final delay = _retryCount == 1
+              ? const Duration(milliseconds: 600)
+              : const Duration(milliseconds: 1500);
+          _retryTimer = Timer(delay, () async {
             if (!_disposed && _uid == currentUid) {
               await _userProvider?.forceAuthRefresh();
               _connect();

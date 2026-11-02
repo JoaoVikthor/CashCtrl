@@ -180,16 +180,21 @@ class _AuthGateState extends State<AuthGate> {
       if (user == null) {
         userProvider.limpar();
         NotificationService.instance.cancelAll();
+        if (mounted) setState(() => _user = null);
       } else {
+        if (mounted) setState(() => _user = user);
         try {
           await user.getIdToken();
         } catch (e) {
           debugPrint('[AuthGate] getIdToken failed: $e');
         }
-        if (authService.currentUser?.uid != user.uid) return;
+        final currentUser = authService.currentUser;
+        if (currentUser?.uid != user.uid) {
+          if (mounted) setState(() => _user = currentUser);
+          return;
+        }
         userProvider.setUsuario(user.uid);
       }
-      if (mounted) setState(() => _user = user);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;

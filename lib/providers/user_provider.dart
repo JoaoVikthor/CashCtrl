@@ -72,7 +72,7 @@ class UserProvider extends ChangeNotifier {
           _profileRetryCount < 1) {
         _profileRetryCount++;
         _retryTimer?.cancel();
-        _retryTimer = Timer(const Duration(seconds: 1), () async {
+        _retryTimer = Timer(const Duration(milliseconds: 600), () async {
           if (!_disposed && _uid == uid) {
             await forceAuthRefresh();
             loadProfile(uid);
