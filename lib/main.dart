@@ -176,24 +176,31 @@ class _AuthGateState extends State<AuthGate> {
     final IngredientProvider ingredientProvider = context
         .read<IngredientProvider>();
     final ProductProvider productProvider = context.read<ProductProvider>();
-    if (!_linked) {
-      txProvider.attach(userProvider);
-      budgetProvider.attach(userProvider);
-      ingredientProvider.attach(userProvider);
-      productProvider.attach(userProvider);
-      _linked = true;
-    }
-    _sub = authService.authStateChanges.listen((User? user) {
+    _sub = authService.authStateChanges.listen((User? user) async {
       if (user == null) {
         userProvider.limpar();
         NotificationService.instance.cancelAll();
       } else {
+        try {
+          await user.getIdToken();
+        } catch (e) {
+          debugPrint('[AuthGate] getIdToken failed: $e');
+        }
+        if (authService.currentUser?.uid != user.uid) return;
         userProvider.setUsuario(user.uid);
       }
       if (mounted) setState(() => _user = user);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _waiting) setState(() => _waiting = false);
+      if (!mounted) return;
+      if (!_linked) {
+        txProvider.attach(userProvider);
+        budgetProvider.attach(userProvider);
+        ingredientProvider.attach(userProvider);
+        productProvider.attach(userProvider);
+        _linked = true;
+      }
+      if (_waiting) setState(() => _waiting = false);
     });
   }
 

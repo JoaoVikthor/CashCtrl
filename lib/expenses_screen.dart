@@ -238,11 +238,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.m),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                AppFilterChipRow(
+          Row(
+            children: [
+              Expanded(
+                child: AppFilterChipRow(
                   options: const ['Todas', 'Receitas', 'Despesas'],
                   selectedIndex: _typeFilterIndex == -1 ? 0 : _typeFilterIndex,
                   onSelected: (index) => setState(() {
@@ -259,28 +258,28 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     }
                   }),
                 ),
-                const SizedBox(width: AppSpacing.s),
-                PopupMenuButton<String>(
-                  color: AppColors.card,
-                  onSelected: (v) => setState(() {
-                    _filterCategory = v;
-                    _filterType = null;
-                  }),
-                  itemBuilder: (_) => _availableCategories
-                      .map((c) => PopupMenuItem(
-                            value: c,
-                            child: Text(
-                              c,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                              ),
+              ),
+              const SizedBox(width: AppSpacing.s),
+              PopupMenuButton<String>(
+                color: AppColors.card,
+                onSelected: (v) => setState(() {
+                  _filterCategory = v;
+                  _filterType = null;
+                }),
+                itemBuilder: (_) => _availableCategories
+                    .map((c) => PopupMenuItem(
+                          value: c,
+                          child: Text(
+                            c,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
                             ),
-                          ))
-                      .toList(),
-                  child: _categoryChip(categorySelected),
-                ),
-              ],
-            ),
+                          ),
+                        ))
+                    .toList(),
+                child: _categoryChip(categorySelected),
+              ),
+            ],
           ),
         ],
       ),

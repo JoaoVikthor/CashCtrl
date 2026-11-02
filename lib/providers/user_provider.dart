@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
@@ -21,6 +23,9 @@ class UserProvider extends ChangeNotifier {
   AppUser? _user;
   bool _loadingProfile = false;
   String? _profileError;
+  Timer? _retryTimer;
+  int _profileRetryCount = 0;
+  bool _disposed = false;
 
   User? get _authUser {
     try {
@@ -46,6 +51,7 @@ class UserProvider extends ChangeNotifier {
     _isReady = true;
     notifyListeners();
     if (uid != null) {
+      _profileRetryCount = 0;
       loadProfile(uid);
     } else {
       _user = null;
@@ -58,10 +64,27 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
     try {
       _user = await _firestore.getUser(uid);
+      _profileRetryCount = 0;
     } catch (e) {
-      _profileError = e.toString();
+      if (!_disposed &&
+          _uid == uid &&
+          e.toString().contains('permission-denied') &&
+          _profileRetryCount < 1) {
+        _profileRetryCount++;
+        _retryTimer?.cancel();
+        _retryTimer = Timer(const Duration(seconds: 1), () async {
+          if (!_disposed && _uid == uid) {
+            await forceAuthRefresh();
+            loadProfile(uid);
+          }
+        });
+      } else {
+        _profileError = e.toString();
+      }
     } finally {
-      _loadingProfile = false;
+      if (_retryTimer?.isActive != true) {
+        _loadingProfile = false;
+      }
       notifyListeners();
     }
   }
@@ -103,7 +126,25 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> forceAuthRefresh() async {
+    try {
+      await (_auth ?? FirebaseAuth.instance).currentUser?.getIdToken(true);
+    } catch (e) {
+      debugPrint('[UserProvider] forceAuthRefresh failed: $e');
+    }
+  }
+
   Future<void> reloadProfile() async {
-    if (_uid != null) await loadProfile(_uid!);
+    if (_uid != null) {
+      _profileRetryCount = 0;
+      await loadProfile(_uid!);
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _retryTimer?.cancel();
+    super.dispose();
   }
 }

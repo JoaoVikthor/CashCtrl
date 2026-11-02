@@ -21,6 +21,9 @@ class TransactionProvider extends ChangeNotifier {
   String? _uid;
   StreamSubscription<List<AppTransaction>>? _sub;
   String? _generationUid;
+  Timer? _retryTimer;
+  int _retryCount = 0;
+  bool _disposed = false;
 
   List<AppTransaction> _transactions = const [];
   bool _loading = true;
@@ -43,31 +46,36 @@ class TransactionProvider extends ChangeNotifier {
   void attach(UserProvider userProvider) {
     _userProvider = userProvider;
     _uid = userProvider.uid;
-    _connect();
+    _connect(notify: _uid != null);
     userProvider.addListener(_onUserChanged);
   }
 
   void _onUserChanged() {
     final newUid = _userProvider?.uid;
     if (newUid != _uid) {
+      _retryTimer?.cancel();
+      _retryCount = 0;
       _uid = newUid;
       _connect();
     }
   }
 
-  void _connect() {
+  void _connect({bool notify = true}) {
+    _retryTimer?.cancel();
     _sub?.cancel();
     if (_uid == null) {
       _transactions = const [];
       _loading = false;
       _generationUid = null;
-      notifyListeners();
+      if (notify) notifyListeners();
       return;
     }
     _loading = true;
-    notifyListeners();
+    if (notify) notifyListeners();
+    final currentUid = _uid;
     _sub = _firestore.transactionsStream(_uid!).listen(
       (list) {
+        _retryCount = 0;
         _transactions = list;
         _loading = false;
         _error = null;
@@ -86,9 +94,22 @@ class TransactionProvider extends ChangeNotifier {
       },
       onError: (e) {
         debugPrint('[TransactionProvider] stream error: $e');
-        _error = e.toString();
-        _loading = false;
-        notifyListeners();
+        if (!_disposed &&
+            _uid == currentUid &&
+            e.toString().contains('permission-denied') &&
+            _retryCount < 2) {
+          _retryCount++;
+          _retryTimer = Timer(const Duration(seconds: 1), () async {
+            if (!_disposed && _uid == currentUid) {
+              await _userProvider?.forceAuthRefresh();
+              _connect();
+            }
+          });
+        } else {
+          _error = e.toString();
+          _loading = false;
+          notifyListeners();
+        }
       },
     );
   }
@@ -108,10 +129,15 @@ class TransactionProvider extends ChangeNotifier {
     await _firestore.deleteTransaction(_uid!, id);
   }
 
-  void reload() => _connect();
+  void reload() {
+    _retryCount = 0;
+    _connect();
+  }
 
   @override
   void dispose() {
+    _disposed = true;
+    _retryTimer?.cancel();
     _sub?.cancel();
     _userProvider?.removeListener(_onUserChanged);
     super.dispose();

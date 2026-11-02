@@ -20,6 +20,9 @@ class ProductProvider extends ChangeNotifier {
   UserProvider? _userProvider;
   String? _uid;
   StreamSubscription<List<Product>>? _sub;
+  Timer? _retryTimer;
+  int _retryCount = 0;
+  bool _disposed = false;
 
   List<Product> _list = const [];
   bool _loading = true;
@@ -32,30 +35,35 @@ class ProductProvider extends ChangeNotifier {
   void attach(UserProvider userProvider) {
     _userProvider = userProvider;
     _uid = userProvider.uid;
-    _connect();
+    _connect(notify: _uid != null);
     userProvider.addListener(_onUserChanged);
   }
 
   void _onUserChanged() {
     final newUid = _userProvider?.uid;
     if (newUid != _uid) {
+      _retryTimer?.cancel();
+      _retryCount = 0;
       _uid = newUid;
       _connect();
     }
   }
 
-  void _connect() {
+  void _connect({bool notify = true}) {
+    _retryTimer?.cancel();
     _sub?.cancel();
     if (_uid == null) {
       _list = const [];
       _loading = false;
-      notifyListeners();
+      if (notify) notifyListeners();
       return;
     }
     _loading = true;
-    notifyListeners();
+    if (notify) notifyListeners();
+    final currentUid = _uid;
     _sub = _firestore.productsStream(_uid!).listen(
       (list) {
+        _retryCount = 0;
         _list = list;
         _loading = false;
         _error = null;
@@ -63,9 +71,22 @@ class ProductProvider extends ChangeNotifier {
       },
       onError: (e) {
         debugPrint('[ProductProvider] stream error: $e');
-        _error = e.toString();
-        _loading = false;
-        notifyListeners();
+        if (!_disposed &&
+            _uid == currentUid &&
+            e.toString().contains('permission-denied') &&
+            _retryCount < 2) {
+          _retryCount++;
+          _retryTimer = Timer(const Duration(seconds: 1), () async {
+            if (!_disposed && _uid == currentUid) {
+              await _userProvider?.forceAuthRefresh();
+              _connect();
+            }
+          });
+        } else {
+          _error = e.toString();
+          _loading = false;
+          notifyListeners();
+        }
       },
     );
   }
@@ -92,10 +113,15 @@ class ProductProvider extends ChangeNotifier {
     return null;
   }
 
-  void reload() => _connect();
+  void reload() {
+    _retryCount = 0;
+    _connect();
+  }
 
   @override
   void dispose() {
+    _disposed = true;
+    _retryTimer?.cancel();
     _sub?.cancel();
     _userProvider?.removeListener(_onUserChanged);
     super.dispose();
