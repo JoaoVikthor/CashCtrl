@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/app_user.dart';
 import 'firestore_service.dart';
@@ -64,7 +67,25 @@ class AuthService {
         endereco: userProfile.endereco,
         photoUrl: userProfile.photoUrl,
       );
-      await _firestore.saveUser(withUid);
+      try {
+        await credential.user?.getIdToken();
+      } catch (e) {
+        debugPrint('[AuthService] warm getIdToken failed: $e');
+      }
+      try {
+        await _firestore.saveUser(withUid).timeout(const Duration(seconds: 10));
+      } on TimeoutException {
+        try {
+          await credential.user!.getIdToken(true);
+        } catch (e) {
+          debugPrint('[AuthService] force getIdToken failed: $e');
+        }
+        try {
+          await _firestore.saveUser(withUid).timeout(const Duration(seconds: 15));
+        } on TimeoutException {
+          throw AuthException('Sua conta foi criada, mas o perfil ainda está sincronizando. Faça login com seu e-mail em instantes.');
+        }
+      }
       return credential.user!;
     } on FirebaseAuthException catch (e) {
       throw AuthException(friendlyAuthError(e));
