@@ -126,6 +126,7 @@ class ProductsScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.greenPrimary,
+                minimumSize: const Size(220, 48),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),

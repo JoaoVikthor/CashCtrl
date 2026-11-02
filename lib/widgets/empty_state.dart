@@ -51,19 +51,24 @@ class EmptyState extends StatelessWidget {
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: AppSpacing.l),
-              ElevatedButton(
-                onPressed: onAction,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.greenPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onAction,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.greenPrimary,
+                    minimumSize: const Size(0, 48),
+                    alignment: Alignment.center,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
                   ),
-                ),
-                child: Text(
-                  actionLabel!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                  child: Text(
+                    actionLabel!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

@@ -1020,28 +1020,33 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-        child: ElevatedButton(
-          onPressed: _saving ? null : _save,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.greenPrimary,
-            disabledBackgroundColor:
-                AppColors.greenPrimary.withValues(alpha: 0.5),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md)),
-            elevation: 0,
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _saving ? null : _save,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.greenPrimary,
+              disabledBackgroundColor:
+                  AppColors.greenPrimary.withValues(alpha: 0.5),
+              minimumSize: const Size(0, 48),
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md)),
+              elevation: 0,
+            ),
+            child: _saving
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2))
+                : Text(
+                    isEdit ? 'Salvar Alterações' : 'Cadastrar Produto',
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
           ),
-          child: _saving
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2))
-              : Text(
-                  isEdit ? 'Salvar Alterações' : 'Cadastrar Produto',
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
         ),
       ),
     );

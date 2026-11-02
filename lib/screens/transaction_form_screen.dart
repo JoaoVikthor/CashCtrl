@@ -247,24 +247,31 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             AppSpacing.xxl,
             AppSpacing.xxl,
           ),
-          child: ElevatedButton(
-            onPressed: _saving ? null : _save,
-            child: _saving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(0, 48),
+                alignment: Alignment.center,
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      isEdit ? 'Salvar Alterações' : 'Registrar Transação',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  )
-                : Text(
-                    isEdit ? 'Salvar Alterações' : 'Registrar Transação',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            ),
           ),
         ),
       ),
